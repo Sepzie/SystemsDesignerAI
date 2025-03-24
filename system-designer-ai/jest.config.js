@@ -9,6 +9,8 @@ module.exports = {
     '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { configFile: './babel.config.test.js' }]
   },
   moduleDirectories: ['node_modules', '<rootDir>'],
-  setupFilesAfterEnv: ['<rootDir>/tests/utilities/test-helpers/jest-setup.js'],
+  setupFilesAfterEnv: [
+    '<rootDir>/tests/utilities/test-helpers/jest-setup.js'
+  ],
   testMatch: ['**/__tests__/**/*.+(ts|tsx|js)', '**/?(*.)+(spec|test).+(ts|tsx|js)']
 }; 

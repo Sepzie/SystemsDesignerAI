@@ -16,7 +16,8 @@
     "test:msw:api": "cross-env USE_MSW_SUPABASE=true jest tests/api",
     "test:e2e": "cypress run",
     "test:e2e:open": "cypress open",
-    "test:integrated": "cross-env NODE_ENV=test TEST_USE_REAL_SUPABASE=true jest",
+    "test:check-env": "node tests/check-env.js",
+    "test:integrated": "npm run test:check-env && cross-env NODE_ENV=test TEST_USE_REAL_SUPABASE=true jest",
     "test:full": "cross-env NODE_ENV=test TEST_USE_REAL_SUPABASE=true TEST_USE_REAL_OPENAI=true TEST_USE_REAL_LANGCHAIN=true jest",
     "test:coverage": "jest --coverage"
   },
@@ -52,6 +53,7 @@
     "cross-env": "^7.0.3",
     "cypress": "^13.6.6",
     "cypress-localstorage-commands": "^2.2.5",
+    "dotenv": "^16.4.7",
     "eslint": "^9",
     "eslint-config-next": "15.2.3",
     "express": "^4.21.2",

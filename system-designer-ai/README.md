@@ -53,6 +53,35 @@ For more details on testing approach, see:
 - [Testing Infrastructure Documentation](docs/testing/manual/testing-infrastructure.md)
 - [Adding Tests Procedures](docs/testing/procedures/adding-tests.md)
 
+### Test Environment Setup
+
+To run integration tests with a real Supabase database, you need to set up a `.env.test` file:
+
+1. Copy the example environment file:
+   ```bash
+   cp .env.test.example .env.test
+   ```
+
+2. Edit `.env.test` with your test Supabase credentials
+   
+3. Run the environment check:
+   ```bash
+   npm run test:check-env
+   ```
+
+4. If the check passes, you can run integration tests:
+   ```bash
+   npm run test:integrated
+   ```
+
+### Running Tests
+
+- **Unit Tests**: `npm test` - Runs all tests with mocked dependencies
+- **API Tests**: `npm run test:api` - Tests API routes with mocked dependencies
+- **Integration Tests**: `npm run test:integrated` - Tests with real Supabase database
+- **E2E Tests**: `npm run test:e2e` - Runs Cypress end-to-end tests
+- **All Tests**: `npm run test:full` - Runs all tests with real dependencies
+
 ### Technology Stack
 
 - **Frontend**: Next.js, React, TailwindCSS

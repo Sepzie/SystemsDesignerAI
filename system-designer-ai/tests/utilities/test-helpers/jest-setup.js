@@ -2,6 +2,33 @@
 require('@testing-library/jest-dom');
 const { server } = require('./msw-setup');
 
+// Load environment variables from .env.test file
+const dotenv = require('dotenv');
+
+// When running integrated tests, use the test-specific env variables
+if (process.env.TEST_USE_REAL_SUPABASE === 'true') {
+  console.log('Loading environment variables from .env.test...');
+  
+  // First try .env.test file
+  const result = dotenv.config({ path: '.env.test' });
+  
+  if (result.error) {
+    console.error('Error loading .env.test file:', result.error.message);
+    console.error('-------------------------------------------------------');
+    console.error('Please create a .env.test file in the project root with these variables:');
+    console.error('NEXT_PUBLIC_SUPABASE_URL=https://your-test-project.supabase.co');
+    console.error('NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key');
+    console.error('SUPABASE_SERVICE_ROLE_KEY=your-service-key (optional)');
+    console.error('-------------------------------------------------------');
+    console.error('Falling back to .env file (not recommended for tests)');
+    
+    // Fallback to .env file
+    dotenv.config();
+  } else {
+    console.log('Successfully loaded environment variables from .env.test');
+  }
+}
+
 // Set a longer timeout for tests
 jest.setTimeout(30000);
 
@@ -67,30 +94,30 @@ if (global.expect) {
 // Suppress console errors during tests
 const originalConsoleError = console.error;
 console.error = (...args) => {
-  if (
-    args[0]?.includes?.('Warning: ReactDOM.render is no longer supported') ||
-    args[0]?.includes?.('Error: Not implemented: navigation')
-  ) {
+  if (process.env.DEBUG) {
     return;
   }
   originalConsoleError(...args);
 };
 
 // Mock Next.js router
-jest.mock('next/navigation', () => ({
+jest.mock('next/router', () => ({
   useRouter: () => ({
+    query: {},
+    pathname: '/',
+    asPath: '/',
+    events: {
+      on: jest.fn(),
+      off: jest.fn(),
+      emit: jest.fn()
+    },
     push: jest.fn(),
     replace: jest.fn(),
-    prefetch: jest.fn(),
-    back: jest.fn(),
-    pathname: '/',
-    query: {},
-  }),
-  usePathname: () => '/',
-  useSearchParams: () => new URLSearchParams(),
+    reload: jest.fn()
+  })
 }));
 
-// Clean up after each test
-afterEach(() => {
+// Reset mocks between tests
+beforeEach(() => {
   jest.clearAllMocks();
 }); 
