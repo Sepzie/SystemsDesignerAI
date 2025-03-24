@@ -6,6 +6,7 @@ CREATE TABLE "User" (
   email TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   last_login TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -18,6 +19,12 @@ CREATE POLICY "Users can view their own data" ON "User"
 
 CREATE POLICY "Users can update their own data" ON "User"
   FOR UPDATE USING (auth.uid() = id);
+
+-- Create trigger for updating updated_at
+CREATE TRIGGER update_user_updated_at
+BEFORE UPDATE ON "User"
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
 
 -- Projects table
 CREATE TABLE "Project" (

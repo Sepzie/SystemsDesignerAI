@@ -54,7 +54,7 @@ describe('Project Setup Integration Tests', () => {
       }
 
       const { data, error } = await supabaseClient
-        .from('projects')
+        .from('Project')
         .select()
         .limit(1);
 
@@ -85,7 +85,7 @@ describe('Project Setup Integration Tests', () => {
       const projectDescription = 'Created during integration testing';
       
       const { data: createdProject, error: createError } = await supabaseClient
-        .from('projects')
+        .from('Project')
         .insert({
           name: projectName,
           description: projectDescription,
@@ -102,7 +102,7 @@ describe('Project Setup Integration Tests', () => {
       
       // Retrieve the project
       const { data: retrievedProject, error: retrieveError } = await supabaseClient
-        .from('projects')
+        .from('Project')
         .select()
         .eq('id', createdProject.id)
         .single();
@@ -114,7 +114,7 @@ describe('Project Setup Integration Tests', () => {
       // Update the project
       const updatedName = `${projectName} (Updated)`;
       const { data: updatedProject, error: updateError } = await supabaseClient
-        .from('projects')
+        .from('Project')
         .update({
           name: updatedName,
           updated_at: new Date().toISOString()
@@ -129,7 +129,7 @@ describe('Project Setup Integration Tests', () => {
       
       // Delete the project
       const { error: deleteError } = await supabaseClient
-        .from('projects')
+        .from('Project')
         .delete()
         .eq('id', createdProject.id);
 
@@ -137,7 +137,7 @@ describe('Project Setup Integration Tests', () => {
       
       // Verify deletion
       const { data: shouldBeEmpty, error: verifyError } = await supabaseClient
-        .from('projects')
+        .from('Project')
         .select()
         .eq('id', createdProject.id);
 

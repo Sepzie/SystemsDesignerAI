@@ -4,9 +4,10 @@ import { createUser, createProject } from '../../utilities/factories/test-data-f
 import { SupabaseService } from '@/types/services';
 import { setupTestData, cleanupTestData } from '../../utilities/test-helpers/db-setup';
 import assert from 'assert';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 describe('Supabase Data Models', () => {
-  let supabaseClient: SupabaseService;
+  let supabaseClient: SupabaseClient;
   let testUser: any;
   let testData: any;
   
@@ -31,7 +32,7 @@ describe('Supabase Data Models', () => {
   
   beforeEach(async () => {
     // Get test client (could be mock or real)
-    supabaseClient = await getTestClient('supabase');
+    supabaseClient = await getTestClient('supabase') as SupabaseClient;
     
     if (process.env.TEST_USE_REAL_SUPABASE === 'true' && testData) {
       // Use the test user created in the beforeAll hook
@@ -71,7 +72,7 @@ describe('Supabase Data Models', () => {
       
       if (process.env.TEST_USE_REAL_SUPABASE === 'true') {
         projectResponse = await supabaseClient
-          .from('projects')
+          .from('Project')
           .insert(projectData)
           .select()
           .single();
@@ -90,7 +91,7 @@ describe('Supabase Data Models', () => {
         } else {
           // Fall back to using Supabase client for mocked client without projects method
           const { data } = await supabaseClient
-            .from('projects')
+            .from('Project')
             .insert(projectData)
             .select()
             .single();
@@ -117,7 +118,7 @@ describe('Supabase Data Models', () => {
         
         // Retrieve the project
         const { data, error } = await supabaseClient
-          .from('projects')
+          .from('Project')
           .select()
           .eq('id', project.id)
           .single();
@@ -144,13 +145,13 @@ describe('Supabase Data Models', () => {
         } else {
           // Fall back to using Supabase client for mocked client without projects method
           const { data: savedProject } = await supabaseClient
-            .from('projects')
+            .from('Project')
             .insert(project)
             .select()
             .single();
             
           const { data } = await supabaseClient
-            .from('projects')
+            .from('Project')
             .select()
             .eq('id', savedProject.id)
             .single();
@@ -218,7 +219,7 @@ describe('Supabase Data Models', () => {
       if (process.env.TEST_USE_REAL_SUPABASE === 'true') {
         // Get projects for the user from the real DB
         const { data: projects, error } = await supabaseClient
-          .from('projects')
+          .from('Project')
           .select()
           .eq('user_id', testData.user.id);
           
@@ -255,14 +256,14 @@ describe('Supabase Data Models', () => {
         } else {
           // Fall back to using Supabase client for mocked client without projects method
           await supabaseClient
-            .from('projects')
+            .from('Project')
             .insert([
               createProject({ name: 'User Project 1', user_id: testUser.id }),
               createProject({ name: 'User Project 2', user_id: testUser.id })
             ]);
             
           const { data: projects } = await supabaseClient
-            .from('projects')
+            .from('Project')
             .select()
             .eq('user_id', testUser.id);
             

@@ -1,6 +1,6 @@
 module.exports = {
   testEnvironment: 'node',
-  testPathIgnorePatterns: ['/node_modules/', '/.next/'],
+  testPathIgnorePatterns: ['/node_modules/', '/.next/', 'babel.config.test.js'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@tests/(.*)$': '<rootDir>/tests/$1',
@@ -10,7 +10,7 @@ module.exports = {
   },
   moduleDirectories: ['node_modules', '<rootDir>'],
   setupFilesAfterEnv: [
-    '<rootDir>/tests/utilities/test-helpers/jest-setup.js'
+    '<rootDir>/tests/utilities/test-helpers/jest-setup.ts'
   ],
   testMatch: ['**/__tests__/**/*.+(ts|tsx|js)', '**/?(*.)+(spec|test).+(ts|tsx|js)']
 }; 

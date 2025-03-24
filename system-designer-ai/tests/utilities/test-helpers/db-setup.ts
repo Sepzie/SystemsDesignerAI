@@ -49,17 +49,29 @@ export async function setupTestData(): Promise<TestData> {
   console.log(`Setting up test user: ${testUser.email}`);
 
   try {
+    // First, insert the test user into the User table
+    const { data: insertedUser, error: userError } = await supabaseClient
+      .from('User')
+      .insert(testUser)
+      .select()
+      .single();
+
+    if (userError) {
+      console.error('Error creating test user:', userError);
+      throw userError;
+    }
+
     // Create test projects
     const projects = [];
     
     // Create a test project
     const projectData = createProject({ 
-      user_id: testUser.id,
+      user_id: insertedUser.id,
       name: `Test Project ${uuidv4().substring(0, 8)}`
     });
     
     const { data: project, error: projectError } = await supabaseClient
-      .from('projects')
+      .from('Project')
       .insert(projectData)
       .select()
       .single();
@@ -71,7 +83,7 @@ export async function setupTestData(): Promise<TestData> {
     }
 
     return {
-      user: testUser,
+      user: insertedUser,
       projects
     };
   } catch (error) {
@@ -118,7 +130,7 @@ export async function cleanupTestData(testData: TestData): Promise<void> {
     if (testData.projects && testData.projects.length > 0) {
       for (const project of testData.projects) {
         const { error } = await supabaseClient
-          .from('projects')
+          .from('Project')
           .delete()
           .eq('id', project.id);
           
@@ -128,7 +140,16 @@ export async function cleanupTestData(testData: TestData): Promise<void> {
       }
     }
     
-    // We don't need to delete the user since we're not creating real auth users
+    // Delete the test user
+    const { error: userError } = await supabaseClient
+      .from('User')
+      .delete()
+      .eq('id', testData.user.id);
+      
+    if (userError) {
+      console.error(`Error deleting test user ${testData.user.id}:`, userError);
+    }
+    
     console.log('Test data cleanup complete');
   } catch (error) {
     console.error('Error in cleanupTestData:', error);
