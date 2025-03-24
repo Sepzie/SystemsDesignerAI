@@ -4,11 +4,11 @@ describe('Authentication Flow', () => {
   });
 
   it('should navigate to login page when not authenticated', () => {
-    cy.url().should('include', '/login');
+    cy.url().should('include', '/auth/login');
   });
 
   it('should show error for invalid login', () => {
-    cy.visit('/login');
+    cy.visit('/auth/login');
     cy.get('input[name="email"]').type('invalid@example.com');
     cy.get('input[name="password"]').type('wrongpassword');
     cy.get('button[type="submit"]').click();
