@@ -1,0 +1,37 @@
+{
+  "testUser": {
+    "email": "test@example.com",
+    "password": "testPassword123!",
+    "fullName": "Test User"
+  },
+  "testProject": {
+    "name": "Test Project",
+    "description": "This is a test project for e2e testing"
+  },
+  "sampleSystemDesign": {
+    "components": [
+      {
+        "name": "User Service",
+        "description": "Handles user authentication and management",
+        "dependencies": ["Database", "Auth Service"]
+      },
+      {
+        "name": "Auth Service",
+        "description": "Manages authentication tokens and sessions",
+        "dependencies": ["Database"]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "User Service",
+        "to": "Database",
+        "type": "reads/writes"
+      },
+      {
+        "from": "Auth Service",
+        "to": "Database",
+        "type": "reads/writes"
+      }
+    ]
+  }
+} 
