@@ -1,0 +1,42 @@
+flowchart TD
+    Start([Design Request]) --> InputType{Request Type}
+    
+    InputType -->|New Project| ProcessRequirements[Process Initial Requirements]
+    InputType -->|Chat Feedback| ProcessFeedback[Process User Feedback]
+    InputType -->|Modification Request| ProcessModification[Process Modification Request]
+    
+    ProcessRequirements --> ExtractEntities[Extract System Entities & Relationships]
+    ProcessFeedback --> IdentifyTarget[Identify Target Asset]
+    ProcessModification --> IdentifyChanges[Identify Required Changes]
+    
+    ExtractEntities --> ContextLoading[Load Design Context]
+    IdentifyTarget --> ContextLoading
+    IdentifyChanges --> ContextLoading
+    
+    ContextLoading --> DiagramType{Diagram Type?}
+    
+    DiagramType -->|System Context| GenerateContext[Generate System Context]
+    DiagramType -->|Component| GenerateComponent[Generate Component Diagram]
+    DiagramType -->|Data Model| GenerateDataModel[Generate Data Model]
+    DiagramType -->|API Spec| GenerateAPI[Generate API Specification]
+    DiagramType -->|User Flow| GenerateUserFlow[Generate User Flow]
+    DiagramType -->|Deployment| GenerateDeployment[Generate Deployment Diagram]
+    
+    GenerateContext --> GenerateMermaid[Generate Mermaid Code]
+    GenerateComponent --> GenerateMermaid
+    GenerateDataModel --> GenerateMermaid
+    GenerateAPI --> GenerateMermaid
+    GenerateUserFlow --> GenerateMermaid
+    GenerateDeployment --> GenerateMermaid
+    
+    GenerateMermaid --> ValidateOutput[Validate Output]
+    ValidateOutput --> Valid{Is Valid?}
+    
+    Valid -->|No| AdjustDiagram[Adjust Diagram]
+    AdjustDiagram --> GenerateMermaid
+    
+    Valid -->|Yes| StoreAsset[Store in Asset Repository]
+    StoreAsset --> GenerateExplanation[Generate Design Explanation]
+    GenerateExplanation --> NotifyUser[Notify User]
+    
+    NotifyUser --> End([End])

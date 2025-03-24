@@ -1,0 +1,39 @@
+flowchart TD
+    Start([Start Conversation]) --> UserInput[User Sends Message]
+    
+    UserInput --> AnalyzeInput[Analyze User Input]
+    AnalyzeInput --> InputType{Message Type?}
+    
+    InputType -->|Question| ProcessQuestion[Process Design Question]
+    InputType -->|Feedback| ProcessFeedback[Process Design Feedback]
+    InputType -->|Request| ProcessRequest[Process Design Request]
+    InputType -->|Clarification| ProvideAnswer[Provide Clarification]
+    
+    ProcessQuestion --> LoadContext[Load Project Context]
+    ProcessFeedback --> LoadContext
+    ProcessRequest --> LoadContext
+    
+    LoadContext --> FormulateResponse[Formulate AI Response]
+    ProvideAnswer --> FormulateResponse
+    
+    FormulateResponse --> ActionRequired{Action Required?}
+    
+    ActionRequired -->|No| SendResponse[Send Text Response]
+    ActionRequired -->|Update Diagram| UpdateDiagram[Update Design Asset]
+    ActionRequired -->|Create Diagram| CreateDiagram[Create New Design Asset]
+    ActionRequired -->|Generate Prompt| GeneratePrompt[Generate Code Prompt]
+    
+    UpdateDiagram --> NotifyChanges[Notify About Changes]
+    CreateDiagram --> NotifyChanges
+    GeneratePrompt --> NotifyCreation[Notify About Prompt]
+    
+    NotifyChanges --> SendResponse
+    NotifyCreation --> SendResponse
+    
+    SendResponse --> UserReaction{User Reaction}
+    
+    UserReaction -->|New Message| UserInput
+    UserReaction -->|Views Asset| ViewAsset[View Updated Asset]
+    UserReaction -->|No Response| End([End Conversation])
+    
+    ViewAsset --> UserReaction

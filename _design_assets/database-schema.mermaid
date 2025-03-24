@@ -1,0 +1,71 @@
+erDiagram
+    User ||--o{ Project : "creates"
+    Project ||--o{ DesignAsset : "contains"
+    Project ||--o{ Conversation : "has"
+    Conversation ||--o{ Message : "contains"
+    DesignAsset ||--o{ AssetVersion : "has versions"
+    Project ||--o{ ExportedPrompt : "generates"
+    
+    User {
+        uuid id PK
+        string email
+        string name
+        timestamp created_at
+        timestamp last_login
+    }
+    
+    Project {
+        uuid id PK
+        uuid user_id FK
+        string name
+        string description
+        jsonb requirements
+        string tech_stack
+        timestamp created_at
+        timestamp updated_at
+        int progress
+    }
+    
+    DesignAsset {
+        uuid id PK
+        uuid project_id FK
+        string name
+        string asset_type "system_context, component, data_model, api_spec, user_flow, deployment"
+        timestamp created_at
+        timestamp updated_at
+    }
+    
+    AssetVersion {
+        uuid id PK
+        uuid asset_id FK
+        int version_number
+        text content "Mermaid code or other content"
+        jsonb metadata "Additional information about the version"
+        timestamp created_at
+        string created_by "user or ai"
+    }
+    
+    Conversation {
+        uuid id PK
+        uuid project_id FK
+        timestamp started_at
+        timestamp updated_at
+    }
+    
+    Message {
+        uuid id PK
+        uuid conversation_id FK
+        string role "user or assistant"
+        text content
+        jsonb metadata "References to assets, etc."
+        timestamp created_at
+    }
+    
+    ExportedPrompt {
+        uuid id PK
+        uuid project_id FK
+        string name
+        text content
+        string prompt_type "code, implementation, testing"
+        timestamp created_at
+    }

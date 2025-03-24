@@ -1,0 +1,65 @@
+flowchart TD
+    subgraph "AI System Designer Application"
+        subgraph "NextJS Application"
+            Frontend[Frontend UI]
+            
+            subgraph "API Routes"
+                ProjectAPI[Project APIs]
+                AssetAPI[Asset APIs]
+                ConversationAPI[Conversation APIs]
+                ExportAPI[Export APIs]
+            end
+            
+            subgraph "Agent Handlers"
+                MainAgent[Main Design Agent]
+                DiagramAgent[Diagram Specialist]
+                PromptAgent[Prompt Generator]
+            end
+            
+            subgraph "LLM Integration"
+                LangChain[LangChain Orchestration]
+                PromptTemplates[Prompt Templates]
+                StreamHandler[Stream Handler]
+            end
+        end
+        
+        DB[(Database)]
+        BlobStore[(Blob Storage)]
+    end
+    
+    ExternalLLM[External LLM Provider]
+    
+    %% Frontend to API connections
+    Frontend <--> ProjectAPI
+    Frontend <--> AssetAPI
+    Frontend <--> ConversationAPI
+    Frontend <--> ExportAPI
+    Frontend <-->|Server-Sent Events| StreamHandler
+    
+    %% API to Agent connections
+    ConversationAPI <--> MainAgent
+    AssetAPI <--> DiagramAgent
+    ExportAPI <--> PromptAgent
+    
+    %% Agent to LLM connections
+    MainAgent <--> LangChain
+    DiagramAgent <--> LangChain
+    PromptAgent <--> LangChain
+    
+    LangChain <--> PromptTemplates
+    LangChain <--> StreamHandler
+    
+    %% Database connections
+    ProjectAPI <--> DB
+    AssetAPI <--> DB
+    ConversationAPI <--> DB
+    MainAgent <--> DB
+    DiagramAgent <--> DB
+    
+    %% Storage connections
+    AssetAPI <--> BlobStore
+    ExportAPI <--> BlobStore
+    
+    %% External connections
+    LangChain <--> ExternalLLM
+    StreamHandler <--> ExternalLLM

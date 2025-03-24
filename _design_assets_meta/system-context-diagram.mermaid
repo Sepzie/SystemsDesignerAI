@@ -1,0 +1,40 @@
+graph TB
+    User[User] 
+    
+    subgraph "AI System Designer Application"
+        subgraph "Frontend - NextJS"
+            UI[User Interface]
+            ClientState[Client State Management]
+        end
+        
+        subgraph "Backend - NextJS API Routes"
+            APILayer[API Endpoints]
+            AIOrchestrator[AI Orchestration Layer]
+        end
+        
+        subgraph "LangChain Components"
+            LLMService[LLM Service]
+            PromptTemplates[Prompt Templates]
+            ChainManager[Chain Manager]
+        end
+        
+        subgraph "Data Storage"
+            ProjectStore[Project Repository]
+            DiagramStore[Diagram Storage]
+        end
+    end
+    
+    ExternalLLM[External LLM Provider]
+    ExternalCoding[External Coding Agent]
+    
+    User -- "Interacts with" --> UI
+    UI -- "Updates/Retrieves" --> ClientState
+    UI -- "API Requests" --> APILayer
+    APILayer -- "Processes requests" --> AIOrchestrator
+    AIOrchestrator -- "Manages" --> LLMService
+    AIOrchestrator -- "Uses" --> PromptTemplates
+    AIOrchestrator -- "Coordinates" --> ChainManager
+    LLMService -- "Communicates with" --> ExternalLLM
+    AIOrchestrator -- "Stores/Retrieves" --> ProjectStore
+    AIOrchestrator -- "Manages" --> DiagramStore
+    ChainManager -- "Generates prompts for" --> ExternalCoding

@@ -1,0 +1,32 @@
+sequenceDiagram
+    actor User
+    participant UI as Frontend UI
+    participant ChatAPI as Chat API
+    participant MainAgent as Main AI Agent
+    participant DiagramAgent as Diagram Specialist Agent
+    participant AssetMgmt as Asset Management API
+    participant DB as Database
+    
+    User->>UI: Request via chat interface
+    UI->>ChatAPI: POST /api/conversations/{id}/messages
+    ChatAPI->>MainAgent: Process user request
+    MainAgent->>DB: Retrieve project context
+    DB-->>MainAgent: Return project data
+    
+    alt Diagram creation/update needed
+        MainAgent->>DiagramAgent: Delegate diagram task
+        DiagramAgent->>DiagramAgent: Generate/modify diagram
+        DiagramAgent-->>MainAgent: Return Mermaid diagram code
+        MainAgent->>AssetMgmt: Store diagram as asset
+        AssetMgmt->>DB: Save to database
+        DB-->>AssetMgmt: Confirm storage
+        AssetMgmt-->>MainAgent: Confirm asset creation
+    end
+    
+    MainAgent-->>ChatAPI: Return response with asset references
+    ChatAPI-->>UI: Return updated conversation
+    UI->>AssetMgmt: GET /api/projects/{id}/assets
+    AssetMgmt->>DB: Retrieve latest assets
+    DB-->>AssetMgmt: Return asset data
+    AssetMgmt-->>UI: Return updated assets
+    UI-->>User: Display response and updated diagrams

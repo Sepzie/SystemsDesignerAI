@@ -1,0 +1,45 @@
+flowchart TD
+    Start([Start]) --> Login{User Logged In?}
+    Login -->|No| AuthProcess[Authentication Process]
+    Login -->|Yes| Dashboard[Project Dashboard]
+    AuthProcess --> Dashboard
+    
+    Dashboard --> ExistingProject{Select Existing Project?}
+    ExistingProject -->|Yes| OpenProject[Open Project Workspace]
+    ExistingProject -->|No| NewProject[Create New Project]
+    
+    NewProject --> RequirementsForm[Fill Project Requirements Form]
+    RequirementsForm --> ProcessRequirements[System Processes Requirements]
+    ProcessRequirements --> InitialDesign[AI Generates Initial Design Assets]
+    InitialDesign --> OpenProject
+    
+    OpenProject --> DesignWorkflow
+    
+    subgraph DesignWorkflow [Design Workspace Workflow]
+        ViewAssets[View Available Design Assets] --> SelectAsset[Select Specific Asset]
+        SelectAsset --> AssetActions{Action?}
+        
+        AssetActions -->|View| ViewAsset[View Asset in Canvas]
+        AssetActions -->|Modify| RequestChange[Request Changes via Chat]
+        AssetActions -->|Export| ExportAsset[Export Asset]
+        
+        RequestChange --> AIProcessing[AI Processes Request]
+        AIProcessing --> UpdateAsset[Update Design Asset]
+        UpdateAsset --> ViewAsset
+        
+        ExportAsset --> ExportOptions[Select Export Options]
+        ExportOptions --> GenerateExport[Generate Export File]
+        GenerateExport --> Download[Download or Share]
+    end
+    
+    ViewAsset --> GeneratePrompt{Generate Code Prompt?}
+    GeneratePrompt -->|Yes| CreatePrompt[Generate AI Coding Prompt]
+    GeneratePrompt -->|No| Continue([Continue Design])
+    
+    CreatePrompt --> ExportPrompt[Export Prompt for Coding Agent]
+    ExportPrompt --> Continue
+    
+    Download --> Continue
+    Continue --> Exit{Exit Project?}
+    Exit -->|No| ViewAssets
+    Exit -->|Yes| Dashboard
