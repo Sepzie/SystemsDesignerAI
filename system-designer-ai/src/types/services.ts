@@ -1,15 +1,16 @@
 /**
- * Service interfaces for external services
- * These ensure both mock and real implementations follow the same contract
+ * Service interfaces for the AI System Designer
+ * These interfaces define the contracts between the application and external services
  */
 
-// Supabase service interface
+// Supabase Service Interface
 export interface SupabaseService {
   auth: {
     signUp: (credentials: { email: string; password: string }) => Promise<any>;
     signIn: (credentials: { email: string; password: string }) => Promise<any>;
-    signOut: () => Promise<void>;
+    signOut: () => Promise<any>;
     getSession: () => Promise<any>;
+    createSession?: (data: any) => Promise<any>;
   };
   
   projects: {
@@ -31,64 +32,25 @@ export interface SupabaseService {
     create: (diagramData: any) => Promise<any>;
     update: (id: string, diagramData: any) => Promise<any>;
   };
+
+  from?: (table: string) => any;
 }
 
-// OpenAI service interface
+// OpenAI Service Interface
 export interface OpenAIService {
   chat: {
-    createCompletion: (params: {
-      messages: Array<{
-        role: 'system' | 'user' | 'assistant';
-        content: string;
-      }>;
-      temperature?: number;
-      maxTokens?: number;
-    }) => Promise<{
-      id: string;
-      choices: Array<{
-        message: {
-          role: string;
-          content: string;
-        };
-        finishReason: string;
-      }>;
-    }>;
+    completions: {
+      create: (params: any) => Promise<any>;
+    };
   };
-  
   embeddings: {
-    create: (params: { input: string | string[] }) => Promise<{
-      data: Array<{
-        embedding: number[];
-        index: number;
-      }>;
-    }>;
+    create: (params: any) => Promise<any>;
   };
 }
 
-// LangChain service interface
+// LangChain Service Interface
 export interface LangChainService {
-  agents: {
-    createSystemDesignAgent: (params: {
-      projectId: string;
-      userMessages: string[];
-    }) => Promise<any>;
-    
-    runAgent: (agentId: string, input: string) => Promise<{
-      output: string;
-      steps: Array<{
-        type: string;
-        content: string;
-      }>;
-    }>;
-  };
-  
-  tools: {
-    generateDiagram: (description: string) => Promise<string>;
-    extractRequirements: (userInput: string) => Promise<string[]>;
-    recommendTechnologies: (requirements: string[]) => Promise<{
-      frontend: string[];
-      backend: string[];
-      database: string[];
-    }>;
-  };
+  generateSystemDiagram: (requirements: string) => Promise<string>;
+  analyzeRequirements: (requirements: string) => Promise<any>;
+  generateComponentSuggestions: (context: any) => Promise<any[]>;
 } 

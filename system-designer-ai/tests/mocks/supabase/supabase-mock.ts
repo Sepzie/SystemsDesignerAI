@@ -6,11 +6,11 @@ import { SupabaseService } from '@/types/services';
  */
 export class SupabaseMock implements SupabaseService {
   // In-memory storage
-  private users: any[] = [];
-  private sessions: any[] = [];
-  private projects: any[] = [];
-  private conversations: any[] = [];
-  private diagrams: any[] = [];
+  private _users: any[] = [];
+  private _sessions: any[] = [];
+  private _projects: any[] = [];
+  private _conversations: any[] = [];
+  private _diagrams: any[] = [];
   
   // Mock delay to simulate network latency (ms)
   private mockDelay = 100;
@@ -20,21 +20,21 @@ export class SupabaseMock implements SupabaseService {
   
   constructor() {
     // Initialize with some test data
-    this.users = [
+    this._users = [
       { id: 'test-user-1', email: 'test@example.com', password: 'password123' }
     ];
     
-    this.projects = [
+    this._projects = [
       { 
         id: 'test-project-1', 
         name: 'E-commerce Platform',
         description: 'A modern e-commerce solution with product catalog and checkout',
-        userId: 'test-user-1',
-        createdAt: new Date().toISOString()
+        user_id: 'test-user-1',
+        created_at: new Date().toISOString()
       }
     ];
     
-    this.conversations = [
+    this._conversations = [
       {
         id: 'test-convo-1',
         projectId: 'test-project-1',
@@ -50,7 +50,7 @@ export class SupabaseMock implements SupabaseService {
       }
     ];
     
-    this.diagrams = [
+    this._diagrams = [
       {
         id: 'test-diagram-1',
         projectId: 'test-project-1',
@@ -72,6 +72,71 @@ export class SupabaseMock implements SupabaseService {
     return new Promise(resolve => setTimeout(() => resolve(data), this.mockDelay));
   }
   
+  // Supabase query builder interface
+  from(table: string) {
+    const builder = {
+      data: null as any,
+      error: null as any,
+      
+      select: (columns = '*') => {
+        return builder;
+      },
+      
+      insert: (data: any) => {
+        try {
+          if (table === 'projects') {
+            // Handle foreign key constraints
+            if (data.user_id && !this._users.find(u => u.id === data.user_id)) {
+              builder.error = { 
+                message: 'Foreign key violation',
+                code: '23503'
+              };
+            } else {
+              const newItem = {
+                id: `${table}-${Date.now()}`,
+                ...data,
+                created_at: new Date().toISOString()
+              };
+              this._projects.push(newItem);
+              builder.data = newItem;
+            }
+          }
+        } catch (err) {
+          builder.error = { message: (err as Error).message };
+        }
+        return builder;
+      },
+      
+      update: (data: any) => {
+        return builder;
+      },
+      
+      delete: () => {
+        return builder;
+      },
+      
+      eq: (column: string, value: any) => {
+        if (table === 'projects') {
+          const index = this._projects.findIndex(p => p[column] === value);
+          if (index !== -1) {
+            if (builder.data === null) { // If we're in a delete operation
+              this._projects.splice(index, 1);
+            } else {
+              builder.data = this._projects[index];
+            }
+          }
+        }
+        return builder;
+      },
+      
+      single: () => {
+        return { data: builder.data, error: builder.error };
+      }
+    };
+    
+    return builder;
+  }
+  
   // Auth methods
   auth = {
     signUp: async (credentials: { email: string; password: string }) => {
@@ -81,19 +146,19 @@ export class SupabaseMock implements SupabaseService {
         password: credentials.password
       };
       
-      this.users.push(newUser);
+      this._users.push(newUser);
       
       const session = {
         user: { ...newUser, password: undefined },
         accessToken: `mock-token-${Date.now()}`
       };
       
-      this.sessions.push(session);
+      this._sessions.push(session);
       return this.delay({ data: { session }, error: null });
     },
     
     signIn: async (credentials: { email: string; password: string }) => {
-      const user = this.users.find(u => 
+      const user = this._users.find(u => 
         u.email === credentials.email && u.password === credentials.password
       );
       
@@ -106,65 +171,81 @@ export class SupabaseMock implements SupabaseService {
         accessToken: `mock-token-${Date.now()}`
       };
       
-      this.sessions.push(session);
+      this._sessions.push(session);
       return this.delay({ data: { session }, error: null });
     },
     
     signOut: async () => {
-      this.sessions = [];
+      this._sessions = [];
       return this.delay(void 0);
     },
     
     getSession: async () => {
-      const session = this.sessions[this.sessions.length - 1] || null;
+      const session = this._sessions[this._sessions.length - 1] || null;
       return this.delay({ data: { session }, error: null });
+    },
+
+    createSession: async (data: any) => {
+      const session = {
+        ...data,
+        access_token: `mock-token-${Date.now()}`,
+        refresh_token: `mock-refresh-${Date.now()}`
+      };
+      this._sessions.push(session);
+      return this.delay(session);
     }
   };
   
   // Projects methods
   projects = {
     getAll: async () => {
-      return this.delay(this.projects);
+      return this.delay(this._projects);
     },
     
     getById: async (id: string) => {
-      const project = this.projects.find(p => p.id === id);
+      const project = this._projects.find(p => p.id === id);
       return this.delay(project || null);
     },
     
     create: async (projectData: any) => {
+      // Check for foreign key constraints
+      if (projectData.user_id && !this._users.find(u => u.id === projectData.user_id)) {
+        throw new Error("foreign key violation: user_id does not exist in users table");
+      }
+      
       const newProject = {
         id: `project-${Date.now()}`,
         ...projectData,
-        createdAt: new Date().toISOString()
+        created_at: projectData.created_at || new Date().toISOString(),
+        updated_at: projectData.updated_at || new Date().toISOString()
       };
       
-      this.projects.push(newProject);
+      this._projects.push(newProject);
       return this.delay(newProject);
     },
     
     update: async (id: string, projectData: any) => {
-      const index = this.projects.findIndex(p => p.id === id);
+      const index = this._projects.findIndex(p => p.id === id);
       
       if (index === -1) {
         throw new Error('Project not found');
       }
       
       const updatedProject = {
-        ...this.projects[index],
+        ...this._projects[index],
         ...projectData,
-        updatedAt: new Date().toISOString()
+        updated_at: new Date().toISOString()
       };
       
-      this.projects[index] = updatedProject;
+      this._projects[index] = updatedProject;
       return this.delay(updatedProject);
     },
     
     delete: async (id: string) => {
-      const index = this.projects.findIndex(p => p.id === id);
+      const index = this._projects.findIndex(p => p.id === id);
       
       if (index !== -1) {
-        this.projects.splice(index, 1);
+        this._projects.splice(index, 1);
       }
       
       return this.delay(void 0);
@@ -174,7 +255,7 @@ export class SupabaseMock implements SupabaseService {
   // Conversations methods
   conversations = {
     getByProjectId: async (projectId: string) => {
-      const projectConversations = this.conversations.filter(c => c.projectId === projectId);
+      const projectConversations = this._conversations.filter(c => c.projectId === projectId);
       return this.delay(projectConversations);
     },
     
@@ -186,12 +267,12 @@ export class SupabaseMock implements SupabaseService {
         createdAt: new Date().toISOString()
       };
       
-      this.conversations.push(newConversation);
+      this._conversations.push(newConversation);
       return this.delay(newConversation);
     },
     
     addMessage: async (conversationId: string, messageData: any) => {
-      const index = this.conversations.findIndex(c => c.id === conversationId);
+      const index = this._conversations.findIndex(c => c.id === conversationId);
       
       if (index === -1) {
         throw new Error('Conversation not found');
@@ -203,7 +284,7 @@ export class SupabaseMock implements SupabaseService {
         timestamp: new Date().toISOString()
       };
       
-      this.conversations[index].messages.push(newMessage);
+      this._conversations[index].messages.push(newMessage);
       return this.delay(newMessage);
     }
   };
@@ -211,7 +292,7 @@ export class SupabaseMock implements SupabaseService {
   // Diagrams methods
   diagrams = {
     getByProjectId: async (projectId: string) => {
-      const projectDiagrams = this.diagrams.filter(d => d.projectId === projectId);
+      const projectDiagrams = this._diagrams.filter(d => d.projectId === projectId);
       return this.delay(projectDiagrams);
     },
     
@@ -222,24 +303,24 @@ export class SupabaseMock implements SupabaseService {
         createdAt: new Date().toISOString()
       };
       
-      this.diagrams.push(newDiagram);
+      this._diagrams.push(newDiagram);
       return this.delay(newDiagram);
     },
     
     update: async (id: string, diagramData: any) => {
-      const index = this.diagrams.findIndex(d => d.id === id);
+      const index = this._diagrams.findIndex(d => d.id === id);
       
       if (index === -1) {
         throw new Error('Diagram not found');
       }
       
       const updatedDiagram = {
-        ...this.diagrams[index],
+        ...this._diagrams[index],
         ...diagramData,
         updatedAt: new Date().toISOString()
       };
       
-      this.diagrams[index] = updatedDiagram;
+      this._diagrams[index] = updatedDiagram;
       return this.delay(updatedDiagram);
     }
   };

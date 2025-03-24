@@ -21,7 +21,7 @@ declare global {
 
 // Add custom commands
 Cypress.Commands.add('login', (email, password) => {
-  cy.visit('/login');
+  cy.visit('/auth/login');
   cy.get('input[name="email"]').type(email);
   cy.get('input[name="password"]').type(password);
   cy.get('button[type="submit"]').click();
@@ -30,7 +30,7 @@ Cypress.Commands.add('login', (email, password) => {
 
 Cypress.Commands.add('logout', () => {
   cy.get('[data-testid="logout-button"]').click();
-  cy.url().should('include', '/login');
+  cy.url().should('include', '/auth/login');
 });
 
 Cypress.Commands.add('preserveSession', () => {

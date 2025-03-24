@@ -59,17 +59,17 @@ export function createProject(overrides: Partial<Project> = {}): Project {
 // Conversation factory
 export const createConversation = (overrides: Partial<any> = {}) => ({
   id: `conversation-${Date.now()}`,
-  projectId: overrides.projectId || `project-${Date.now()}`,
+  project_id: overrides.project_id || `project-${Date.now()}`,
   title: 'Test Conversation',
   messages: overrides.messages || [],
-  createdAt: new Date().toISOString(),
+  created_at: new Date().toISOString(),
   ...overrides
 });
 
 // Message factory
 export const createMessage = (overrides: Partial<any> = {}) => ({
   id: `message-${Date.now()}`,
-  conversationId: overrides.conversationId || `conversation-${Date.now()}`,
+  conversation_id: overrides.conversation_id || `conversation-${Date.now()}`,
   role: overrides.role || 'user',
   content: overrides.content || 'This is a test message',
   timestamp: new Date().toISOString(),
@@ -79,33 +79,33 @@ export const createMessage = (overrides: Partial<any> = {}) => ({
 // Diagram factory
 export const createDiagram = (overrides: Partial<any> = {}) => ({
   id: `diagram-${Date.now()}`,
-  projectId: overrides.projectId || `project-${Date.now()}`,
+  project_id: overrides.project_id || `project-${Date.now()}`,
   title: 'Test Diagram',
   content: overrides.content || 'graph TD\nA[Client] --> B[Server]\nB --> C[Database]',
   type: overrides.type || 'mermaid',
-  createdAt: new Date().toISOString(),
+  created_at: new Date().toISOString(),
   ...overrides
 });
 
 // Test projects with different types
-export const createTestProjects = (userId: string) => [
+export const createTestProjects = (user_id: string) => [
   createProject({
     id: 'e-commerce-project',
     name: 'E-commerce Platform',
     description: 'An online shopping platform with product management and checkout',
-    userId
+    user_id
   }),
   createProject({
     id: 'blog-project',
     name: 'Blog System',
     description: 'A content management system for bloggers',
-    userId
+    user_id
   }),
   createProject({
     id: 'analytics-project',
     name: 'Analytics Dashboard',
     description: 'A data visualization dashboard for business metrics',
-    userId
+    user_id
   })
 ];
 

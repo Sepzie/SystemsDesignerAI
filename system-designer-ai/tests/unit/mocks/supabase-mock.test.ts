@@ -2,6 +2,7 @@ import { SupabaseMock } from '../../mocks/supabase/supabase-mock';
 
 describe('Supabase Mock', () => {
   let supabaseMock: SupabaseMock;
+  const testUserId = 'test-user-1'; // Match the ID used in the mock's constructor
   
   beforeEach(() => {
     supabaseMock = new SupabaseMock();
@@ -10,6 +11,9 @@ describe('Supabase Mock', () => {
     expect(supabaseMock).toBeDefined();
     expect(supabaseMock.auth).toBeDefined();
     expect(typeof supabaseMock.auth.signUp).toBe('function');
+    
+    // Ensure a test user exists - the SupabaseMock constructor should already add this user
+    expect(supabaseMock['_users'].some(u => u.id === testUserId)).toBeTruthy();
   });
   
   describe('Auth Methods', () => {
@@ -66,8 +70,8 @@ describe('Supabase Mock', () => {
     });
   });
   
-  // Skip the projects tests temporarily until we fix the mock implementation
-  describe.skip('Projects Methods', () => {
+  // Projects tests are now enabled
+  describe('Projects Methods', () => {
     it('should get all projects', async () => {
       // Verify the projects property exists and has methods
       expect(supabaseMock.projects).toBeDefined();
@@ -75,20 +79,23 @@ describe('Supabase Mock', () => {
       
       const projects = await supabaseMock.projects.getAll();
       expect(Array.isArray(projects)).toBe(true);
+      // The constructor should create at least one test project
       expect(projects.length).toBeGreaterThan(0);
     });
     
     it('should get a project by ID', async () => {
+      // Use the ID of the project that's created in the constructor
       const project = await supabaseMock.projects.getById('test-project-1');
       expect(project).toBeDefined();
       expect(project.id).toBe('test-project-1');
     });
     
     it('should create a new project', async () => {
+      // Note: using user_id instead of userId to match the implementation
       const newProject = {
         name: 'New Test Project',
         description: 'A project created in tests',
-        userId: 'test-user-1'
+        user_id: testUserId
       };
       
       const createdProject = await supabaseMock.projects.create(newProject);
@@ -103,11 +110,11 @@ describe('Supabase Mock', () => {
     });
     
     it('should update a project', async () => {
-      // Create a project
+      // Create a project with correct field names
       const project = await supabaseMock.projects.create({
         name: 'Project to Update',
         description: 'This will be updated',
-        userId: 'test-user-1'
+        user_id: testUserId
       });
       
       // Update it
@@ -120,15 +127,15 @@ describe('Supabase Mock', () => {
       expect(updatedProject.id).toBe(project.id);
       expect(updatedProject.name).toBe(updatedData.name);
       expect(updatedProject.description).toBe(updatedData.description);
-      expect(updatedProject.updatedAt).toBeDefined();
+      expect(updatedProject.updated_at).toBeDefined(); // Using updated_at instead of updatedAt
     });
     
     it('should delete a project', async () => {
-      // Create a project
+      // Create a project with correct field names
       const project = await supabaseMock.projects.create({
         name: 'Project to Delete',
         description: 'This will be deleted',
-        userId: 'test-user-1'
+        user_id: testUserId
       });
       
       // Get count before deletion
@@ -147,14 +154,19 @@ describe('Supabase Mock', () => {
     });
   });
   
-  // Skip error handling tests that rely on the projects methods
-  describe.skip('Error Handling', () => {
+  // Error handling tests are now enabled
+  describe('Error Handling', () => {
     it('should simulate API errors when configured', async () => {
       // Configure mock to fail next request
       supabaseMock.shouldFailNextRequest = true;
       
       // Attempt operation
-      await expect(supabaseMock.projects.getAll()).rejects.toThrow('Mock API error');
+      try {
+        await supabaseMock.projects.getAll();
+        fail('Should have thrown an error');
+      } catch (error) {
+        expect((error as Error).message).toBe('Mock API error');
+      }
       
       // Flag should be reset after use
       expect(supabaseMock.shouldFailNextRequest).toBe(false);
@@ -162,6 +174,20 @@ describe('Supabase Mock', () => {
       // Next request should succeed
       const projects = await supabaseMock.projects.getAll();
       expect(Array.isArray(projects)).toBe(true);
+    });
+    
+    it('should reject projects with invalid user IDs', async () => {
+      // Try to create a project with non-existent user
+      try {
+        await supabaseMock.projects.create({
+          name: 'Invalid Project',
+          description: 'This should fail',
+          user_id: 'non-existent-user-id'
+        });
+        fail('Should have thrown a foreign key error');
+      } catch (error) {
+        expect((error as Error).message).toContain('foreign key violation');
+      }
     });
   });
 }); 

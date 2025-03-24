@@ -7,55 +7,51 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 export type ClientType = 'supabase' | 'openai' | 'langchain';
 
 /**
- * Factory function to get either a mock or real client based on test configuration
+ * Gets a client (either mock or real) based on test configuration
  */
-export function getTestClient(clientType: ClientType): any {
-  if (testConfig.useMocks[clientType]) {
+export async function getTestClient(clientType: ClientType): Promise<any> {
+  const useMock = testConfig.useMocks[clientType];
+  
+  if (useMock) {
     return getMockClient(clientType);
+  } else {
+    return getRealClient(clientType);
   }
-  return getRealClient(clientType);
 }
 
 /**
- * Returns the appropriate mock client implementation
+ * Gets a mock client for the specified type
  */
-function getMockClient(clientType: ClientType): any {
+async function getMockClient(clientType: ClientType): Promise<any> {
   switch (clientType) {
     case 'supabase':
-      // Dynamically import to avoid loading in production
-      return import('../../mocks/supabase/supabase-mock').then(
-        (module) => new module.SupabaseMock()
-      );
+      const supabaseMock = await import('../../mocks/supabase/supabase-mock');
+      return new supabaseMock.SupabaseMock();
     case 'openai':
-      return import('../../mocks/openai/openai-mock').then(
-        (module) => new module.OpenAIMock()
-      );
+      const openaiMock = await import('../../mocks/openai/openai-mock');
+      return new openaiMock.OpenAIMock();
     case 'langchain':
-      return import('../../mocks/langchain/langchain-mock').then(
-        (module) => new module.LangChainMock()
-      );
+      const langchainMock = await import('../../mocks/langchain/langchain-mock');
+      return new langchainMock.LangChainMock();
     default:
       throw new Error(`Unknown client type: ${clientType}`);
   }
 }
 
 /**
- * Returns the real client implementation
+ * Gets a real client for the specified type
  */
-function getRealClient(clientType: ClientType): any {
+async function getRealClient(clientType: ClientType): Promise<any> {
   switch (clientType) {
     case 'supabase':
-      return import('@/lib/supabase/client').then(
-        (module) => module.createClient()
-      );
+      const supabaseClient = await import('@/lib/supabase/client');
+      return supabaseClient.createClient();
     case 'openai':
-      return import('@/lib/openai/client').then(
-        (module) => module.getOpenAIClient()
-      );
+      const openaiClient = await import('@/lib/openai/client');
+      return openaiClient.createClient();
     case 'langchain':
-      return import('@/lib/langchain/client').then(
-        (module) => module.getLangChainClient()
-      );
+      const langchainClient = await import('@/lib/langchain/client');
+      return langchainClient.createClient();
     default:
       throw new Error(`Unknown client type: ${clientType}`);
   }
