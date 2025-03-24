@@ -1,129 +1,93 @@
-# System Designer AI Testing
+# System Designer AI Test Directory
 
-This directory contains tests for the System Designer AI application. The tests are organized into different categories and use MSW (Mock Service Worker) to mock Supabase interactions.
+This directory contains the test implementation for the System Designer AI application. For comprehensive documentation, see:
+- [Main Testing Documentation](../TESTING.md)
+- [Guide for Adding Tests](../docs/testing/procedures/adding-tests.md)
 
-## Test Structure
+## Quick Start
 
-- `unit/`: Contains unit tests for individual components and utilities
-- `api/`: Contains tests for API routes
-- `utilities/`: Contains test helpers and setup files
-- `mocks/`: Contains legacy mock implementations (deprecated in favor of MSW)
-
-## Testing Setup
-
-### Mock Service Worker (MSW)
-
-We use MSW with msw-postgrest to mock Supabase API calls. The setup is defined in:
-
-- `utilities/test-helpers/msw-setup.js`: Configures the MSW server and handlers
-- `utilities/test-helpers/jest-setup.js`: Configures Jest and initializes the MSW server
-
-### Test Client
-
-A test Supabase client is created in `utilities/test-helpers/supabase-test-client.js`. This client uses the mock Supabase URL for testing.
-
-## Running Tests
-
+1. Install dependencies:
 ```bash
-# Run all tests
-npm test
-
-# Run unit tests
-npm run test:unit
-
-# Run API tests
-npm run test:api
-
-# Run a specific test file
-npx jest path/to/test-file.test.js
-
-# Run tests with coverage
-npm test -- --coverage
+npm install
 ```
 
-## Writing Tests
-
-### Unit Tests
-
-Unit tests should focus on testing a single component or utility function in isolation. Mock any dependencies using MSW or Jest mocks.
-
-Example:
-
-```javascript
-import { createTestClient } from '../../utilities/test-helpers/supabase-test-client';
-import { mock } from '../../utilities/test-helpers/msw-setup';
-
-describe('Some Component', () => {
-  let supabase;
-  
-  beforeEach(() => {
-    supabase = createTestClient();
-    
-    // Mock Supabase response
-    mock.getHandler('projects').mockData([
-      { id: 1, name: 'Test Project' }
-    ]);
-  });
-  
-  it('should do something', async () => {
-    // Test logic here
-  });
-});
+2. Generate MSW service worker (if using MSW):
+```bash
+npx msw init public/
 ```
 
-### API Tests
+## Directory Structure Quick Reference
 
-API tests should use supertest to make requests to a Next.js API route and test the response.
-
-Example:
-
-```javascript
-import request from 'supertest';
-import { createServer } from 'http';
-import { apiResolver } from 'next/dist/server/api-utils/node';
-import handler from '../../../pages/api/some-endpoint';
-
-describe('API Endpoint', () => {
-  let server;
+- `unit/`: Unit tests (components, utilities)
+  - Test files should end with `.test.ts` or `.test.tsx`
+  - Place tests close to the code they test
   
-  beforeAll(() => {
-    server = createServer((req, res) => {
-      return apiResolver(req, res, undefined, handler, {}, false);
-    });
-  });
+- `api/`: API route tests
+  - Follow the same structure as your API routes
+  - Use `supertest` for HTTP testing
   
-  afterAll(() => {
-    server.close();
-  });
+- `mocks/`: Service mocks
+  - Each service has its own directory
+  - Implement the same interface as the real service
   
-  it('should return expected response', async () => {
-    const response = await request(server)
-      .get('/')
-      .set('Authorization', 'Bearer test-token');
-      
-    expect(response.status).toBe(200);
-    expect(response.body).toMatchObject({
-      // expected response
-    });
-  });
-});
+- `utilities/`:
+  - `test-helpers/`: Test setup and configuration
+  - `fixtures/`: Test data templates
+  - `factories/`: Test data generation
+
+## Key Files
+
+- `utilities/test-helpers/msw-setup.js`: MSW configuration
+- `utilities/test-helpers/jest-setup.js`: Jest configuration
+- `utilities/test-helpers/test-config.ts`: Mock/real service switching
+- `utilities/test-helpers/client-factory.ts`: Service client factory
+- `utilities/factories/test-data-factory.ts`: Test data generation
+
+## Debugging Tests
+
+1. Debug specific test file:
+```bash
+node --inspect-brk node_modules/.bin/jest --runInBand [test-file]
 ```
 
-## Best Practices
+2. Debug in VS Code:
+   - Add a `debugger` statement in your test
+   - Use the "Jest Current File" launch configuration
+   - Set breakpoints in VS Code
 
-1. Keep tests focused on a single piece of functionality
-2. Use descriptive test names
-3. Mock external dependencies
-4. Clean up after each test
-5. Use setup and teardown hooks appropriately
-6. Avoid testing implementation details
-7. Aim for high test coverage of critical paths
+3. Common debugging commands:
+```bash
+# Run single test file
+npx jest path/to/test.test.ts
+
+# Run tests matching pattern
+npx jest -t "test pattern"
+
+# Run with detailed logging
+npm test -- --verbose
+
+# Update snapshots
+npm test -- -u
+```
 
 ## Troubleshooting
 
-If tests are failing, check:
+1. **MSW Issues**
+   - Check `mockServiceWorker.js` exists in public/
+   - Verify MSW handlers match your API routes
+   - Check network tab for intercepted requests
 
-1. MSW setup is correctly configured
-2. Mocks are properly set up before each test
-3. Assertions are accurate
-4. Test timeouts are sufficient for async operations 
+2. **Test Data Issues**
+   - Use `console.log` or `debug` statements
+   - Check test data factory output
+   - Verify database state in beforeEach/afterEach
+
+3. **Timeouts**
+   - Increase timeout in jest.config.js
+   - Add `jest.setTimeout(milliseconds)` in test
+   - Check for hanging promises or connections
+
+4. **Memory Leaks**
+   - Clean up subscriptions and listeners
+   - Close database connections
+   - Reset mocks between tests 
