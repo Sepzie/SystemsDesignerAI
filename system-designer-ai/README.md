@@ -1,106 +1,70 @@
 # AI System Designer
 
-AI System Designer is a web application that helps software engineers design complex software systems with AI assistance. The platform allows users to create system diagrams, API specifications, data models, and more using AI-generated suggestions.
+A powerful AI-assisted tool for designing software systems, architecture diagrams, and technical specifications.
 
-## Features
+## Overview
 
-- Create and manage software design projects
-- Generate system architecture diagrams
-- Define API specifications
-- Design database schemas
-- Interactive conversations with AI to refine designs
-- Export designs for implementation
+AI System Designer helps you create detailed system designs with the power of AI. The application offers:
 
-## Technology Stack
+- AI-powered system design conversations
+- Automatic diagram generation
+- Requirements extraction
+- Technology stack recommendations
+- Code snippet generation
+- Export capabilities
 
-- **Frontend**: Next.js, React, TypeScript, Tailwind CSS
-- **Backend**: Next.js API Routes, Supabase
-- **Database**: PostgreSQL (via Supabase)
-- **Authentication**: Supabase Auth
-
-## Getting Started
+## Development
 
 ### Prerequisites
 
-- Node.js 18.x or higher
+- Node.js 20+
 - npm or yarn
-- Supabase account
+- Supabase account (for database and auth)
+- OpenAI API key (for AI functionalities)
 
-### Installation
+### Setup
 
-1. Clone the repository:
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Set up environment variables (copy `.env.example` to `.env.local`)
+4. Run the development server: `npm run dev`
 
-```bash
-git clone https://github.com/yourusername/system-designer-ai.git
-cd system-designer-ai
-```
+### Testing
 
-2. Install dependencies:
+The project uses a progressive mock-to-real implementation approach for testing:
 
-```bash
-npm install
-# or
-yarn install
-```
+- **Unit tests**: Fast tests with mocked dependencies
+  - Run with: `npm test:unit`
 
-3. Create a `.env.local` file in the root directory with the following variables:
+- **API tests**: Tests for API routes
+  - Run with: `npm test:api`
 
-```
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-```
+- **E2E tests**: Cypress-based end-to-end tests
+  - Run with: `npm test:e2e` or `npm test:e2e:open` for interactive mode
 
-4. Set up the Supabase database by creating the following tables:
+- **Integration tests**: Tests with some real dependencies
+  - Run with: `npm test:integrated` 
 
-- User
-- Project
-- DesignAsset
-- AssetVersion
-- Conversation
-- Message
-- ExportedPrompt
+- **Full tests**: Tests with all real dependencies
+  - Run with: `npm test:full`
 
-5. Start the development server:
+For more details on testing approach, see:
 
-```bash
-npm run dev
-# or
-yarn dev
-```
+- [Testing Infrastructure Documentation](docs/testing/manual/testing-infrastructure.md)
+- [Adding Tests Procedures](docs/testing/procedures/adding-tests.md)
 
-6. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
+### Technology Stack
 
-## Project Structure
-
-```
-system-designer-ai/
-├── src/
-│   ├── app/             # Next.js App Router
-│   │   ├── api/         # API routes
-│   │   ├── dashboard/   # Dashboard page
-│   │   ├── login/       # Login page
-│   │   ├── register/    # Registration page
-│   │   └── projects/    # Project-related pages
-│   ├── components/      # React components
-│   ├── lib/             # Utility libraries
-│   │   └── supabase/    # Supabase client
-│   ├── types/           # TypeScript type definitions
-│   └── utils/           # Utility functions
-├── public/              # Static assets
-└── ...
-```
-
-## API Endpoints
-
-The application provides the following API endpoints:
-
-- **Authentication**: Login, registration, and session management
-- **Projects**: Create, read, update, and delete projects
-- **Design Assets**: Manage various design assets within projects
-- **Conversations**: Interactive sessions with AI for system design
+- **Frontend**: Next.js, React, TailwindCSS
+- **Backend**: Next.js API Routes, Supabase
+- **Database**: PostgreSQL via Supabase
+- **AI**: OpenAI API, LangChain
+- **Testing**: Jest, React Testing Library, Cypress
 
 ## License
 
-This project is licensed under the MIT License.
+[MIT License](LICENSE)
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
