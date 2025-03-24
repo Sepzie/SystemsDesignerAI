@@ -46,7 +46,7 @@ function getRealClient(clientType: ClientType): any {
   switch (clientType) {
     case 'supabase':
       return import('@/lib/supabase/client').then(
-        (module) => module.getSupabaseClient()
+        (module) => module.createClient()
       );
     case 'openai':
       return import('@/lib/openai/client').then(
