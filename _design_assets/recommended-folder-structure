@@ -1,0 +1,29 @@
+/ai-system-designer
+  /app (or /pages if using Pages Router)
+    /api
+      /auth
+      /projects
+      /conversations
+      /diagrams
+      /export
+    /dashboard
+    /project
+      /[id]
+        /conversation
+        /assets
+        /export
+  /components
+    /ui
+    /layout
+    /chat
+    /diagrams
+    /project
+  /lib
+    /supabase
+    /langchain
+    /utils
+    /validators
+  /types
+  /styles
+  /public
+  /diagrams (for reference diagrams)
