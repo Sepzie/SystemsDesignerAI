@@ -43,22 +43,35 @@ export async function setupTestData(): Promise<TestData> {
   });
   
   // Create a test user
-  // We'll just create user data manually without using auth API
-  // This is because we just need the ID for references with projects
-  const testUser = createUser();
+  let testUser = createUser();
   console.log(`Setting up test user: ${testUser.email}`);
 
   try {
-    // First, insert the test user into the User table
-    const { data: insertedUser, error: userError } = await supabaseClient
+    // Check if user already exists
+    const { data: existingUser, error: checkError } = await supabaseClient
       .from('User')
-      .insert(testUser)
       .select()
+      .eq('id', testUser.id)
       .single();
 
-    if (userError) {
-      console.error('Error creating test user:', userError);
-      throw userError;
+    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "not found"
+      console.error('Error checking for existing user:', checkError);
+      throw checkError;
+    }
+
+    // Only create user if it doesn't exist
+    if (!existingUser) {
+      const { data: insertedUser, error: userError } = await supabaseClient
+        .from('User')
+        .insert(testUser)
+        .select()
+        .single();
+
+      if (userError) {
+        console.error('Error creating test user:', userError);
+        throw userError;
+      }
+      testUser = insertedUser;
     }
 
     // Create test projects
@@ -66,7 +79,7 @@ export async function setupTestData(): Promise<TestData> {
     
     // Create a test project
     const projectData = createProject({ 
-      user_id: insertedUser.id,
+      user_id: testUser.id,
       name: `Test Project ${uuidv4().substring(0, 8)}`
     });
     
@@ -83,7 +96,7 @@ export async function setupTestData(): Promise<TestData> {
     }
 
     return {
-      user: insertedUser,
+      user: testUser,
       projects
     };
   } catch (error) {

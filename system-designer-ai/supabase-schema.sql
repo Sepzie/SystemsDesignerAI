@@ -1,3 +1,12 @@
+-- Create functions for handling timestamps
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 -- Create tables for AI System Designer
 
 -- Users table
@@ -46,6 +55,12 @@ ALTER TABLE "Project" ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can CRUD their own projects" ON "Project"
   FOR ALL USING (auth.uid() = user_id);
 
+-- Create trigger for Project table
+CREATE TRIGGER update_project_updated_at
+BEFORE UPDATE ON "Project"
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
+
 -- Design Assets table
 CREATE TABLE "DesignAsset" (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -66,6 +81,12 @@ CREATE POLICY "Users can CRUD their own design assets" ON "DesignAsset"
       SELECT 1 FROM "Project" WHERE "Project".id = "DesignAsset".project_id AND "Project".user_id = auth.uid()
     )
   );
+
+-- Create trigger for DesignAsset table
+CREATE TRIGGER update_design_asset_updated_at
+BEFORE UPDATE ON "DesignAsset"
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
 
 -- Asset Versions table
 CREATE TABLE "AssetVersion" (
@@ -109,6 +130,12 @@ CREATE POLICY "Users can CRUD their own conversations" ON "Conversation"
       SELECT 1 FROM "Project" WHERE "Project".id = "Conversation".project_id AND "Project".user_id = auth.uid()
     )
   );
+
+-- Create trigger for Conversation table
+CREATE TRIGGER update_conversation_updated_at
+BEFORE UPDATE ON "Conversation"
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
 
 -- Messages table
 CREATE TABLE "Message" (
@@ -154,27 +181,5 @@ CREATE POLICY "Users can CRUD their own exported prompts" ON "ExportedPrompt"
     )
   );
 
--- Create functions for handling timestamps
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-  NEW.updated_at = NOW();
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Create triggers
-CREATE TRIGGER update_project_updated_at
-BEFORE UPDATE ON "Project"
-FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_design_asset_updated_at
-BEFORE UPDATE ON "DesignAsset"
-FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_conversation_updated_at
-BEFORE UPDATE ON "Conversation"
-FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column(); 
+-- Refresh the schema cache
+NOTIFY pgrst, 'reload schema'; 

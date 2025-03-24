@@ -163,29 +163,75 @@ describe('Supabase Data Models', () => {
     });
 
     it('updates a project', async () => {
-      // Skip if using real DB without user creation
-      if (process.env.TEST_USE_REAL_SUPABASE === 'true') {
-        console.log('Skipping test with real Supabase - requires user setup');
+      // Skip if using real DB without proper setup
+      if (process.env.TEST_USE_REAL_SUPABASE === 'true' && !testData) {
+        console.log('Skipping test with real Supabase - requires proper setup');
         return;
       }
       
-      // Create a project with the test user
-      const project = createProject({ user_id: testUser.id });
-      const savedProject = await supabaseClient.projects.create(project);
-      
-      // Update data
-      const updateData = {
-        name: 'Updated Project Name',
-        description: 'Updated Description'
-      };
-      
-      // Update the project
-      const updatedProject = await supabaseClient.projects.update(savedProject.id, updateData);
-      
-      assert.strictEqual(updatedProject.id, savedProject.id);
-      assert.strictEqual(updatedProject.name, updateData.name);
-      assert.strictEqual(updatedProject.description, updateData.description);
-      assert.strictEqual(updatedProject.user_id, testUser.id);
+      if (process.env.TEST_USE_REAL_SUPABASE === 'true') {
+        // Get a new client with service role key to bypass RLS
+        const serviceRoleClient = await getTestClient('supabase', true);
+        
+        // Create a test project
+        const project = createProject({ user_id: testUser.id });
+        const { data: savedProject, error: createError } = await serviceRoleClient
+          .from('Project')
+          .insert(project)
+          .select()
+          .single();
+          
+        assert(!createError, `Error creating project: ${createError?.message}`);
+        assert(savedProject);
+        
+        // Update data
+        const updateData = {
+          name: 'Updated Project Name',
+          description: 'Updated Description'
+        };
+        
+        // Update the project
+        const { data: updatedProject, error: updateError } = await serviceRoleClient
+          .from('Project')
+          .update(updateData)
+          .eq('id', savedProject.id)
+          .select()
+          .single();
+          
+        assert(!updateError, `Error updating project: ${updateError?.message}`);
+        assert(updatedProject);
+        
+        assert.strictEqual(updatedProject.id, savedProject.id);
+        assert.strictEqual(updatedProject.name, updateData.name);
+        assert.strictEqual(updatedProject.description, updateData.description);
+        assert.strictEqual(updatedProject.user_id, testUser.id);
+        
+        // Clean up
+        const { error: deleteError } = await serviceRoleClient
+          .from('Project')
+          .delete()
+          .eq('id', savedProject.id);
+          
+        assert(!deleteError, `Error cleaning up project: ${deleteError?.message}`);
+      } else {
+        // Mock test implementation
+        const project = createProject({ user_id: testUser.id });
+        const savedProject = await supabaseClient.projects.create(project);
+        
+        // Update data
+        const updateData = {
+          name: 'Updated Project Name',
+          description: 'Updated Description'
+        };
+        
+        // Update the project
+        const updatedProject = await supabaseClient.projects.update(savedProject.id, updateData);
+        
+        assert.strictEqual(updatedProject.id, savedProject.id);
+        assert.strictEqual(updatedProject.name, updateData.name);
+        assert.strictEqual(updatedProject.description, updateData.description);
+        assert.strictEqual(updatedProject.user_id, testUser.id);
+      }
     });
 
     it('deletes a project', async () => {
@@ -217,19 +263,78 @@ describe('Supabase Data Models', () => {
       }
       
       if (process.env.TEST_USE_REAL_SUPABASE === 'true') {
-        // Get projects for the user from the real DB
-        const { data: projects, error } = await supabaseClient
+        // Create a test user if not exists
+        const testUser = createUser();
+        console.log(`Testing with user ID: ${testUser.id}`);
+        
+        // Clean up any existing projects for this user
+        const { data: existingProjects, error: fetchError } = await supabaseClient
           .from('Project')
           .select()
-          .eq('user_id', testData.user.id);
+          .eq('user_id', testUser.id);
+          
+        if (fetchError) {
+          console.error('Error fetching existing projects:', fetchError);
+        } else if (existingProjects && existingProjects.length > 0) {
+          console.log(`Found ${existingProjects.length} existing projects to clean up`);
+        }
+        
+        const { error: cleanupError } = await supabaseClient
+          .from('Project')
+          .delete()
+          .eq('user_id', testUser.id);
+        assert(!cleanupError, `Error cleaning up existing projects: ${cleanupError?.message}`);
+        
+        // Verify cleanup
+        const { data: verifyCleanup, error: verifyError } = await supabaseClient
+          .from('Project')
+          .select()
+          .eq('user_id', testUser.id);
+          
+        if (verifyError) {
+          console.error('Error verifying cleanup:', verifyError);
+        } else {
+          console.log(`After cleanup, found ${verifyCleanup?.length || 0} projects`);
+        }
+        
+        // Create multiple projects for the test user
+        const projects = [
+          createProject({ user_id: testUser.id, name: 'Test Project 1' }),
+          createProject({ user_id: testUser.id, name: 'Test Project 2' }),
+          createProject({ user_id: testUser.id, name: 'Test Project 3' })
+        ];
+        
+        // Insert projects using service role key to bypass RLS
+        for (const project of projects) {
+          const { error } = await supabaseClient
+            .from('Project')
+            .insert(project);
+          assert(!error, `Error creating project: ${error?.message}`);
+        }
+        
+        // Get projects for the user
+        const { data: userProjects, error } = await supabaseClient
+          .from('Project')
+          .select()
+          .eq('user_id', testUser.id);
           
         assert(!error, `Error retrieving projects: ${error?.message}`);
-        assert(projects);
+        assert(userProjects);
+        console.log(`Found ${userProjects.length} projects for user`);
+        
+        assert.strictEqual(userProjects.length, projects.length);
         
         // Check that the projects belong to our test user
-        for (const project of projects) {
-          assert.strictEqual(project.user_id, testData.user.id);
+        for (const project of userProjects) {
+          assert.strictEqual(project.user_id, testUser.id);
         }
+        
+        // Clean up
+        const { error: deleteError } = await supabaseClient
+          .from('Project')
+          .delete()
+          .eq('user_id', testUser.id);
+        assert(!deleteError, `Error cleaning up projects: ${deleteError?.message}`);
       } else {
         const mockClient = supabaseClient as any;
         
@@ -278,7 +383,7 @@ describe('Supabase Data Models', () => {
   describe('Table Relationships', () => {
     it('prevents creating a project with invalid user ID', async () => {
       // Skip if using real DB without user creation
-      if (process.env.TEST_USE_REAL_SUPABASE === 'true') {
+      if (process.env.TEST_USE_REAL_SUPABASE === 'true' && !testData) {
         console.log('Skipping test with real Supabase - requires proper setup');
         return;
       }
@@ -286,43 +391,115 @@ describe('Supabase Data Models', () => {
       const projectWithInvalidUser = {
         name: 'Invalid Project',
         description: 'Project with invalid user',
-        user_id: 'non-existent-user-id',
+        user_id: '00000000-0000-0000-0000-000000000001', // Valid UUID format that doesn't exist
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
       
-      try {
-        await supabaseClient.projects.create(projectWithInvalidUser);
-        assert.fail('Should have thrown a foreign key violation error');
-      } catch (error) {
-        assert((error as Error).message.includes('foreign key violation') || 
-               (error as Error).message.includes('user_id'));
+      if (process.env.TEST_USE_REAL_SUPABASE === 'true') {
+        // Get a new client with service role key to bypass RLS
+        const serviceRoleClient = await getTestClient('supabase', true);
+        
+        // Try to create project with invalid user ID
+        const { error } = await serviceRoleClient
+          .from('Project')
+          .insert(projectWithInvalidUser);
+          
+        assert(error, 'Should have returned an error');
+        assert(
+          error.message.includes('foreign key violation') || 
+          error.message.includes('user_id'),
+          `Expected foreign key violation error, got: ${error.message}`
+        );
+      } else {
+        try {
+          await supabaseClient.projects.create(projectWithInvalidUser);
+          assert.fail('Should have thrown a foreign key violation error');
+        } catch (error) {
+          assert((error as Error).message.includes('foreign key violation') || 
+                 (error as Error).message.includes('user_id'));
+        }
       }
     });
     
     it('cascades project deletion to related records', async () => {
       // Skip if using real DB without user creation
-      if (process.env.TEST_USE_REAL_SUPABASE === 'true') {
+      if (process.env.TEST_USE_REAL_SUPABASE === 'true' && !testData) {
         console.log('Skipping test with real Supabase - requires proper setup');
         return;
       }
       
-      // This is a basic test that will need to be expanded based on your actual cascade logic
-      const project = createProject({ user_id: testUser.id });
-      const savedProject = await supabaseClient.projects.create(project);
-      
-      // Create some related records if needed
-      // ...
-      
-      // Delete the project
-      await supabaseClient.projects.delete(savedProject.id);
-      
-      // Verify project was deleted
-      const retrievedProject = await supabaseClient.projects.getById(savedProject.id);
-      assert(!retrievedProject);
-      
-      // Verify related records were also deleted if cascade is implemented
-      // ...
+      if (process.env.TEST_USE_REAL_SUPABASE === 'true') {
+        // Get a new client with service role key to bypass RLS
+        const serviceRoleClient = await getTestClient('supabase', true);
+        
+        // Create a test project
+        const project = createProject({ user_id: testUser.id });
+        const { data: savedProject, error: createError } = await serviceRoleClient
+          .from('Project')
+          .insert(project)
+          .select()
+          .single();
+          
+        assert(!createError, `Error creating project: ${createError?.message}`);
+        assert(savedProject);
+        
+        // Create a related record (DesignAsset)
+        const { error: assetError } = await serviceRoleClient
+          .from('DesignAsset')
+          .insert({
+            project_id: savedProject.id,
+            name: 'Test Asset',
+            asset_type: 'system_context'
+          });
+          
+        assert(!assetError, `Error creating design asset: ${assetError?.message}`);
+        
+        // Delete the project
+        const { error: deleteError } = await serviceRoleClient
+          .from('Project')
+          .delete()
+          .eq('id', savedProject.id);
+          
+        assert(!deleteError, `Error deleting project: ${deleteError?.message}`);
+        
+        // Verify project was deleted
+        const { data: deletedProject, error: fetchError } = await serviceRoleClient
+          .from('Project')
+          .select()
+          .eq('id', savedProject.id)
+          .single();
+          
+        assert(!fetchError || fetchError.code === 'PGRST116', 'Project should be deleted');
+        assert(!deletedProject);
+        
+        // Verify related record was also deleted
+        const { data: deletedAsset, error: assetFetchError } = await serviceRoleClient
+          .from('DesignAsset')
+          .select()
+          .eq('project_id', savedProject.id)
+          .single();
+          
+        assert(!assetFetchError || assetFetchError.code === 'PGRST116', 'Design asset should be deleted');
+        assert(!deletedAsset);
+      } else {
+        // Mock test implementation
+        const project = createProject({ user_id: testUser.id });
+        const savedProject = await supabaseClient.projects.create(project);
+        
+        // Create some related records if needed
+        // ...
+        
+        // Delete the project
+        await supabaseClient.projects.delete(savedProject.id);
+        
+        // Verify project was deleted
+        const retrievedProject = await supabaseClient.projects.getById(savedProject.id);
+        assert(!retrievedProject);
+        
+        // Verify related records were also deleted if cascade is implemented
+        // ...
+      }
     });
   });
 }); 

@@ -33,8 +33,8 @@ interface Session {
 export function createUser(overrides: Partial<User> = {}): User {
   const now = new Date().toISOString();
   return {
-    id: uuidv4(),
-    email: `test-${uuidv4()}@example.com`,
+    id: '00000000-0000-0000-0000-000000000000',  // Fixed test user ID
+    email: 'test@example.com',
     name: 'Test User',
     created_at: now,
     updated_at: now,

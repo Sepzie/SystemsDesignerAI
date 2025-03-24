@@ -16,15 +16,15 @@ describe('Project Setup Integration Tests', () => {
     try {
       // Create a direct Supabase client instead of using the browser client
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+      const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
       
       // Validate environment variables
-      if (!supabaseUrl || !supabaseKey) {
+      if (!supabaseUrl || !serviceRoleKey) {
         throw new Error('Missing Supabase environment variables');
       }
       
-      // Create client with appropriate options for Node.js environment
-      supabaseClient = createClient(supabaseUrl, supabaseKey, {
+      // Create client with service role key to bypass RLS
+      supabaseClient = createClient(supabaseUrl, serviceRoleKey, {
         auth: {
           autoRefreshToken: false,
           persistSession: false
