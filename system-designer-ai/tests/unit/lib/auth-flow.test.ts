@@ -1,7 +1,11 @@
-const { SupabaseMock } = require('../../mocks/supabase/supabase-mock');
+import { SupabaseMock } from '../../mocks/supabase/supabase-mock';
+import { SupabaseService } from '@/types/services';
+
+// Import Jest types
+import { describe, expect, it, beforeEach } from '@jest/globals';
 
 describe('Authentication Flows', () => {
-  let supabaseClient;
+  let supabaseClient: SupabaseMock;
   
   beforeEach(() => {
     // Create a direct instance of SupabaseMock
@@ -24,7 +28,7 @@ describe('Authentication Flows', () => {
 
       expect(error).toBeNull();
       expect(data.session).toBeDefined();
-      expect(data.session.user.email).toBe(credentials.email);
+      expect(data.session?.user.email).toBe(credentials.email);
     });
 
     it('rejects registration with invalid email', async () => {
@@ -41,7 +45,7 @@ describe('Authentication Flows', () => {
         // Should not reach here
         fail('Should have thrown an error');
       } catch (error) {
-        expect(error.message).toBe('Mock API error');
+        expect((error as Error).message).toBe('Mock API error');
       }
     });
   });
@@ -58,7 +62,7 @@ describe('Authentication Flows', () => {
 
       expect(error).toBeNull();
       expect(data.session).toBeDefined();
-      expect(data.session.user.email).toBe(credentials.email);
+      expect(data.session?.user.email).toBe(credentials.email);
     });
 
     it('rejects login with invalid credentials', async () => {
@@ -70,7 +74,7 @@ describe('Authentication Flows', () => {
       const { data, error } = await supabaseClient.auth.signIn(credentials);
 
       expect(error).toBeDefined();
-      expect(error.message).toBe('Invalid login credentials');
+      expect(error?.message).toBe('Invalid login credentials');
       expect(data.session).toBeNull();
     });
   });
@@ -88,7 +92,7 @@ describe('Authentication Flows', () => {
       
       expect(error).toBeNull();
       expect(data.session).toBeDefined();
-      expect(data.session.user.email).toBe('test@example.com');
+      expect(data.session?.user.email).toBe('test@example.com');
     });
   });
 
@@ -108,4 +112,4 @@ describe('Authentication Flows', () => {
       expect(data.session).toBeNull();
     });
   });
-});
+}); 

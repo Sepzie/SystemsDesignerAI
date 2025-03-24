@@ -1,6 +1,7 @@
 import { testConfig } from '../../utilities/test-helpers/test-config';
 import { getTestClient } from '../../utilities/test-helpers/client-factory';
 import { SupabaseService, OpenAIService, LangChainService } from '@/types/services';
+import { describe, expect, it, beforeEach } from '@jest/globals';
 
 describe('Client Factory Mock Switching', () => {
   // Reset mock settings before each test
@@ -8,8 +9,20 @@ describe('Client Factory Mock Switching', () => {
     testConfig.resetMockSettings();
   });
   
-  // Skip this test when running in integrated mode
-  it.skip('should use mock clients by default', async () => {
+  // TODO: Review integration mode implementation. Current approach assumes any real service means we're in integration mode,
+  // which might prevent running this test when only one service is real but others are mocked. Consider:
+  // 1. Adding a dedicated TEST_INTEGRATION_MODE env var
+  // 2. Checking only for the specific services this test is testing
+  // 3. Implementing more granular test skipping based on which specific services are real vs mocked
+  
+  // Skip test if any real services are being used (which would indicate an integration test)
+  const isIntegrationMode = 
+    process.env.TEST_USE_REAL_SUPABASE === 'true' || 
+    process.env.TEST_USE_REAL_OPENAI === 'true' ||
+    process.env.TEST_USE_REAL_LANGCHAIN === 'true';
+  
+  const testFn = isIntegrationMode ? it.skip : it;
+  testFn('should use mock clients by default', async () => {
     // Get clients with default settings (mocks)
     const supabase = await getTestClient('supabase') as SupabaseService;
     const openai = await getTestClient('openai') as OpenAIService;
