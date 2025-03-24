@@ -3,6 +3,7 @@ import { testConfig } from '../../utilities/test-helpers/test-config';
 import { createUser, createProject } from '../../utilities/factories/test-data-factory';
 import { SupabaseService } from '@/types/services';
 import { SupabaseMock } from '../../mocks/supabase/supabase-mock';
+import assert from 'assert';
 
 describe('Supabase Data Models', () => {
   let supabaseClient: SupabaseService;
@@ -14,7 +15,7 @@ describe('Supabase Data Models', () => {
     supabaseClient = await getTestClient('supabase');
     
     // Ensure we have direct access to the mock to add test data
-    expect(supabaseClient).toBeInstanceOf(SupabaseMock);
+    assert(supabaseClient instanceof SupabaseMock);
     
     // Create a test user and add it to the mock database
     testUser = createUser();
@@ -34,11 +35,9 @@ describe('Supabase Data Models', () => {
       // Use the projects API on the mock instead of direct table access
       const data = await supabaseClient.projects.create(projectData);
 
-      expect(data).toMatchObject({
-        name: projectData.name,
-        description: projectData.description,
-        user_id: projectData.user_id
-      });
+      assert.strictEqual(data.name, projectData.name);
+      assert.strictEqual(data.description, projectData.description);
+      assert.strictEqual(data.user_id, projectData.user_id);
     });
 
     it('retrieves a project by ID', async () => {
@@ -51,10 +50,8 @@ describe('Supabase Data Models', () => {
       // Retrieve project
       const data = await supabaseClient.projects.getById(savedProject.id);
 
-      expect(data).toMatchObject({
-        name: project.name,
-        user_id: testUser.id
-      });
+      assert.strictEqual(data.name, project.name);
+      assert.strictEqual(data.user_id, testUser.id);
     });
 
     it('updates a project', async () => {
@@ -71,12 +68,10 @@ describe('Supabase Data Models', () => {
       // Update the project
       const updatedProject = await supabaseClient.projects.update(savedProject.id, updateData);
       
-      expect(updatedProject).toMatchObject({
-        id: savedProject.id,
-        name: updateData.name,
-        description: updateData.description,
-        user_id: testUser.id
-      });
+      assert.strictEqual(updatedProject.id, savedProject.id);
+      assert.strictEqual(updatedProject.name, updateData.name);
+      assert.strictEqual(updatedProject.description, updateData.description);
+      assert.strictEqual(updatedProject.user_id, testUser.id);
     });
 
     it('deletes a project', async () => {
@@ -89,7 +84,7 @@ describe('Supabase Data Models', () => {
       
       // Try to retrieve it - should be null or undefined
       const retrievedProject = await supabaseClient.projects.getById(savedProject.id);
-      expect(retrievedProject).toBeFalsy();
+      assert(!retrievedProject);
     });
   });
 
@@ -111,9 +106,9 @@ describe('Supabase Data Models', () => {
       const allProjects = await supabaseClient.projects.getAll();
       const userProjects = allProjects.filter(p => p.user_id === testUser.id);
       
-      expect(userProjects.length).toBeGreaterThanOrEqual(2);
-      expect(userProjects[0].user_id).toBe(testUser.id);
-      expect(userProjects[1].user_id).toBe(testUser.id);
+      assert(userProjects.length >= 2);
+      assert.strictEqual(userProjects[0].user_id, testUser.id);
+      assert.strictEqual(userProjects[1].user_id, testUser.id);
     });
   });
 
@@ -127,9 +122,12 @@ describe('Supabase Data Models', () => {
         updated_at: new Date().toISOString()
       };
       
-      await expect(
-        supabaseClient.projects.create(projectWithInvalidUser)
-      ).rejects.toThrow(/foreign key violation/);
+      try {
+        await supabaseClient.projects.create(projectWithInvalidUser);
+        assert.fail('Should have thrown a foreign key violation error');
+      } catch (error) {
+        assert((error as Error).message.includes('foreign key violation'));
+      }
     });
     
     it('cascades project deletion to related records', async () => {
@@ -145,7 +143,7 @@ describe('Supabase Data Models', () => {
       
       // Verify project was deleted
       const retrievedProject = await supabaseClient.projects.getById(savedProject.id);
-      expect(retrievedProject).toBeFalsy();
+      assert(!retrievedProject);
       
       // Verify related records were also deleted if cascade is implemented
       // ...
