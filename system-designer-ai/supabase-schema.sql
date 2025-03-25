@@ -1,4 +1,11 @@
--- Create tables for AI System Designer
+-- Drop existing tables if they exist (BE CAREFUL DURING PRODUCTION)
+DROP TABLE IF EXISTS "Message" CASCADE;
+DROP TABLE IF EXISTS "Conversation" CASCADE;
+DROP TABLE IF EXISTS "ExportedPrompt" CASCADE;
+DROP TABLE IF EXISTS "AssetVersion" CASCADE;
+DROP TABLE IF EXISTS "DesignAsset" CASCADE;
+DROP TABLE IF EXISTS "Project" CASCADE;
+DROP TABLE IF EXISTS "User" CASCADE;
 
 -- Users table
 CREATE TABLE "User" (
@@ -12,12 +19,15 @@ CREATE TABLE "User" (
 -- Enable Row Level Security
 ALTER TABLE "User" ENABLE ROW LEVEL SECURITY;
 
--- Create policies
+-- Create policies for User table
 CREATE POLICY "Users can view their own data" ON "User"
   FOR SELECT USING (auth.uid() = id);
 
 CREATE POLICY "Users can update their own data" ON "User"
   FOR UPDATE USING (auth.uid() = id);
+
+CREATE POLICY "Users can insert their own data" ON "User"
+  FOR INSERT WITH CHECK (auth.uid() = id);
 
 -- Projects table
 CREATE TABLE "Project" (
@@ -35,7 +45,7 @@ CREATE TABLE "Project" (
 -- Enable Row Level Security
 ALTER TABLE "Project" ENABLE ROW LEVEL SECURITY;
 
--- Create policies
+-- Create policies for Project table
 CREATE POLICY "Users can CRUD their own projects" ON "Project"
   FOR ALL USING (auth.uid() = user_id);
 
@@ -52,7 +62,7 @@ CREATE TABLE "DesignAsset" (
 -- Enable Row Level Security
 ALTER TABLE "DesignAsset" ENABLE ROW LEVEL SECURITY;
 
--- Create policies
+-- Create policies for DesignAsset table
 CREATE POLICY "Users can CRUD their own design assets" ON "DesignAsset"
   FOR ALL USING (
     EXISTS (
@@ -74,7 +84,7 @@ CREATE TABLE "AssetVersion" (
 -- Enable Row Level Security
 ALTER TABLE "AssetVersion" ENABLE ROW LEVEL SECURITY;
 
--- Create policies
+-- Create policies for AssetVersion table
 CREATE POLICY "Users can CRUD their own asset versions" ON "AssetVersion"
   FOR ALL USING (
     EXISTS (
@@ -95,7 +105,7 @@ CREATE TABLE "Conversation" (
 -- Enable Row Level Security
 ALTER TABLE "Conversation" ENABLE ROW LEVEL SECURITY;
 
--- Create policies
+-- Create policies for Conversation table
 CREATE POLICY "Users can CRUD their own conversations" ON "Conversation"
   FOR ALL USING (
     EXISTS (
@@ -116,7 +126,7 @@ CREATE TABLE "Message" (
 -- Enable Row Level Security
 ALTER TABLE "Message" ENABLE ROW LEVEL SECURITY;
 
--- Create policies
+-- Create policies for Message table
 CREATE POLICY "Users can CRUD their own messages" ON "Message"
   FOR ALL USING (
     EXISTS (
@@ -139,7 +149,7 @@ CREATE TABLE "ExportedPrompt" (
 -- Enable Row Level Security
 ALTER TABLE "ExportedPrompt" ENABLE ROW LEVEL SECURITY;
 
--- Create policies
+-- Create policies for ExportedPrompt table
 CREATE POLICY "Users can CRUD their own exported prompts" ON "ExportedPrompt"
   FOR ALL USING (
     EXISTS (
