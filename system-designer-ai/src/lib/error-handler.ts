@@ -4,49 +4,50 @@ export class ApiError extends Error {
   constructor(
     public statusCode: number,
     message: string,
-    public isOperational = true,
-    public stack = ''
+    public isOperational = true
   ) {
     super(message);
-    this.statusCode = statusCode;
-    this.isOperational = isOperational;
-    if (stack) {
-      this.stack = stack;
-    } else {
-      Error.captureStackTrace(this, this.constructor);
-    }
+    Object.setPrototypeOf(this, ApiError.prototype);
   }
 }
 
-export function handleApiError(error: unknown) {
-  console.error('API Error:', error);
+type HandlerFunction = (req: Request) => Promise<Response>;
 
-  if (error instanceof ApiError) {
-    return NextResponse.json(
-      {
-        error: error.message,
-        status: error.statusCode,
-      },
-      { status: error.statusCode }
-    );
-  }
-
-  // Handle unknown errors
-  return NextResponse.json(
-    {
-      error: 'Internal Server Error',
-      status: 500,
-    },
-    { status: 500 }
-  );
-}
-
-export function withErrorHandler(handler: Function) {
+export function withErrorHandler(handler: HandlerFunction): HandlerFunction {
   return async (req: Request) => {
     try {
       return await handler(req);
     } catch (error) {
-      return handleApiError(error);
+      console.error('API Error:', error);
+
+      if (error instanceof ApiError) {
+        return new Response(
+          JSON.stringify({
+            error: error.message,
+            statusCode: error.statusCode,
+          }),
+          {
+            status: error.statusCode,
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+      }
+
+      // Handle unexpected errors
+      return new Response(
+        JSON.stringify({
+          error: 'Internal Server Error',
+          statusCode: 500,
+        }),
+        {
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
     }
   };
 } 
