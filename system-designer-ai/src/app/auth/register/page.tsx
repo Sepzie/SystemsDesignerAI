@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
 import MainLayout from '@/components/layout/MainLayout'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
@@ -22,48 +21,36 @@ export default function RegisterPage() {
     setLoading(true)
 
     try {
-      const supabase = createClient()
-      
-      // Register the user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name
-          }
-        }
-      })
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          fullName: name,
+        }),
+      });
 
-      if (authError) {
-        throw authError
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Registration failed');
       }
 
-      // Add user to the User table
-      if (authData.user) {
-        const { error: profileError } = await supabase
-          .from('User')
-          .insert([
-            {
-              id: authData.user.id,
-              email,
-              name,
-              created_at: new Date().toISOString(),
-              last_login: new Date().toISOString()
-            }
-          ])
-
-        if (profileError) {
-          throw profileError
-        }
+      // If we got a session (in development), we'll be automatically logged in
+      if (data.session) {
+        router.push('/dashboard');
+      } else {
+        // In production, redirect to login
+        router.push('/auth/login');
       }
-
-      router.push('/dashboard')
-      router.refresh()
+      router.refresh();
     } catch (error: any) {
-      setError(error.message || 'An error occurred during registration')
+      setError(error.message || 'An error occurred during registration');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
