@@ -7,6 +7,8 @@ export default async function DashboardPage() {
   const supabase = createClient()
   const { data: { session } } = await supabase.auth.getSession()
 
+  console.log('session', session)
+
   if (!session) {
     redirect('/login')
   }
@@ -23,12 +25,14 @@ export default async function DashboardPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-2xl font-bold">Your Projects</h1>
-          <Link
-            href="/projects/new"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-          >
-            New Project
-          </Link>
+          {projects && projects.length > 0 && (
+            <Link
+              href="/projects/new"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              New Project
+            </Link>
+          )}
         </div>
         
         {projects && projects.length > 0 ? (

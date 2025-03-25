@@ -22,7 +22,7 @@ export default function LoginPage() {
 
     try {
       const supabase = createClient()
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
@@ -31,8 +31,14 @@ export default function LoginPage() {
         throw error
       }
 
-      router.push('/dashboard')
-      router.refresh()
+      if (data?.session) {
+        // Wait a moment for the session to be fully established
+        await new Promise(resolve => setTimeout(resolve, 500));
+        router.push('/dashboard')
+        router.refresh()
+      } else {
+        throw new Error('Failed to get session after login')
+      }
     } catch (error: any) {
       setError(error.message || 'An error occurred during login')
     } finally {
