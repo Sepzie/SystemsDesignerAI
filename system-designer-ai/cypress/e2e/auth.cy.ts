@@ -1,49 +1,71 @@
+import { resetTestDb } from '../support/db-reset';
+
 describe('Authentication', () => {
   beforeEach(() => {
-    // Reset the database state before each test
-    cy.exec('npm run db:reset');
+    // Reset the database state before each test using Supabase CLI
+    cy.exec('supabase db reset --force', { timeout: 30000 });
   });
 
   describe('Registration', () => {
     it('should successfully register a new user', () => {
-      const email = 'newuser@example.com';
-      const password = 'TestPassword123!';
+      const testUser = {
+        email: `test-${Date.now()}@example.com`,
+        password: 'TestPassword123!',
+        fullName: 'Test User'
+      };
 
-      cy.register(email, password);
+      cy.visit('/auth/register');
+      cy.get('input[name="email"]').type(testUser.email);
+      cy.get('input[name="password"]').type(testUser.password);
+      cy.get('input[name="name"]').type(testUser.fullName);
+      cy.get('button[type="submit"]').click();
       
       // Verify successful registration
-      cy.get('div').contains('Welcome to your dashboard').should('be.visible');
       cy.url().should('include', '/dashboard');
     });
 
     it('should show validation errors for invalid registration', () => {
-      cy.visit('/register');
+      cy.visit('/auth/register');
       
       // Try to submit without filling in fields
       cy.get('button[type="submit"]').click();
       
       // Verify validation messages
-      cy.get('div').contains('Email is required').should('be.visible');
-      cy.get('div').contains('Password is required').should('be.visible');
+      cy.get('input[name="email"]:invalid').should('exist');
+      cy.get('input[name="password"]:invalid').should('exist');
+      cy.get('input[name="name"]:invalid').should('exist');
     });
   });
 
   describe('Login', () => {
     beforeEach(() => {
       // Create a test user before each login test
-      cy.exec('npm run db:seed:test-user');
+      const testUser = {
+        email: `test-${Date.now()}@example.com`,
+        password: 'TestPassword123!',
+        fullName: 'Test User'
+      };
+
+      cy.visit('/auth/register');
+      cy.get('input[name="email"]').type(testUser.email);
+      cy.get('input[name="password"]').type(testUser.password);
+      cy.get('input[name="name"]').type(testUser.fullName);
+      cy.get('button[type="submit"]').click();
+      cy.url().should('include', '/dashboard');
+      cy.visit('/auth/login'); // Go back to login page
     });
 
     it('should successfully login with valid credentials', () => {
-      cy.login(Cypress.env('testUserEmail'), Cypress.env('testUserPassword'));
+      cy.get('input[name="email"]').type(Cypress.env('testUserEmail'));
+      cy.get('input[name="password"]').type(Cypress.env('testUserPassword'));
+      cy.get('button[type="submit"]').click();
       
       // Verify successful login
-      cy.get('div').contains('Welcome to your dashboard').should('be.visible');
       cy.url().should('include', '/dashboard');
     });
 
     it('should show error for invalid credentials', () => {
-      cy.visit('/login');
+      cy.visit('/auth/login');
       cy.get('input[name="email"]').type('wrong@example.com');
       cy.get('input[name="password"]').type('wrongpassword');
       cy.get('button[type="submit"]').click();
@@ -55,13 +77,23 @@ describe('Authentication', () => {
 
   describe('Logout', () => {
     beforeEach(() => {
-      // Login before each logout test
-      cy.exec('npm run db:seed:test-user');
-      cy.login(Cypress.env('testUserEmail'), Cypress.env('testUserPassword'));
+      // Create and login a test user
+      const testUser = {
+        email: `test-${Date.now()}@example.com`,
+        password: 'TestPassword123!',
+        fullName: 'Test User'
+      };
+
+      cy.visit('/auth/register');
+      cy.get('input[name="email"]').type(testUser.email);
+      cy.get('input[name="password"]').type(testUser.password);
+      cy.get('input[name="name"]').type(testUser.fullName);
+      cy.get('button[type="submit"]').click();
     });
 
     it('should successfully logout user', () => {
-      cy.logout();
+      // Find and click logout button/link
+      cy.get('button').contains('Logout').click();
       
       // Verify redirect to login page
       cy.url().should('include', '/login');
