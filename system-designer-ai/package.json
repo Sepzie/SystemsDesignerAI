@@ -10,9 +10,9 @@
     "test": "cypress run",
     "test:open": "cypress open",
     "test:ci": "cypress run --headless",
-    "db:reset": "ts-node scripts/test-db.ts reset",
-    "db:seed:test-user": "ts-node scripts/test-db.ts seed:test-user",
-    "db:seed:test-project": "ts-node scripts/test-db.ts seed:test-project"
+    "db:reset": "ts-node --project scripts/tsconfig.json scripts/test-db.ts reset",
+    "db:seed:test-user": "ts-node --project scripts/tsconfig.json scripts/test-db.ts seed:test-user",
+    "db:seed:test-project": "ts-node --project scripts/tsconfig.json scripts/test-db.ts seed:test-project"
   },
   "dependencies": {
     "@supabase/auth-helpers-nextjs": "^0.10.0",

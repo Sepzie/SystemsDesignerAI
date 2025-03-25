@@ -2,8 +2,8 @@ import { resetTestDb } from '../support/db-reset';
 
 describe('Authentication', () => {
   beforeEach(() => {
-    // Reset the database state before each test using Supabase CLI
-    cy.exec('supabase db reset --force', { timeout: 30000 });
+    // Reset the database state before each test using our custom script
+    cy.exec('npm run db:reset', { timeout: 30000 });
   });
 
   describe('Registration', () => {
