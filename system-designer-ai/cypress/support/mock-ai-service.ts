@@ -1,7 +1,15 @@
 /// <reference types="cypress" />
 
-// Mock responses for AI service
+/**
+ * Mock responses for AI service endpoints
+ * This file provides predefined responses for AI-related API calls during E2E testing
+ * to ensure consistent and predictable test behavior without relying on actual AI services
+ */
 export const mockAIResponses = {
+  /**
+   * Mock response for system design generation endpoint
+   * Simulates the AI service's response when generating a system design
+   */
   generateSystemDesign: {
     success: {
       status: 200,
@@ -41,6 +49,11 @@ export const mockAIResponses = {
       },
     },
   },
+
+  /**
+   * Mock response for architecture analysis endpoint
+   * Simulates the AI service's response when analyzing system architecture
+   */
   analyzeArchitecture: {
     success: {
       status: 200,
@@ -71,16 +84,29 @@ export const mockAIResponses = {
   },
 };
 
-// Intercept AI service calls
+/**
+ * Sets up Cypress interceptors for AI service endpoints
+ * This function configures the mock responses for all AI-related API calls
+ * 
+ * Usage:
+ * ```typescript
+ * beforeEach(() => {
+ *   setupAIMocks();
+ * });
+ * ```
+ */
 export const setupAIMocks = () => {
-  // Mock system design generation
-  cy.intercept('POST', '/api/ai/generate-design', mockAIResponses.generateSystemDesign.success).as('generateDesign');
+  // Mock successful system design generation endpoint
+  cy.intercept('POST', '/api/ai/generate-design', mockAIResponses.generateSystemDesign.success)
+    .as('generateDesign');
 
-  // Mock architecture analysis
-  cy.intercept('POST', '/api/ai/analyze-architecture', mockAIResponses.analyzeArchitecture.success).as('analyzeArchitecture');
+  // Mock successful architecture analysis endpoint
+  cy.intercept('POST', '/api/ai/analyze-architecture', mockAIResponses.analyzeArchitecture.success)
+    .as('analyzeArchitecture');
 
-  // Mock error responses
-  cy.intercept('POST', '/api/ai/*', (req: Cypress.Interception) => {
+  // Mock error response for any unmatched AI endpoints
+  // This ensures we don't have unexpected API calls during tests
+  cy.intercept('POST', '/api/ai/*', (req) => {
     req.reply({
       statusCode: 500,
       body: {

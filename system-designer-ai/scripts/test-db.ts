@@ -1,25 +1,83 @@
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 
+import fetch from 'node-fetch';
+
 // Load test environment variables
 dotenv.config({ path: '.env.test' });
 
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
 if (!supabaseUrl || !supabaseServiceKey) {
   throw new Error('Missing required environment variables');
 }
 
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
+// Create Supabase client with admin privileges
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+});
+
+// Type definitions for API responses
+interface SignupResponse {
+  user: {
+    id: string;
+    email: string;
+  };
+  error?: string;
+}
+
+interface ProjectResponse {
+  project: {
+    id: string;
+    name: string;
+    description: string;
+    user_id: string;
+  };
+  error?: string;
+}
 
 async function resetDatabase() {
   try {
+    console.log('Starting database reset...');
+    
     // Delete all data from tables in reverse order of dependencies
-    await supabase.from('project_versions').delete().neq('id', 0);
-    await supabase.from('projects').delete().neq('id', 0);
-    await supabase.from('user_profiles').delete().neq('id', 0);
-    await supabase.from('auth.users').delete().neq('id', 0);
+    const { error: versionsError } = await supabase
+      .from('project_versions')
+      .delete()
+      .neq('id', 0);
+    
+    if (versionsError) throw versionsError;
+    console.log('Cleared project_versions table');
+
+    const { error: projectsError } = await supabase
+      .from('projects')
+      .delete()
+      .neq('id', 0);
+    
+    if (projectsError) throw projectsError;
+    console.log('Cleared projects table');
+
+    const { error: profilesError } = await supabase
+      .from('user_profiles')
+      .delete()
+      .neq('id', 0);
+    
+    if (profilesError) throw profilesError;
+    console.log('Cleared user_profiles table');
+
+    const { error: usersError } = await supabase
+      .from('auth.users')
+      .delete()
+      .neq('id', 0);
+    
+    if (usersError) throw usersError;
+    console.log('Cleared auth.users table');
     
     console.log('Database reset successful');
   } catch (error) {
@@ -30,14 +88,35 @@ async function resetDatabase() {
 
 async function seedTestUser() {
   try {
-    // Create test user
-    const { data: user, error: userError } = await supabase.auth.admin.createUser({
-      email: process.env.TEST_USER_EMAIL || 'test@example.com',
-      password: process.env.TEST_USER_PASSWORD || 'testPassword123!',
+    console.log('Starting test user seeding...');
+    const testEmail = process.env.TEST_USER_EMAIL || 'test@example.com';
+    const testPassword = process.env.TEST_USER_PASSWORD || 'testPassword123!';
+
+    // First check if user already exists
+    const { data: existingUser, error: checkError } = await supabase
+      .from('auth.users')
+      .select('id')
+      .eq('email', testEmail)
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "not found"
+      throw checkError;
+    }
+
+    if (existingUser) {
+      console.log('Test user already exists, skipping creation');
+      return;
+    }
+
+    // Create test user using admin API
+    const { data: user, error: createError } = await supabase.auth.admin.createUser({
+      email: testEmail,
+      password: testPassword,
       email_confirm: true,
     });
 
-    if (userError) throw userError;
+    if (createError) throw createError;
+    if (!user) throw new Error('Failed to create test user');
 
     // Create user profile
     const { error: profileError } = await supabase
@@ -61,14 +140,18 @@ async function seedTestUser() {
 
 async function seedTestProject() {
   try {
+    console.log('Starting test project seeding...');
+    const testEmail = process.env.TEST_USER_EMAIL || 'test@example.com';
+
     // Get test user
     const { data: user, error: userError } = await supabase
       .from('user_profiles')
       .select('id')
-      .eq('email', process.env.TEST_USER_EMAIL || 'test@example.com')
+      .eq('email', testEmail)
       .single();
 
     if (userError) throw userError;
+    if (!user) throw new Error('Test user not found');
 
     // Create test project
     const { error: projectError } = await supabase
@@ -78,6 +161,11 @@ async function seedTestProject() {
           name: 'Test Project',
           description: 'This is a test project',
           user_id: user.id,
+          requirements: {
+            functional: ['Test functional requirement'],
+            nonFunctional: ['Test non-functional requirement'],
+          },
+          tech_stack: 'React, Node.js, PostgreSQL',
           status: 'active',
         },
       ]);
