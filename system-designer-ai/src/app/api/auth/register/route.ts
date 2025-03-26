@@ -36,7 +36,8 @@ export async function POST(request: Request) {
 
   const { email, password } = await request.json()
 
-  const { data, error } = await supabase.auth.signUp({
+  // Step 1: Create the auth user
+  const { data: authData, error: authError } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -44,12 +45,32 @@ export async function POST(request: Request) {
     },
   })
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 })
+  if (authError) {
+    return NextResponse.json({ error: authError.message }, { status: 400 })
+  }
+
+  if (!authData.user) {
+    return NextResponse.json({ error: 'Failed to create user' }, { status: 400 })
+  }
+
+  // Step 2: Create the user record in the User table
+  const { error: userError } = await supabase
+    .from('User')
+    .insert([
+      {
+        id: authData.user.id,
+        email: email,
+        name: email.split('@')[0], // Use part of email as default name
+      },
+    ])
+
+  if (userError) {
+    console.error('User creation error:', userError)
+    return NextResponse.json({ error: 'Failed to create user profile' }, { status: 500 })
   }
 
   return NextResponse.json({ 
     message: 'Registration successful. Please check your email to verify your account.',
-    user: data.user 
+    user: authData.user 
   })
 } 
