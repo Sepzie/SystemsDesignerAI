@@ -12,8 +12,10 @@ beforeEach(() => {
     setupAIMocks();
   });
 
-  // Preserve cookies between tests
-  Cypress.Cookies.preserveOnce('sb-access-token', 'sb-refresh-token');
+  // Set up session to preserve auth state
+  cy.session('auth', () => {
+    // Session will be preserved automatically
+  });
 });
 
 // Handle uncaught exceptions

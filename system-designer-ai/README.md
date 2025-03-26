@@ -25,6 +25,7 @@ AI System Designer is a web application that helps software engineers design com
 - Node.js 18.x or higher
 - npm or yarn
 - Supabase account
+- Supabase CLI (required for database operations)
 
 ### Installation
 
@@ -104,3 +105,7 @@ The application provides the following API endpoints:
 ## License
 
 This project is licensed under the MIT License.
+
+## Supabase Setup
+
+The project uses Supabase for authentication and database operations. You need Supabase CLI for development and testing.
