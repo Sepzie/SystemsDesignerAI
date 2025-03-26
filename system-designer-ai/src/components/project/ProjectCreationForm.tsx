@@ -5,15 +5,11 @@ import { useRouter } from 'next/navigation';
 import { Card } from '../ui/Card';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
-import { ProjectFormData, ProjectRequirements } from '@/types/project';
+import { ProjectFormData } from '@/types/project';
 
 const initialFormData: ProjectFormData = {
   name: '',
   description: '',
-  requirements: {
-    functional: [''],
-    nonFunctional: ['']
-  },
   techStack: ''
 };
 
@@ -33,14 +29,6 @@ export function ProjectCreationForm() {
 
     if (!formData.description.trim()) {
       newErrors.description = 'Description is required';
-    }
-
-    if (formData.requirements.functional.length === 1 && !formData.requirements.functional[0].trim()) {
-      newErrors.requirements = 'At least one functional requirement is required';
-    }
-
-    if (formData.requirements.nonFunctional.length === 1 && !formData.requirements.nonFunctional[0].trim()) {
-      newErrors.requirements = 'At least one non-functional requirement is required';
     }
 
     setErrors(newErrors);
@@ -81,42 +69,6 @@ export function ProjectCreationForm() {
     }
   };
 
-  const handleRequirementChange = (
-    type: 'functional' | 'nonFunctional',
-    index: number,
-    value: string
-  ) => {
-    setFormData(prev => ({
-      ...prev,
-      requirements: {
-        ...prev.requirements,
-        [type]: prev.requirements[type].map((req, i) => 
-          i === index ? value : req
-        )
-      }
-    }));
-  };
-
-  const addRequirement = (type: 'functional' | 'nonFunctional') => {
-    setFormData(prev => ({
-      ...prev,
-      requirements: {
-        ...prev.requirements,
-        [type]: [...prev.requirements[type], '']
-      }
-    }));
-  };
-
-  const removeRequirement = (type: 'functional' | 'nonFunctional', index: number) => {
-    setFormData(prev => ({
-      ...prev,
-      requirements: {
-        ...prev.requirements,
-        [type]: prev.requirements[type].filter((_, i) => i !== index)
-      }
-    }));
-  };
-
   return (
     <Card className="max-w-2xl mx-auto p-6">
       <h2 className="text-2xl font-bold mb-6">Create New Project</h2>
@@ -138,79 +90,20 @@ export function ProjectCreationForm() {
           <label htmlFor="description" className="block text-sm font-medium mb-2">
             Description
           </label>
-          <Input
+          <textarea
             id="description"
             value={formData.description}
             onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-            error={errors.description}
+            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              errors.description ? 'border-red-500' : 'border-gray-300'
+            } ${isSubmitting ? 'bg-gray-100' : 'bg-white'}`}
+            rows={4}
             disabled={isSubmitting}
+            placeholder="Enter project description..."
           />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Functional Requirements
-          </label>
-          {formData.requirements.functional.map((req, index) => (
-            <div key={index} className="flex gap-2 mb-2">
-              <Input
-                value={req}
-                onChange={(e) => handleRequirementChange('functional', index, e.target.value)}
-                placeholder={`Requirement ${index + 1}`}
-                disabled={isSubmitting}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => removeRequirement('functional', index)}
-                disabled={isSubmitting}
-              >
-                Remove
-              </Button>
-            </div>
-          ))}
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => addRequirement('functional')}
-            className="mt-2"
-            disabled={isSubmitting}
-          >
-            Add Requirement
-          </Button>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Non-Functional Requirements
-          </label>
-          {formData.requirements.nonFunctional.map((req, index) => (
-            <div key={index} className="flex gap-2 mb-2">
-              <Input
-                value={req}
-                onChange={(e) => handleRequirementChange('nonFunctional', index, e.target.value)}
-                placeholder={`Requirement ${index + 1}`}
-                disabled={isSubmitting}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => removeRequirement('nonFunctional', index)}
-                disabled={isSubmitting}
-              >
-                Remove
-              </Button>
-            </div>
-          ))}
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => addRequirement('nonFunctional')}
-            className="mt-2"
-            disabled={isSubmitting}
-          >
-            Add Requirement
-          </Button>
+          {errors.description && (
+            <p className="mt-1 text-sm text-red-500">{errors.description}</p>
+          )}
         </div>
 
         <div>
@@ -225,10 +118,6 @@ export function ProjectCreationForm() {
             disabled={isSubmitting}
           />
         </div>
-
-        {errors.requirements && (
-          <p className="text-red-500 text-sm">{errors.requirements}</p>
-        )}
 
         {submitError && (
           <p className="text-red-500 text-sm">{submitError}</p>

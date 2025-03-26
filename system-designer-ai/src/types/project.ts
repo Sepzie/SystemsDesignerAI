@@ -6,7 +6,6 @@ export interface ProjectRequirements {
 export interface ProjectFormData {
   name: string;
   description: string;
-  requirements: ProjectRequirements;
   techStack: string;
 }
 

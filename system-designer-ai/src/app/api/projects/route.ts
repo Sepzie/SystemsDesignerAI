@@ -8,9 +8,6 @@ function validateProjectData(data: any): data is ProjectFormData {
   if (!data || typeof data !== 'object') return false
   if (!data.name || typeof data.name !== 'string') return false
   if (!data.description || typeof data.description !== 'string') return false
-  if (!data.requirements || typeof data.requirements !== 'object') return false
-  if (!Array.isArray(data.requirements.functional)) return false
-  if (!Array.isArray(data.requirements.nonFunctional)) return false
   if (typeof data.techStack !== 'string') return false
   return true
 }
@@ -104,12 +101,8 @@ export async function POST(request: Request) {
       name: body.name.trim(),
       description: body.description.trim(),
       requirements: {
-        functional: body.requirements.functional
-          .map((req: string) => req.trim())
-          .filter(Boolean),
-        nonFunctional: body.requirements.nonFunctional
-          .map((req: string) => req.trim())
-          .filter(Boolean)
+        functional: [],
+        nonFunctional: []
       },
       tech_stack: body.techStack.trim(),
       user_id: user.id,
