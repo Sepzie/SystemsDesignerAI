@@ -41,12 +41,12 @@ export default function RegisterPage() {
 
       // If we got a session (in development), we'll be automatically logged in
       if (data.session) {
-        router.push('/dashboard');
+        // Use replace instead of push to prevent back navigation to registration
+        router.replace('/dashboard');
       } else {
         // In production, redirect to login
-        router.push('/login');
+        router.replace('/login');
       }
-      router.refresh();
     } catch (error: any) {
       setError(error.message || 'An error occurred during registration');
     } finally {
