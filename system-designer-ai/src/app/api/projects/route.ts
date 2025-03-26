@@ -1,43 +1,24 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
-import { ProjectFormData } from '@/types/project'
+import { ProjectFormData, ProjectRequirements } from '@/types/project'
 
-// Validation function for project data
-function validateProjectData(data: Partial<ProjectFormData>): { isValid: boolean; errors: string[] } {
-  const errors: string[] = [];
-
-  if (!data.name?.trim()) {
-    errors.push('Project name is required');
-  }
-
-  if (!data.description?.trim()) {
-    errors.push('Description is required');
-  }
-
-  if (!data.requirements) {
-    errors.push('Requirements are required');
-  } else {
-    const { functional, nonFunctional } = data.requirements;
-    
-    if (!Array.isArray(functional) || functional.length === 0 || functional.some(req => !req.trim())) {
-      errors.push('At least one functional requirement is required');
-    }
-
-    if (!Array.isArray(nonFunctional) || nonFunctional.length === 0 || nonFunctional.some(req => !req.trim())) {
-      errors.push('At least one non-functional requirement is required');
-    }
-  }
-
-  return {
-    isValid: errors.length === 0,
-    errors
-  };
+// Validation function
+function validateProjectData(data: any): data is ProjectFormData {
+  if (!data || typeof data !== 'object') return false
+  if (!data.name || typeof data.name !== 'string') return false
+  if (!data.description || typeof data.description !== 'string') return false
+  if (!data.requirements || typeof data.requirements !== 'object') return false
+  if (!Array.isArray(data.requirements.functional)) return false
+  if (!Array.isArray(data.requirements.nonFunctional)) return false
+  if (typeof data.techStack !== 'string') return false
+  return true
 }
 
 // Helper function to create Supabase client
-function createSupabaseClient() {
-  const cookieStore = cookies()
+async function createSupabaseClient() {
+  const cookieStore = await cookies()
+  
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -59,101 +40,91 @@ function createSupabaseClient() {
 
 // GET: Fetch all projects for authenticated user
 export async function GET() {
-  const supabase = createSupabaseClient()
-
   try {
-    const { data: { session } } = await supabase.auth.getSession()
+    const supabase = await createSupabaseClient()
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
 
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Fetch projects for the current user
-    const { data: projects, error: projectsError } = await supabase
-      .from('Project')
-      .select('*')
-      .eq('user_id', session.user.id)
-      .order('created_at', { ascending: false });
-
-    if (projectsError) {
-      console.error('Error fetching projects:', projectsError);
+    if (userError || !user) {
       return NextResponse.json(
-        { error: 'Failed to fetch projects' },
-        { status: 500 }
-      );
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
     }
 
-    return NextResponse.json({ projects });
+    const { data: projects, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching projects:', error)
+      return NextResponse.json(
+        { error: 'Failed to fetch projects', details: error.message },
+        { status: 500 }
+      )
+    }
+
+    return NextResponse.json({ projects })
   } catch (error) {
-    console.error('Error in GET /api/projects:', error);
+    console.error('Error in GET /api/projects:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
-    );
+    )
   }
 }
 
 // POST: Create a new project
 export async function POST(request: Request) {
-  const supabase = createSupabaseClient()
-
   try {
-    const { data: { session } } = await supabase.auth.getSession()
+    const supabase = await createSupabaseClient()
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
 
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const projectData = await request.json() as ProjectFormData;
-
-    // Validate the project data
-    const validation = validateProjectData(projectData);
-    if (!validation.isValid) {
+    if (userError || !user) {
       return NextResponse.json(
-        { error: 'Validation failed', details: validation.errors },
-        { status: 400 }
-      );
+        { error: 'Unauthorized' },
+        { status: 401 }
+      )
     }
 
-    // Prepare data for database
-    const { name, description, requirements, techStack } = projectData;
-    const dbData = {
-      user_id: session.user.id,
-      name: name.trim(),
-      description: description.trim(),
-      requirements: {
-        functional: requirements.functional.map(req => req.trim()),
-        nonFunctional: requirements.nonFunctional.map(req => req.trim())
-      },
-      tech_stack: techStack?.trim() || '',
-      progress: 0
-    };
+    const body = await request.json()
 
-    // Insert the project
-    const { data, error } = await supabase
-      .from('Project')
-      .insert([dbData])
+    if (!validateProjectData(body)) {
+      return NextResponse.json(
+        { error: 'Invalid project data' },
+        { status: 400 }
+      )
+    }
+
+    const { data: project, error } = await supabase
+      .from('projects')
+      .insert([
+        {
+          ...body,
+          user_id: user.id,
+          progress: 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ])
       .select()
-      .single();
+      .single()
 
     if (error) {
-      console.error('Database error:', error);
+      console.error('Error creating project:', error)
       return NextResponse.json(
         { error: 'Failed to create project', details: error.message },
         { status: 500 }
-      );
+      )
     }
 
-    return NextResponse.json({
-      message: 'Project created successfully',
-      project: data
-    }, { status: 201 });
-
+    return NextResponse.json({ project })
   } catch (error) {
-    console.error('Request error:', error);
+    console.error('Error in POST /api/projects:', error)
     return NextResponse.json(
-      { error: 'Invalid request data', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 400 }
-    );
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
   }
 } 
