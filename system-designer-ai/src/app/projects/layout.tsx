@@ -31,7 +31,7 @@ export default async function ProjectsLayout({
   const { data: { user }, error: userError } = await supabase.auth.getUser()
 
   if (userError || !user) {
-    redirect('/auth/login')
+    redirect('/login')
   }
 
   return (

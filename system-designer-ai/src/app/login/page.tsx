@@ -3,13 +3,13 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { createClient } from '@/lib/supabase/client'
 import MainLayout from '@/components/layout/MainLayout'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 
-export default function RegisterPage() {
+export default function LoginPage() {
   const router = useRouter()
-  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -21,36 +21,28 @@ export default function RegisterPage() {
     setLoading(true)
 
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          password,
-          fullName: name,
-        }),
-      });
+      const supabase = createClient()
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Registration failed');
+      if (error) {
+        throw error
       }
 
-      // If we got a session (in development), we'll be automatically logged in
-      if (data.session) {
-        router.push('/dashboard');
+      if (data?.session) {
+        // Wait a moment for the session to be fully established
+        await new Promise(resolve => setTimeout(resolve, 500));
+        router.push('/dashboard')
+        router.refresh()
       } else {
-        // In production, redirect to login
-        router.push('/auth/login');
+        throw new Error('Failed to get session after login')
       }
-      router.refresh();
     } catch (error: any) {
-      setError(error.message || 'An error occurred during registration');
+      setError(error.message || 'An error occurred during login')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
   }
 
@@ -59,12 +51,12 @@ export default function RegisterPage() {
       <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-50">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
-            Create a new account
+            Sign in to your account
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Or{' '}
-            <Link href="/auth/login" className="font-medium text-blue-600 hover:text-blue-500">
-              sign in to your account
+            <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
+              create a new account
             </Link>
           </p>
         </div>
@@ -78,17 +70,6 @@ export default function RegisterPage() {
             )}
             
             <form className="space-y-6" onSubmit={handleSubmit}>
-              <Input
-                id="name"
-                name="name"
-                type="text"
-                autoComplete="name"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                label="Full name"
-              />
-
               <Input
                 id="email"
                 name="email"
@@ -104,7 +85,7 @@ export default function RegisterPage() {
                 id="password"
                 name="password"
                 type="password"
-                autoComplete="new-password"
+                autoComplete="current-password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -117,7 +98,7 @@ export default function RegisterPage() {
                   isLoading={loading}
                   fullWidth={true}
                 >
-                  Create account
+                  Sign in
                 </Button>
               </div>
             </form>

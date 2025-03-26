@@ -14,7 +14,7 @@ export default function HomePage() {
             Collaborate with AI to design the architecture for your next project.
           </p>
           <Link
-            href="/auth/register"
+            href="/register"
             className="px-6 py-3 bg-blue-600 text-white rounded-md text-lg font-medium hover:bg-blue-700"
           >
             Get Started

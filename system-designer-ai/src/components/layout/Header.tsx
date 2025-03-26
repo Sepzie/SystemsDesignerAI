@@ -35,13 +35,13 @@ export default function Header({ isLoggedIn, userEmail }: HeaderProps) {
           ) : (
             <>
               <Link 
-                href="/auth/login" 
+                href="/login" 
                 className="px-4 py-2 rounded-md text-gray-600 hover:text-gray-900"
               >
                 Login
               </Link>
               <Link 
-                href="/auth/register" 
+                href="/register" 
                 className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
               >
                 Sign Up

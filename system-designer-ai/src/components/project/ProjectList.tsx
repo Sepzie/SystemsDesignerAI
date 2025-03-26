@@ -26,7 +26,7 @@ export function ProjectList() {
 
       if (!response.ok) {
         if (response.status === 401) {
-          router.push('/auth/login');
+          router.push('/login');
           return;
         }
         throw new Error(data.error || 'Failed to fetch projects');

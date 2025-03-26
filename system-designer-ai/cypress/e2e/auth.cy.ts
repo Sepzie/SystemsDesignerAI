@@ -14,7 +14,7 @@ describe('Authentication', () => {
         fullName: 'Test User'
       };
 
-      cy.visit('/auth/register');
+      cy.visit('/register');
       cy.get('input[name="email"]').type(testUser.email);
       cy.get('input[name="password"]').type(testUser.password);
       cy.get('input[name="name"]').type(testUser.fullName);
@@ -25,7 +25,7 @@ describe('Authentication', () => {
     });
 
     it('should show validation errors for invalid registration', () => {
-      cy.visit('/auth/register');
+      cy.visit('/register');
       
       // Try to submit without filling in fields
       cy.get('button[type="submit"]').click();
@@ -46,12 +46,12 @@ describe('Authentication', () => {
         fullName: 'Test User'
       };
 
-      cy.visit('/auth/register');
+      cy.visit('/register');
       cy.get('input[name="email"]').type(testUser.email);
       cy.get('input[name="password"]').type(testUser.password);
       cy.get('input[name="name"]').type(testUser.fullName);
       cy.get('button[type="submit"]').click();
-      cy.url().should('include', '/auth/login');
+      cy.url().should('include', '/login');
     });
 
     it('should successfully login with valid credentials', () => {
@@ -64,7 +64,7 @@ describe('Authentication', () => {
     });
 
     it('should show error for invalid credentials', () => {
-      cy.visit('/auth/login');
+      cy.visit('/login');
       cy.get('input[name="email"]').type('wrong@example.com');
       cy.get('input[name="password"]').type('wrongpassword');
       cy.get('button[type="submit"]').click();
@@ -83,7 +83,7 @@ describe('Authentication', () => {
         fullName: 'Test User'
       };
 
-      cy.visit('/auth/register');
+      cy.visit('/register');
       cy.get('input[name="email"]').type(testUser.email);
       cy.get('input[name="password"]').type(testUser.password);
       cy.get('input[name="name"]').type(testUser.fullName);

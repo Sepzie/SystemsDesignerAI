@@ -68,13 +68,13 @@ export async function middleware(request: NextRequest) {
     if (request.nextUrl.pathname.startsWith('/api/')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    return NextResponse.redirect(new URL('/auth/login', request.url))
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
   // If logged in and trying to access auth pages, redirect to dashboard
   if (session && 
-      (request.nextUrl.pathname.startsWith('/auth/login') || 
-       request.nextUrl.pathname.startsWith('/auth/register'))) {
+      (request.nextUrl.pathname.startsWith('/login') || 
+       request.nextUrl.pathname.startsWith('/register'))) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 

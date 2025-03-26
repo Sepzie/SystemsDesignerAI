@@ -27,7 +27,7 @@ export default async function NewProjectPage() {
   const { data: { user }, error: userError } = await supabase.auth.getUser()
 
   if (userError || !user) {
-    redirect('/auth/login')
+    redirect('/login')
   }
 
   return (
