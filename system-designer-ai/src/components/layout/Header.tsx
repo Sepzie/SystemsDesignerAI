@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { Button } from '../ui/Button'
 
 interface HeaderProps {
   isLoggedIn?: boolean
@@ -10,6 +11,19 @@ interface HeaderProps {
 
 export default function Header({ isLoggedIn, userEmail }: HeaderProps) {
   const router = useRouter()
+
+  const handleSignOut = async () => {
+    try {
+      const response = await fetch('/api/auth/signout', {
+        method: 'POST',
+      });
+      if (response.ok) {
+        router.push('/login');
+      }
+    } catch (error) {
+      console.error('Failed to sign out:', error);
+    }
+  };
 
   return (
     <header className="bg-white shadow-sm border-b">
@@ -23,14 +37,12 @@ export default function Header({ isLoggedIn, userEmail }: HeaderProps) {
               <span className="text-gray-600">
                 {userEmail}
               </span>
-              <form action="/api/auth/signout" method="post">
-                <button 
-                  type="submit"
-                  className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 hover:bg-gray-50"
-                >
-                  Sign out
-                </button>
-              </form>
+              <Button 
+                variant="outline"
+                onClick={handleSignOut}
+              >
+                Sign out
+              </Button>
             </>
           ) : (
             <>
