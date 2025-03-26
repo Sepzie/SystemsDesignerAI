@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card } from '../ui/Card';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
@@ -17,8 +18,11 @@ const initialFormData: ProjectFormData = {
 };
 
 export function ProjectCreationForm() {
+  const router = useRouter();
   const [formData, setFormData] = useState<ProjectFormData>(initialFormData);
   const [errors, setErrors] = useState<Partial<Record<keyof ProjectFormData, string>>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof ProjectFormData, string>> = {};
@@ -45,13 +49,36 @@ export function ProjectCreationForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitError(null);
     
     if (!validateForm()) {
       return;
     }
 
-    // TODO: Implement API call
-    console.log('Form submitted:', formData);
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || data.details || 'Failed to create project');
+      }
+
+      // Redirect to the project page
+      router.push(`/projects/${data.project.id}`);
+    } catch (error) {
+      setSubmitError(error instanceof Error ? error.message : 'An unexpected error occurred');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleRequirementChange = (
@@ -103,6 +130,7 @@ export function ProjectCreationForm() {
             value={formData.name}
             onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
             error={errors.name}
+            disabled={isSubmitting}
           />
         </div>
 
@@ -115,6 +143,7 @@ export function ProjectCreationForm() {
             value={formData.description}
             onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
             error={errors.description}
+            disabled={isSubmitting}
           />
         </div>
 
@@ -128,11 +157,13 @@ export function ProjectCreationForm() {
                 value={req}
                 onChange={(e) => handleRequirementChange('functional', index, e.target.value)}
                 placeholder={`Requirement ${index + 1}`}
+                disabled={isSubmitting}
               />
               <Button
                 type="button"
-                variant="secondary"
+                variant="outline"
                 onClick={() => removeRequirement('functional', index)}
+                disabled={isSubmitting}
               >
                 Remove
               </Button>
@@ -140,9 +171,10 @@ export function ProjectCreationForm() {
           ))}
           <Button
             type="button"
-            variant="secondary"
+            variant="outline"
             onClick={() => addRequirement('functional')}
             className="mt-2"
+            disabled={isSubmitting}
           >
             Add Requirement
           </Button>
@@ -158,11 +190,13 @@ export function ProjectCreationForm() {
                 value={req}
                 onChange={(e) => handleRequirementChange('nonFunctional', index, e.target.value)}
                 placeholder={`Requirement ${index + 1}`}
+                disabled={isSubmitting}
               />
               <Button
                 type="button"
-                variant="secondary"
+                variant="outline"
                 onClick={() => removeRequirement('nonFunctional', index)}
+                disabled={isSubmitting}
               >
                 Remove
               </Button>
@@ -170,9 +204,10 @@ export function ProjectCreationForm() {
           ))}
           <Button
             type="button"
-            variant="secondary"
+            variant="outline"
             onClick={() => addRequirement('nonFunctional')}
             className="mt-2"
+            disabled={isSubmitting}
           >
             Add Requirement
           </Button>
@@ -187,6 +222,7 @@ export function ProjectCreationForm() {
             value={formData.techStack}
             onChange={(e) => setFormData(prev => ({ ...prev, techStack: e.target.value }))}
             placeholder="e.g., React, Node.js, PostgreSQL"
+            disabled={isSubmitting}
           />
         </div>
 
@@ -194,8 +230,16 @@ export function ProjectCreationForm() {
           <p className="text-red-500 text-sm">{errors.requirements}</p>
         )}
 
-        <Button type="submit" className="w-full">
-          Create Project
+        {submitError && (
+          <p className="text-red-500 text-sm">{submitError}</p>
+        )}
+
+        <Button 
+          type="submit" 
+          className="w-full"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Creating Project...' : 'Create Project'}
         </Button>
       </form>
     </Card>
