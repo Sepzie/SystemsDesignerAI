@@ -1,8 +1,7 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { createClient } from '@supabase/supabase-js';
-import { cookies, headers } from 'next/headers';
-import { NextResponse } from 'next/server';
-import { ApiError, withErrorHandler } from '@/lib/error-handler';
+import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
+import { NextResponse } from 'next/server'
+import { ApiError, withErrorHandler } from '@/lib/error-handler'
 
 /**
  * This is the registration endpoint that handles new user signups.
@@ -14,110 +13,43 @@ import { ApiError, withErrorHandler } from '@/lib/error-handler';
  * 5. Return success response with redirect
  */
 
-export const POST = withErrorHandler(async (req: Request) => {
-  const { email, password, fullName } = await req.json();
-
-  /**
-   * Create a Supabase admin client with service role key
-   * This client has elevated privileges to:
-   * - Create users
-   * - Manage sessions
-   * - Access database directly
-   * We use this instead of the regular client for admin operations
-   */
-  const supabaseAdmin = createClient(
+export async function POST(request: Request) {
+  const cookieStore = await cookies()
+  
+  const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+        set(name: string, value: string, options: any) {
+          cookieStore.set({ name, value, ...options })
+        },
+        remove(name: string, options: any) {
+          cookieStore.set({ name, value: '', ...options })
+        },
+      },
     }
-  );
+  )
 
-  /**
-   * Step 1: Create the user account in Supabase Auth
-   * This creates the authentication record for the user
-   * We set emailRedirectTo to dashboard since we're auto-signing in
-   */
-  const { data: authData, error: authError } = await supabaseAdmin.auth.signUp({
+  const { email, password } = await request.json()
+
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
     },
-  });
+  })
 
-  // Handle various authentication errors
-  if (authError) {
-    if (authError.message.includes('rate limit')) {
-      throw new ApiError(429, 'Too many registration attempts. Please try again later.');
-    }
-    throw new ApiError(400, authError.message);
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 400 })
   }
 
-  if (!authData.user) {
-    throw new ApiError(400, 'Failed to create user');
-  }
-
-  /**
-   * Step 2: Create the user's profile in our database
-   * This stores additional user information like full name
-   * We use the user's ID from Supabase Auth as the primary key
-   */
-  const { error: userError } = await supabaseAdmin
-    .from('User')
-    .insert([
-      {
-        id: authData.user.id,
-        email: email,
-        name: fullName,
-      },
-    ]);
-
-  if (userError) {
-    console.error('User creation error:', userError);
-    throw new ApiError(500, 'Failed to create user profile');
-  }
-
-  /**
-   * Step 3: Sign in the user immediately
-   * This creates a session that we'll use to maintain their logged-in state
-   * We use the same credentials they just registered with
-   */
-  const { data: { session }, error: signInError } = await supabaseAdmin.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (signInError) {
-    console.error('Auto sign-in error:', signInError);
-    throw new ApiError(500, 'Failed to sign in after registration');
-  }
-
-  if (!session) {
-    throw new ApiError(500, 'Failed to create session');
-  }
-
-  /**
-   * Step 4: Set up the session cookies
-   * This is crucial for maintaining the user's authenticated state
-   * The cookies will be automatically included in subsequent requests
-   */
-  const response = NextResponse.json({
-    message: 'Registration successful. You have been signed in.',
-    session,
-    redirectTo: '/dashboard'
-  });
-
-  // Set the session cookie using the route handler client
-  const cookieStore = cookies();
-  const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
-  await supabase.auth.setSession({
-    access_token: session.access_token,
-    refresh_token: session.refresh_token
-  });
-
-  return response;
-}); 
+  return NextResponse.json({ 
+    message: 'Registration successful. Please check your email to verify your account.',
+    user: data.user 
+  })
+} 
