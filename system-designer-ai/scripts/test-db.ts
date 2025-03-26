@@ -6,6 +6,8 @@ import fetch from 'node-fetch';
 // Load test environment variables
 dotenv.config({ path: '.env.test' });
 
+// Constant for delete operations
+const ZERO_UUID = '00000000-0000-0000-0000-000000000000';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -47,36 +49,70 @@ async function resetDatabase() {
     console.log('Starting database reset...');
     
     // Delete all data from tables in reverse order of dependencies
-    const { error: versionsError } = await supabase
-      .from('project_versions')
+    const { error: messagesError } = await supabase
+      .from('Message')
       .delete()
-      .neq('id', 0);
+      .neq('id', ZERO_UUID);
     
-    if (versionsError) throw versionsError;
-    console.log('Cleared project_versions table');
+    if (messagesError) throw messagesError;
+    console.log('Cleared Message table');
+
+    const { error: conversationsError } = await supabase
+      .from('Conversation')
+      .delete()
+      .neq('id', ZERO_UUID);
+    
+    if (conversationsError) throw conversationsError;
+    console.log('Cleared Conversation table');
+
+    const { error: exportedPromptsError } = await supabase
+      .from('ExportedPrompt')
+      .delete()
+      .neq('id', ZERO_UUID);
+    
+    if (exportedPromptsError) throw exportedPromptsError;
+    console.log('Cleared ExportedPrompt table');
+
+    const { error: assetVersionsError } = await supabase
+      .from('AssetVersion')
+      .delete()
+      .neq('id', ZERO_UUID);
+    
+    if (assetVersionsError) throw assetVersionsError;
+    console.log('Cleared AssetVersion table');
+
+    const { error: designAssetsError } = await supabase
+      .from('DesignAsset')
+      .delete()
+      .neq('id', ZERO_UUID);
+    
+    if (designAssetsError) throw designAssetsError;
+    console.log('Cleared DesignAsset table');
 
     const { error: projectsError } = await supabase
-      .from('projects')
+      .from('Project')
       .delete()
-      .neq('id', 0);
+      .neq('id', ZERO_UUID);
     
     if (projectsError) throw projectsError;
-    console.log('Cleared projects table');
-
-    const { error: profilesError } = await supabase
-      .from('user_profiles')
-      .delete()
-      .neq('id', 0);
-    
-    if (profilesError) throw profilesError;
-    console.log('Cleared user_profiles table');
+    console.log('Cleared Project table');
 
     const { error: usersError } = await supabase
-      .from('auth.users')
+      .from('User')
       .delete()
-      .neq('id', 0);
+      .neq('id', ZERO_UUID);
     
     if (usersError) throw usersError;
+    console.log('Cleared User table');
+
+    // Use the auth API to delete users instead of direct table access
+    const { data: users, error: listUsersError } = await supabase.auth.admin.listUsers();
+    if (listUsersError) throw listUsersError;
+
+    for (const user of users.users) {
+      const { error: deleteError } = await supabase.auth.admin.deleteUser(user.id);
+      if (deleteError) throw deleteError;
+    }
     console.log('Cleared auth.users table');
     
     console.log('Database reset successful');
@@ -120,12 +156,12 @@ async function seedTestUser() {
 
     // Create user profile
     const { error: profileError } = await supabase
-      .from('user_profiles')
+      .from('User')
       .insert([
         {
           id: user.user.id,
           email: user.user.email,
-          full_name: 'Test User',
+          name: 'Test User',
         },
       ]);
 
@@ -145,7 +181,7 @@ async function seedTestProject() {
 
     // Get test user
     const { data: user, error: userError } = await supabase
-      .from('user_profiles')
+      .from('User')
       .select('id')
       .eq('email', testEmail)
       .single();
@@ -155,7 +191,7 @@ async function seedTestProject() {
 
     // Create test project
     const { error: projectError } = await supabase
-      .from('projects')
+      .from('Project')
       .insert([
         {
           name: 'Test Project',
@@ -166,7 +202,6 @@ async function seedTestProject() {
             nonFunctional: ['Test non-functional requirement'],
           },
           tech_stack: 'React, Node.js, PostgreSQL',
-          status: 'active',
         },
       ]);
 
