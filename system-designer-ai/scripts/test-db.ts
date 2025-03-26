@@ -48,54 +48,14 @@ async function resetDatabase() {
   try {
     console.log('Starting database reset...');
     
-    // Delete all data from tables in reverse order of dependencies
-    const { error: messagesError } = await supabase
-      .from('Message')
-      .delete()
-      .neq('id', ZERO_UUID);
-    
-    if (messagesError) throw messagesError;
-    console.log('Cleared Message table');
-
-    const { error: conversationsError } = await supabase
-      .from('Conversation')
-      .delete()
-      .neq('id', ZERO_UUID);
-    
-    if (conversationsError) throw conversationsError;
-    console.log('Cleared Conversation table');
-
-    const { error: exportedPromptsError } = await supabase
-      .from('ExportedPrompt')
-      .delete()
-      .neq('id', ZERO_UUID);
-    
-    if (exportedPromptsError) throw exportedPromptsError;
-    console.log('Cleared ExportedPrompt table');
-
-    const { error: assetVersionsError } = await supabase
-      .from('AssetVersion')
-      .delete()
-      .neq('id', ZERO_UUID);
-    
-    if (assetVersionsError) throw assetVersionsError;
-    console.log('Cleared AssetVersion table');
-
-    const { error: designAssetsError } = await supabase
-      .from('DesignAsset')
-      .delete()
-      .neq('id', ZERO_UUID);
-    
-    if (designAssetsError) throw designAssetsError;
-    console.log('Cleared DesignAsset table');
-
+    // Delete from root tables only - cascading will handle the rest
     const { error: projectsError } = await supabase
       .from('Project')
       .delete()
       .neq('id', ZERO_UUID);
     
     if (projectsError) throw projectsError;
-    console.log('Cleared Project table');
+    console.log('Cleared Project table (cascading to related tables)');
 
     const { error: usersError } = await supabase
       .from('User')
@@ -103,7 +63,7 @@ async function resetDatabase() {
       .neq('id', ZERO_UUID);
     
     if (usersError) throw usersError;
-    console.log('Cleared User table');
+    console.log('Cleared User table (cascading to related tables)');
 
     // Use the auth API to delete users instead of direct table access
     const { data: users, error: listUsersError } = await supabase.auth.admin.listUsers();
@@ -130,7 +90,7 @@ async function seedTestUser() {
 
     // First check if user already exists
     const { data: existingUser, error: checkError } = await supabase
-      .from('auth.users')
+      .from('User')
       .select('id')
       .eq('email', testEmail)
       .single();
