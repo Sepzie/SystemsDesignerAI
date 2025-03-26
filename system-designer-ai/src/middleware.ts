@@ -60,10 +60,14 @@ export async function middleware(request: NextRequest) {
 
   const { data: { session } } = await supabase.auth.getSession()
 
-  // If no session and trying to access protected routes, redirect to login
+  // If no session and trying to access protected routes or API endpoints, redirect to login
   if (!session && 
-      (request.nextUrl.pathname.startsWith('/projects') || 
-       request.nextUrl.pathname.startsWith('/dashboard'))) {
+      ((request.nextUrl.pathname.startsWith('/projects') || 
+        request.nextUrl.pathname.startsWith('/dashboard')) ||
+       (request.nextUrl.pathname.startsWith('/api/projects')))) {
+    if (request.nextUrl.pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     return NextResponse.redirect(new URL('/auth/login', request.url))
   }
 
@@ -84,11 +88,10 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 } 

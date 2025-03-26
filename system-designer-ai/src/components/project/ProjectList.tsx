@@ -5,8 +5,10 @@ import { Project } from '@/types/project';
 import { ProjectCard } from './ProjectCard';
 import { Button } from '../ui/Button';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export function ProjectList() {
+  const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -17,10 +19,16 @@ export function ProjectList() {
 
   const fetchProjects = async () => {
     try {
-      const response = await fetch('/api/projects');
+      const response = await fetch('/api/projects', {
+        credentials: 'include', // Include cookies in the request
+      });
       const data = await response.json();
 
       if (!response.ok) {
+        if (response.status === 401) {
+          router.push('/auth/login');
+          return;
+        }
         throw new Error(data.error || 'Failed to fetch projects');
       }
 
