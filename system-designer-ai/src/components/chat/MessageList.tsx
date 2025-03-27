@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useRef } from 'react';
 import { Message } from '@/types/chat';
 import { MessageItem } from './MessageItem';
