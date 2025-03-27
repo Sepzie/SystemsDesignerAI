@@ -1,14 +1,14 @@
 -- Drop existing tables if they exist (BE CAREFUL DURING PRODUCTION)
-DROP TABLE IF EXISTS "Message" CASCADE;
-DROP TABLE IF EXISTS "Conversation" CASCADE;
-DROP TABLE IF EXISTS "ExportedPrompt" CASCADE;
-DROP TABLE IF EXISTS "AssetVersion" CASCADE;
-DROP TABLE IF EXISTS "DesignAsset" CASCADE;
-DROP TABLE IF EXISTS "Project" CASCADE;
-DROP TABLE IF EXISTS "User" CASCADE;
+DROP TABLE IF EXISTS messages CASCADE;
+DROP TABLE IF EXISTS conversations CASCADE;
+DROP TABLE IF EXISTS exported_prompts CASCADE;
+DROP TABLE IF EXISTS asset_versions CASCADE;
+DROP TABLE IF EXISTS design_assets CASCADE;
+DROP TABLE IF EXISTS projects CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
 
 -- Users table
-CREATE TABLE "User" (
+CREATE TABLE users (
   id UUID PRIMARY KEY REFERENCES auth.users(id),
   email TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
@@ -17,22 +17,22 @@ CREATE TABLE "User" (
 );
 
 -- Enable Row Level Security
-ALTER TABLE "User" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 
--- Create policies for User table
-CREATE POLICY "Users can view their own data" ON "User"
+-- Create policies for users table
+CREATE POLICY "Users can view their own data" ON users
   FOR SELECT USING (auth.uid() = id);
 
-CREATE POLICY "Users can update their own data" ON "User"
+CREATE POLICY "Users can update their own data" ON users
   FOR UPDATE USING (auth.uid() = id);
 
-CREATE POLICY "Users can insert their own data" ON "User"
+CREATE POLICY "Users can insert their own data" ON users
   FOR INSERT WITH CHECK (auth.uid() = id);
 
 -- Projects table
-CREATE TABLE "Project" (
+CREATE TABLE projects (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id UUID NOT NULL REFERENCES "User"(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   description TEXT NOT NULL,
   requirements JSONB DEFAULT '{}',
@@ -43,16 +43,16 @@ CREATE TABLE "Project" (
 );
 
 -- Enable Row Level Security
-ALTER TABLE "Project" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
 
--- Create policies for Project table
-CREATE POLICY "Users can CRUD their own projects" ON "Project"
+-- Create policies for projects table
+CREATE POLICY "Users can CRUD their own projects" ON projects
   FOR ALL USING (auth.uid() = user_id);
 
 -- Design Assets table
-CREATE TABLE "DesignAsset" (
+CREATE TABLE design_assets (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  project_id UUID NOT NULL REFERENCES "Project"(id) ON DELETE CASCADE,
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   asset_type TEXT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -60,20 +60,20 @@ CREATE TABLE "DesignAsset" (
 );
 
 -- Enable Row Level Security
-ALTER TABLE "DesignAsset" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE design_assets ENABLE ROW LEVEL SECURITY;
 
--- Create policies for DesignAsset table
-CREATE POLICY "Users can CRUD their own design assets" ON "DesignAsset"
+-- Create policies for design_assets table
+CREATE POLICY "Users can CRUD their own design assets" ON design_assets
   FOR ALL USING (
     EXISTS (
-      SELECT 1 FROM "Project" WHERE "Project".id = "DesignAsset".project_id AND "Project".user_id = auth.uid()
+      SELECT 1 FROM projects WHERE projects.id = design_assets.project_id AND projects.user_id = auth.uid()
     )
   );
 
 -- Asset Versions table
-CREATE TABLE "AssetVersion" (
+CREATE TABLE asset_versions (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  asset_id UUID NOT NULL REFERENCES "DesignAsset"(id) ON DELETE CASCADE,
+  asset_id UUID NOT NULL REFERENCES design_assets(id) ON DELETE CASCADE,
   version_number INTEGER NOT NULL,
   content TEXT NOT NULL,
   metadata JSONB DEFAULT '{}',
@@ -82,41 +82,41 @@ CREATE TABLE "AssetVersion" (
 );
 
 -- Enable Row Level Security
-ALTER TABLE "AssetVersion" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE asset_versions ENABLE ROW LEVEL SECURITY;
 
--- Create policies for AssetVersion table
-CREATE POLICY "Users can CRUD their own asset versions" ON "AssetVersion"
+-- Create policies for asset_versions table
+CREATE POLICY "Users can CRUD their own asset versions" ON asset_versions
   FOR ALL USING (
     EXISTS (
-      SELECT 1 FROM "DesignAsset"
-      JOIN "Project" ON "Project".id = "DesignAsset".project_id
-      WHERE "DesignAsset".id = "AssetVersion".asset_id AND "Project".user_id = auth.uid()
+      SELECT 1 FROM design_assets
+      JOIN projects ON projects.id = design_assets.project_id
+      WHERE design_assets.id = asset_versions.asset_id AND projects.user_id = auth.uid()
     )
   );
 
 -- Conversations table
-CREATE TABLE "Conversation" (
+CREATE TABLE conversations (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  project_id UUID NOT NULL REFERENCES "Project"(id) ON DELETE CASCADE,
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   started_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- Enable Row Level Security
-ALTER TABLE "Conversation" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE conversations ENABLE ROW LEVEL SECURITY;
 
--- Create policies for Conversation table
-CREATE POLICY "Users can CRUD their own conversations" ON "Conversation"
+-- Create policies for conversations table
+CREATE POLICY "Users can CRUD their own conversations" ON conversations
   FOR ALL USING (
     EXISTS (
-      SELECT 1 FROM "Project" WHERE "Project".id = "Conversation".project_id AND "Project".user_id = auth.uid()
+      SELECT 1 FROM projects WHERE projects.id = conversations.project_id AND projects.user_id = auth.uid()
     )
   );
 
 -- Messages table
-CREATE TABLE "Message" (
+CREATE TABLE messages (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  conversation_id UUID NOT NULL REFERENCES "Conversation"(id) ON DELETE CASCADE,
+  conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
   role TEXT NOT NULL,
   content TEXT NOT NULL,
   metadata JSONB DEFAULT '{}',
@@ -124,22 +124,22 @@ CREATE TABLE "Message" (
 );
 
 -- Enable Row Level Security
-ALTER TABLE "Message" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE messages ENABLE ROW LEVEL SECURITY;
 
--- Create policies for Message table
-CREATE POLICY "Users can CRUD their own messages" ON "Message"
+-- Create policies for messages table
+CREATE POLICY "Users can CRUD their own messages" ON messages
   FOR ALL USING (
     EXISTS (
-      SELECT 1 FROM "Conversation"
-      JOIN "Project" ON "Project".id = "Conversation".project_id
-      WHERE "Conversation".id = "Message".conversation_id AND "Project".user_id = auth.uid()
+      SELECT 1 FROM conversations
+      JOIN projects ON projects.id = conversations.project_id
+      WHERE conversations.id = messages.conversation_id AND projects.user_id = auth.uid()
     )
   );
 
 -- Exported Prompts table
-CREATE TABLE "ExportedPrompt" (
+CREATE TABLE exported_prompts (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  project_id UUID NOT NULL REFERENCES "Project"(id) ON DELETE CASCADE,
+  project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   content TEXT NOT NULL,
   prompt_type TEXT NOT NULL,
@@ -147,13 +147,13 @@ CREATE TABLE "ExportedPrompt" (
 );
 
 -- Enable Row Level Security
-ALTER TABLE "ExportedPrompt" ENABLE ROW LEVEL SECURITY;
+ALTER TABLE exported_prompts ENABLE ROW LEVEL SECURITY;
 
--- Create policies for ExportedPrompt table
-CREATE POLICY "Users can CRUD their own exported prompts" ON "ExportedPrompt"
+-- Create policies for exported_prompts table
+CREATE POLICY "Users can CRUD their own exported prompts" ON exported_prompts
   FOR ALL USING (
     EXISTS (
-      SELECT 1 FROM "Project" WHERE "Project".id = "ExportedPrompt".project_id AND "Project".user_id = auth.uid()
+      SELECT 1 FROM projects WHERE projects.id = exported_prompts.project_id AND projects.user_id = auth.uid()
     )
   );
 
@@ -168,16 +168,16 @@ $$ LANGUAGE plpgsql;
 
 -- Create triggers
 CREATE TRIGGER update_project_updated_at
-BEFORE UPDATE ON "Project"
+BEFORE UPDATE ON projects
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_design_asset_updated_at
-BEFORE UPDATE ON "DesignAsset"
+BEFORE UPDATE ON design_assets
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_conversation_updated_at
-BEFORE UPDATE ON "Conversation"
+BEFORE UPDATE ON conversations
 FOR EACH ROW
 EXECUTE FUNCTION update_updated_at_column(); 

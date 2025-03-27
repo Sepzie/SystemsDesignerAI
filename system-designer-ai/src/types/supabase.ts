@@ -9,7 +9,7 @@ export type Json =
 export interface Database {
   public: {
     Tables: {
-      User: {
+      users: {
         Row: {
           id: string
           email: string
@@ -32,7 +32,7 @@ export interface Database {
           last_login?: string
         }
       }
-      Project: {
+      projects: {
         Row: {
           id: string
           user_id: string
@@ -67,7 +67,7 @@ export interface Database {
           progress?: number
         }
       }
-      DesignAsset: {
+      design_assets: {
         Row: {
           id: string
           project_id: string
@@ -93,7 +93,7 @@ export interface Database {
           updated_at?: string
         }
       }
-      AssetVersion: {
+      asset_versions: {
         Row: {
           id: string
           asset_id: string
@@ -122,7 +122,7 @@ export interface Database {
           created_by?: string
         }
       }
-      Conversation: {
+      conversations: {
         Row: {
           id: string
           project_id: string
@@ -142,7 +142,7 @@ export interface Database {
           updated_at?: string
         }
       }
-      Message: {
+      messages: {
         Row: {
           id: string
           conversation_id: string
@@ -168,7 +168,7 @@ export interface Database {
           created_at?: string
         }
       }
-      ExportedPrompt: {
+      exported_prompts: {
         Row: {
           id: string
           project_id: string

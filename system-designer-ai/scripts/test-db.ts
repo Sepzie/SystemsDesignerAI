@@ -50,7 +50,7 @@ async function resetDatabase() {
     
     // Delete from root tables only - cascading will handle the rest
     const { error: projectsError } = await supabase
-      .from('Project')
+      .from('projects')
       .delete()
       .neq('id', ZERO_UUID);
     
@@ -58,7 +58,7 @@ async function resetDatabase() {
     console.log('Cleared Project table (cascading to related tables)');
 
     const { error: usersError } = await supabase
-      .from('User')
+      .from('users')
       .delete()
       .neq('id', ZERO_UUID);
     
@@ -90,7 +90,7 @@ async function seedTestUser() {
 
     // First check if user already exists
     const { data: existingUser, error: checkError } = await supabase
-      .from('User')
+      .from('users')
       .select('id')
       .eq('email', testEmail)
       .single();
@@ -116,7 +116,7 @@ async function seedTestUser() {
 
     // Create user profile
     const { error: profileError } = await supabase
-      .from('User')
+      .from('users')
       .insert([
         {
           id: user.user.id,
@@ -141,7 +141,7 @@ async function seedTestProject() {
 
     // Get test user
     const { data: user, error: userError } = await supabase
-      .from('User')
+      .from('users')
       .select('id')
       .eq('email', testEmail)
       .single();
@@ -149,23 +149,97 @@ async function seedTestProject() {
     if (userError) throw userError;
     if (!user) throw new Error('Test user not found');
 
-    // Create test project
-    const { error: projectError } = await supabase
-      .from('Project')
+    // Test project creation
+    const { data: project, error: projectError } = await supabase
+      .from('projects')
       .insert([
         {
-          name: 'Test Project',
-          description: 'This is a test project',
           user_id: user.id,
-          requirements: {
-            functional: ['Test functional requirement'],
-            nonFunctional: ['Test non-functional requirement'],
-          },
-          tech_stack: 'React, Node.js, PostgreSQL',
+          name: 'Test Project',
+          description: 'A test project',
+          requirements: { features: ['test'] },
+          tech_stack: 'test',
         },
-      ]);
+      ])
+      .select()
+      .single();
 
-    if (projectError) throw projectError;
+    if (projectError) {
+      console.error('Project creation error:', projectError);
+      return;
+    }
+
+    // Test user queries
+    const { data: userData, error: userQueryError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (userQueryError) {
+      console.error('User query error:', userQueryError);
+      return;
+    }
+
+    // Test project queries
+    const { data: projectData, error: projectQueryError } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('id', project.id)
+      .single();
+
+    if (projectQueryError) {
+      console.error('Project query error:', projectQueryError);
+      return;
+    }
+
+    // Test user updates
+    const { data: updatedUser, error: userUpdateError } = await supabase
+      .from('users')
+      .update({ name: 'Updated Name' })
+      .eq('id', user.id)
+      .select()
+      .single();
+
+    if (userUpdateError) {
+      console.error('User update error:', userUpdateError);
+      return;
+    }
+
+    // Test project updates
+    const { data: updatedProject, error: projectUpdateError } = await supabase
+      .from('projects')
+      .update({ name: 'Updated Project' })
+      .eq('id', project.id)
+      .select()
+      .single();
+
+    if (projectUpdateError) {
+      console.error('Project update error:', projectUpdateError);
+      return;
+    }
+
+    // Test user deletion
+    const { error: userDeleteError } = await supabase
+      .from('users')
+      .delete()
+      .eq('id', user.id);
+
+    if (userDeleteError) {
+      console.error('User deletion error:', userDeleteError);
+      return;
+    }
+
+    // Test project deletion
+    const { error: projectDeleteError } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', project.id);
+
+    if (projectDeleteError) {
+      console.error('Project deletion error:', projectDeleteError);
+      return;
+    }
 
     console.log('Test project seeded successfully');
   } catch (error) {

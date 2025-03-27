@@ -35,18 +35,18 @@ export async function POST(request: Request) {
   }
 
   // Step 2: Create the user record in the User table
-  const { error: userError } = await supabase
-    .from('User')
+  const { error: profileError } = await supabase
+    .from('users')
     .insert([
       {
         id: authData.user.id,
         email: email,
-        name: email.split('@')[0], // Use part of email as default name
+        name: authData.user.user_metadata.full_name || email?.split('@')[0] || 'User',
       },
     ])
 
-  if (userError) {
-    console.error('User creation error:', userError)
+  if (profileError) {
+    console.error('User creation error:', profileError)
     return NextResponse.json({ error: 'Failed to create user profile' }, { status: 500 })
   }
 

@@ -18,7 +18,7 @@ export async function GET(
 
     // Get the conversation
     const { data: conversation, error: convError } = await supabase
-      .from('Conversation')
+      .from('conversations')
       .select('*')
       .eq('id', params.conversationId)
       .eq('project_id', params.projectId)
@@ -30,7 +30,7 @@ export async function GET(
 
     // Get messages for the conversation
     const { data: messages, error: msgError } = await supabase
-      .from('Message')
+      .from('messages')
       .select('*')
       .eq('conversation_id', params.conversationId)
       .order('created_at', { ascending: true });

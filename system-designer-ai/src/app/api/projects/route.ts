@@ -26,7 +26,7 @@ export async function GET() {
     }
 
     const { data: projects, error } = await supabase
-      .from('Project')
+      .from('projects')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
     console.log('Inserting project data:', projectData)
 
     const { data: project, error } = await supabase
-      .from('Project')
+      .from('projects')
       .insert([projectData])
       .select()
       .single()

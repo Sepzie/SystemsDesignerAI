@@ -32,7 +32,7 @@ export async function GET(
       .from('messages')
       .select('*')
       .eq('conversation_id', conversationId)
-      .order('timestamp', { ascending: true })
+      .order('created_at', { ascending: true })
       .range(offset, offset + limit - 1);
 
     if (error) {
@@ -85,7 +85,7 @@ export async function POST(
           conversation_id: conversationId,
           role: messageData.role,
           content: messageData.content,
-          timestamp: new Date().toISOString(),
+          created_at: new Date().toISOString(),
           metadata: messageData.metadata,
         },
       ])

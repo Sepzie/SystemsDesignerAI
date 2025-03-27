@@ -58,7 +58,7 @@ export async function validateProjectAccess(
   projectId: string
 ) {
   const { data: project, error } = await supabase
-    .from('Project')
+    .from('projects')
     .select('*')
     .eq('id', projectId)
     .eq('user_id', userId)

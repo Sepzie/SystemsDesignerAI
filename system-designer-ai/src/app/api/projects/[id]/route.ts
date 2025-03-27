@@ -16,7 +16,7 @@ export async function GET(
   }
 
   const { data, error } = await supabase
-    .from('Project')
+    .from('projects')
     .select('*')
     .eq('id', params.id)
     .eq('user_id', session.user.id)
@@ -50,7 +50,7 @@ export async function PUT(
     
     // Verify user owns this project
     const { data: projectData, error: projectError } = await supabase
-      .from('Project')
+      .from('projects')
       .select('user_id')
       .eq('id', params.id)
       .single()
@@ -70,7 +70,7 @@ export async function PUT(
     }
 
     const { data, error } = await supabase
-      .from('Project')
+      .from('projects')
       .update({ 
         ...updates,
         updated_at: new Date().toISOString() 
@@ -107,7 +107,7 @@ export async function DELETE(
 
   // Verify user owns this project
   const { data: projectData, error: projectError } = await supabase
-    .from('Project')
+    .from('projects')
     .select('user_id')
     .eq('id', params.id)
     .single()
@@ -127,7 +127,7 @@ export async function DELETE(
   }
 
   const { error } = await supabase
-    .from('Project')
+    .from('projects')
     .delete()
     .eq('id', params.id)
 
