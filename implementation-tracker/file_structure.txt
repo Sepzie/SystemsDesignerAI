@@ -1,0 +1,96 @@
+src/
+├── app
+│   ├── api
+│   │   ├── auth
+│   │   │   ├── callback
+│   │   │   │   └── route.ts
+│   │   │   ├── register
+│   │   │   │   └── route.ts
+│   │   │   └── signout
+│   │   │       └── route.ts
+│   │   ├── diagrams
+
+│   │   ├── export
+
+│   │   └── projects
+│   │       ├── route.ts
+│   │       └── [id]
+│   │           ├── conversations
+│   │           │   ├── route.ts
+│   │           │   └── [conversationId]
+│   │           │       ├── messages
+│   │           │       │   └── route.ts
+│   │           │       └── route.ts
+│   │           └── route.ts
+│   ├── dashboard
+│   │   └── page.tsx
+│   ├── error.tsx
+│   ├── favicon.ico
+│   ├── globals.css
+│   ├── layout.tsx
+│   ├── login
+│   │   └── page.tsx
+│   ├── page.tsx
+│   ├── projects
+│   │   ├── layout.tsx
+│   │   ├── new
+│   │   │   └── page.tsx
+│   │   └── [id]
+│   │       ├── page.tsx
+│   │       └── settings
+│   │           └── page.tsx
+│   └── register
+│       └── page.tsx
+├── components
+│   ├── chat
+│   │   ├── ChatInterface.tsx
+│   │   ├── MessageInput.tsx
+│   │   ├── MessageItem.tsx
+│   │   └── MessageList.tsx
+│   ├── diagrams
+
+│   ├── layout
+│   │   ├── Footer.tsx
+│   │   ├── Header.tsx
+│   │   └── MainLayout.tsx
+│   ├── project
+│   │   ├── ChatInterface.tsx
+│   │   ├── ProjectCard.tsx
+│   │   ├── ProjectCreationForm.tsx
+│   │   ├── ProjectLayout.tsx
+│   │   ├── ProjectList.tsx
+│   │   ├── ProjectSidebar.tsx
+│   │   └── VersionHistory.tsx
+│   └── ui
+│       ├── Button.tsx
+│       ├── Card.tsx
+│       └── Input.tsx
+├── contexts
+│   └── ChatContext.tsx
+├── diagrams
+
+├── lib
+│   ├── api-client.ts
+│   ├── api-utils.ts
+│   ├── error-handler.ts
+│   ├── langchain
+
+│   ├── supabase
+│   │   ├── client.ts
+│   │   └── server.ts
+│   ├── utils
+│   │   └── cn.ts
+│   └── validators
+
+├── middleware.ts
+├── styles
+
+├── types
+│   ├── api.ts
+│   ├── chat.ts
+│   ├── project.ts
+│   └── supabase.ts
+└── utils
+    ├── env.ts
+    └── supabase
+        └── server.ts

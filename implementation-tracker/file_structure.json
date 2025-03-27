@@ -42,16 +42,6 @@
                 }
               }
             },
-            "conversations": {
-              "type": "directory",
-              "contents": {
-                "route.ts": {
-                  "type": "file",
-                  "extension": ".ts",
-                  "size": 4224
-                }
-              }
-            },
             "diagrams": {
               "type": "directory",
               "contents": {}
@@ -69,16 +59,6 @@
                   "size": 4481
                 },
                 "[id]": {
-                  "type": "directory",
-                  "contents": {
-                    "route.ts": {
-                      "type": "file",
-                      "extension": ".ts",
-                      "size": 4933
-                    }
-                  }
-                },
-                "[projectId]": {
                   "type": "directory",
                   "contents": {
                     "conversations": {
@@ -110,6 +90,11 @@
                           }
                         }
                       }
+                    },
+                    "route.ts": {
+                      "type": "file",
+                      "extension": ".ts",
+                      "size": 4933
                     }
                   }
                 }
@@ -187,6 +172,16 @@
                   "type": "file",
                   "extension": ".tsx",
                   "size": 744
+                },
+                "settings": {
+                  "type": "directory",
+                  "contents": {
+                    "page.tsx": {
+                      "type": "file",
+                      "extension": ".tsx",
+                      "size": 1
+                    }
+                  }
                 }
               }
             }
