@@ -52,7 +52,7 @@ export async function GET() {
 // POST: Create a new project
 export async function POST(request: Request) {
   try {
-    const supabase = await createSupabaseClient()
+    const supabase = await createClient()
     const { data: { user }, error: userError } = await supabase.auth.getUser()
 
     if (userError || !user) {

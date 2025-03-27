@@ -19,14 +19,10 @@ export async function createClient() {
           return cookieStore.get(name)?.value
         },
         set(name: string, value: string, options: any) {
-          // In Next.js 14, we can't set cookies directly in server components
-          // This is handled by the middleware instead
-          console.warn('Cookie setting is handled by middleware')
+          cookieStore.set(name, value, options)
         },
         remove(name: string, options: any) {
-          // In Next.js 14, we can't remove cookies directly in server components
-          // This is handled by the middleware instead
-          console.warn('Cookie removal is handled by middleware')
+          cookieStore.set(name, '', { ...options, maxAge: 0 })
         },
       },
     }
