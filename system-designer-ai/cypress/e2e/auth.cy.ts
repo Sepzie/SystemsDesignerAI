@@ -1,5 +1,3 @@
-import { resetTestDb } from '../support/db-reset';
-
 describe('Authentication', () => {
   beforeEach(() => {
     // Reset the database state before each test using our custom script
@@ -39,49 +37,25 @@ describe('Authentication', () => {
 
   describe('Login', () => {
     beforeEach(() => {
-      // Create a test user before each login test
-      const testUser = {
-        email: `test-${Date.now()}@example.com`,
-        password: 'TestPassword123!',
-        fullName: 'Test User'
-      };
+      //seed test user
+      cy.exec('npm run db:seed:test-user');
+    })
 
-      cy.visit('/register');
-      cy.get('input[name="email"]').type(testUser.email);
-      cy.get('input[name="password"]').type(testUser.password);
-      cy.get('input[name="name"]').type(testUser.fullName);
+    it('should successfully login a test user', () => {
+      cy.visit('/login');
+      cy.get('input[name="email"]').type(Cypress.env('testUserEmail'));
+      cy.get('input[name="password"]').type(Cypress.env('testUserPassword'));
       cy.get('button[type="submit"]').click();
-
       cy.url().should('include', '/dashboard');
     });
 
-    // it('should show error for invalid credentials', () => {
-    //   cy.visit('/login');
-    //   cy.get('input[name="email"]').type('wrong@example.com');
-    //   cy.get('input[name="password"]').type('wrongpassword');
-    //   cy.get('button[type="submit"]').click();
-      
-    //   // Verify error message
-    //   cy.get('div').contains('Invalid email or password').should('be.visible');
-    // });
   });
 
   describe('Logout', () => {
     beforeEach(() => {
       // Create and login a test user
-      const testUser = {
-        email: `test-${Date.now()}@example.com`,
-        password: 'TestPassword123!',
-        fullName: 'Test User'
-      };
-
-      cy.visit('/register');
-      cy.get('input[name="email"]').type(testUser.email);
-      cy.get('input[name="password"]').type(testUser.password);
-      cy.get('input[name="name"]').type(testUser.fullName);
-      cy.get('button[type="submit"]').click();
-
-      cy.url().should('include', '/dashboard');
+      cy.exec('npm run db:seed:test-user');
+      cy.login(Cypress.env('testUserEmail'), Cypress.env('testUserPassword'));
     });
 
 
