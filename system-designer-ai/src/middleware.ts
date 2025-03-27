@@ -58,11 +58,11 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Use getUser() instead of getSession() for secure authentication
-  const { data: { user }, error: userError } = await supabase.auth.getUser()
+  // Use getSession() for more reliable authentication checks
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession()
 
-  // If no user and trying to access protected routes or API endpoints, redirect to login
-  if (!user && 
+  // If no session and trying to access protected routes or API endpoints, redirect to login
+  if (!session && 
       ((request.nextUrl.pathname.startsWith('/projects') || 
         request.nextUrl.pathname.startsWith('/dashboard')) ||
        (request.nextUrl.pathname.startsWith('/api/projects')))) {
@@ -73,7 +73,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // If logged in and trying to access auth pages, redirect to dashboard
-  if (user && 
+  if (session && 
       (request.nextUrl.pathname.startsWith('/login') || 
        request.nextUrl.pathname.startsWith('/register'))) {
     return NextResponse.redirect(new URL('/dashboard', request.url))

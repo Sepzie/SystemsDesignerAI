@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
@@ -14,6 +14,18 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  // Check if user is already logged in
+  useEffect(() => {
+    const checkSession = async () => {
+      const supabase = createClient()
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        router.replace('/dashboard')
+      }
+    }
+    checkSession()
+  }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,9 +44,7 @@ export default function LoginPage() {
       }
 
       if (data?.session) {
-        // Wait a moment for the session to be fully established
-        await new Promise(resolve => setTimeout(resolve, 500));
-        router.push('/dashboard')
+        // Let the middleware handle the redirect
         router.refresh()
       } else {
         throw new Error('Failed to get session after login')
