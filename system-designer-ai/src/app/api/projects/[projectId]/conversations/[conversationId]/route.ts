@@ -1,18 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  getServerSupabase,
   validateUser,
   validateProjectAccess,
   ApiError,
 } from '@/lib/api-utils';
 import { GetConversationResponse } from '@/types/api';
+import { createClient } from '@/lib/supabase/server';
 
 export async function GET(
   req: NextRequest,
   { params }: { params: { projectId: string; conversationId: string } }
 ) {
   try {
-    const supabase = await getServerSupabase();
+    const supabase = await createClient();
     const user = await validateUser(supabase);
     await validateProjectAccess(supabase, user.id, params.projectId);
 
