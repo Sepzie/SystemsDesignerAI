@@ -1,13 +1,17 @@
-import { ProjectContent } from '@/components/project/ProjectContent'
+import { redirect } from 'next/navigation'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import MainLayout from '@/components/layout/MainLayout'
+import { ProjectHeader } from '@/components/project/ProjectHeader'
+import { ProjectNavigation } from '@/components/project/ProjectNavigation'
+import { ProjectContent } from '@/components/project/ProjectContent'
 
 export default async function ProjectDesignPage({
   params,
 }: {
   params: { id: string }
 }) {
-  const cookieStore = await cookies()
+  const cookieStore = cookies()
   
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -27,16 +31,31 @@ export default async function ProjectDesignPage({
     }
   )
 
+  const { data: { user }, error: userError } = await supabase.auth.getUser()
+
+  if (userError || !user) {
+    redirect('/login')
+  }
+
   // Fetch project data
   const { data: project, error: projectError } = await supabase
     .from('Project')
     .select('*')
     .eq('id', params.id)
+    .eq('user_id', user.id)
     .single()
 
   if (projectError || !project) {
-    return null // The layout will handle the redirect
+    redirect('/dashboard')
   }
 
-  return <ProjectContent project={project} />
+  return (
+    <MainLayout isLoggedIn={true} userEmail={user.email}>
+      <div className="container mx-auto px-4 py-8">
+        <ProjectHeader project={project} />
+        <ProjectNavigation projectId={project.id} />
+        <ProjectContent project={project} />
+      </div>
+    </MainLayout>
+  )
 } 
