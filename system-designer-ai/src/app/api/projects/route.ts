@@ -1,7 +1,6 @@
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { ProjectFormData, ProjectRequirements } from '@/types/project'
+import { createClient } from '@/lib/supabase/server'
 
 // Validation function
 function validateProjectData(data: any): data is ProjectFormData {
@@ -12,33 +11,11 @@ function validateProjectData(data: any): data is ProjectFormData {
   return true
 }
 
-// Helper function to create Supabase client
-async function createSupabaseClient() {
-  const cookieStore = await cookies()
-  
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
-        },
-        set(name: string, value: string, options: any) {
-          cookieStore.set({ name, value, ...options })
-        },
-        remove(name: string, options: any) {
-          cookieStore.set({ name, value: '', ...options })
-        },
-      },
-    }
-  )
-}
 
 // GET: Fetch all projects for authenticated user
 export async function GET() {
   try {
-    const supabase = await createSupabaseClient()
+    const supabase = await createClient()
     const { data: { user }, error: userError } = await supabase.auth.getUser()
 
     if (userError || !user) {

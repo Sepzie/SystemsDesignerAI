@@ -1,7 +1,6 @@
-import { createServerClient } from '@supabase/ssr'
-import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 import { ApiError, withErrorHandler } from '@/lib/error-handler'
+import { createClient } from '@/lib/supabase/server'
 
 /**
  * This is the registration endpoint that handles new user signups.
@@ -14,25 +13,7 @@ import { ApiError, withErrorHandler } from '@/lib/error-handler'
  */
 
 export async function POST(request: Request) {
-  const cookieStore = await cookies()
-  
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore.get(name)?.value
-        },
-        set(name: string, value: string, options: any) {
-          cookieStore.set({ name, value, ...options })
-        },
-        remove(name: string, options: any) {
-          cookieStore.set({ name, value: '', ...options })
-        },
-      },
-    }
-  )
+  const supabase = await createClient()
 
   const { email, password } = await request.json()
 
