@@ -6,11 +6,12 @@ import { ChatProvider } from '@/contexts/ChatContext';
 
 interface ProjectLayoutProps {
   children: React.ReactNode;
+  projectId: string;
 }
 
-export const ProjectLayout: React.FC<ProjectLayoutProps> = ({ children }) => {
+export const ProjectLayout: React.FC<ProjectLayoutProps> = ({ children, projectId }) => {
   return (
-    <ChatProvider>
+    <ChatProvider projectId={projectId}>
       <div className="flex flex-col h-screen">
         {/* Header */}
         <header className="bg-primary text-white p-4">
@@ -35,7 +36,7 @@ export const ProjectLayout: React.FC<ProjectLayoutProps> = ({ children }) => {
         </div>
 
         {/* Chat Interface */}
-        <ChatInterface />
+        <ChatInterface projectId={projectId} />
       </div>
     </ChatProvider>
   );

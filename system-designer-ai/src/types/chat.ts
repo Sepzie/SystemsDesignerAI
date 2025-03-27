@@ -1,3 +1,5 @@
+import { Conversation } from './api';
+
 export type MessageRole = 'user' | 'assistant';
 
 export interface Message {
@@ -10,7 +12,9 @@ export interface Message {
 export interface ChatContextType {
   messages: Message[];
   isLoading: boolean;
+  error: string | null;
   sendMessage: (content: string) => Promise<void>;
+  conversation: Conversation | null;
 }
 
 // Mock data for initial development
