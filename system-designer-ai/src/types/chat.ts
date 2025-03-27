@@ -15,6 +15,8 @@ export interface ChatContextType {
   error: string | null;
   sendMessage: (content: string) => Promise<void>;
   conversation: Conversation | null;
+  loadMoreMessages: () => Promise<void>;
+  hasMoreMessages: boolean;
 }
 
 // Mock data for initial development

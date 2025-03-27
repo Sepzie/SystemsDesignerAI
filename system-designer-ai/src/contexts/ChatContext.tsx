@@ -8,15 +8,19 @@ import * as api from '@/lib/api-client';
 interface ChatProviderProps {
   children: React.ReactNode;
   projectId: string;
+  initialConversationId?: string;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
-export function ChatProvider({ children, projectId }: ChatProviderProps) {
+export function ChatProvider({ children, projectId, initialConversationId }: ChatProviderProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [conversation, setConversation] = useState<Conversation | null>(null);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const MESSAGES_PER_PAGE = 20;
 
   // Initialize or get existing conversation
   useEffect(() => {
@@ -25,16 +29,23 @@ export function ChatProvider({ children, projectId }: ChatProviderProps) {
         setIsLoading(true);
         setError(null);
 
-        // Create a new conversation
-        const { conversation: newConversation } = await api.createConversation(projectId);
+        let newConversation: Conversation;
+        if (initialConversationId) {
+          // Get existing conversation
+          const { conversation: existingConversation } = await api.getConversation(
+            projectId,
+            initialConversationId
+          );
+          newConversation = existingConversation;
+        } else {
+          // Create a new conversation
+          const { conversation: createdConversation } = await api.createConversation(projectId);
+          newConversation = createdConversation;
+        }
         setConversation(newConversation);
 
-        // Load messages if the conversation already existed
-        const { messages: existingMessages } = await api.getMessages(
-          projectId,
-          newConversation.id
-        );
-        setMessages(existingMessages);
+        // Load initial messages
+        await loadMessages(newConversation.id, 1);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to initialize conversation');
         console.error('Failed to initialize conversation:', err);
@@ -44,7 +55,39 @@ export function ChatProvider({ children, projectId }: ChatProviderProps) {
     }
 
     initializeConversation();
+  }, [projectId, initialConversationId]);
+
+  const loadMessages = useCallback(async (conversationId: string, page: number) => {
+    try {
+      const { messages: newMessages } = await api.getMessages(
+        projectId,
+        conversationId,
+        page,
+        MESSAGES_PER_PAGE
+      );
+
+      setMessages(prev => {
+        if (page === 1) return newMessages;
+        return [...prev, ...newMessages];
+      });
+      setHasMoreMessages(newMessages.length === MESSAGES_PER_PAGE);
+      setCurrentPage(page);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load messages');
+      console.error('Failed to load messages:', err);
+    }
   }, [projectId]);
+
+  const loadMoreMessages = useCallback(async () => {
+    if (!conversation || isLoading || !hasMoreMessages) return;
+    
+    setIsLoading(true);
+    try {
+      await loadMessages(conversation.id, currentPage + 1);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [conversation, isLoading, hasMoreMessages, currentPage, loadMessages]);
 
   const sendMessage = useCallback(async (content: string) => {
     if (!conversation) {
@@ -65,15 +108,31 @@ export function ChatProvider({ children, projectId }: ChatProviderProps) {
       };
       setMessages(prev => [...prev, optimisticMessage]);
 
-      // Send the message to the API
-      const { message: sentMessage } = await api.sendMessage(
-        projectId,
-        conversation.id,
-        {
-          role: 'user',
-          content,
+      // Send the message to the API with retry logic
+      let retryCount = 0;
+      const maxRetries = 3;
+      let sentMessage: Message | null = null;
+
+      while (retryCount < maxRetries) {
+        try {
+          const response = await api.sendMessage(
+            projectId,
+            conversation.id,
+            {
+              role: 'user',
+              content,
+            }
+          );
+          sentMessage = response.message;
+          break;
+        } catch (err) {
+          retryCount++;
+          if (retryCount === maxRetries) throw err;
+          await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
         }
-      );
+      }
+
+      if (!sentMessage) throw new Error('Failed to send message after retries');
 
       // Replace optimistic message with actual message
       setMessages(prev =>
@@ -82,7 +141,7 @@ export function ChatProvider({ children, projectId }: ChatProviderProps) {
         )
       );
 
-      // Simulate assistant response (to be replaced with actual AI response)
+      // Get AI response
       const { message: assistantMessage } = await api.sendMessage(
         projectId,
         conversation.id,
@@ -112,6 +171,8 @@ export function ChatProvider({ children, projectId }: ChatProviderProps) {
     error,
     sendMessage,
     conversation,
+    loadMoreMessages,
+    hasMoreMessages,
   };
 
   return (

@@ -7,9 +7,10 @@ import { useChat } from '@/contexts/ChatContext';
 
 interface ChatInterfaceProps {
   projectId: string;
+  initialConversationId?: string;
 }
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId }) => {
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId, initialConversationId }) => {
   const { messages, isLoading, error, sendMessage } = useChat();
 
   return (
@@ -43,6 +44,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId }) => {
             </div>
             <div className="ml-3">
               <p className="text-sm text-red-700">{error}</p>
+              <button
+                onClick={() => window.location.reload()}
+                className="mt-2 text-sm text-red-600 hover:text-red-800 font-medium"
+              >
+                Try again
+              </button>
             </div>
           </div>
         </div>
@@ -50,11 +57,20 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId }) => {
 
       {/* Messages */}
       <div className="flex-1 overflow-hidden flex flex-col bg-gray-50">
-        <MessageList messages={messages} />
+        {isLoading && messages.length === 0 ? (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4" />
+              <p className="text-gray-600">Loading conversation...</p>
+            </div>
+          </div>
+        ) : (
+          <MessageList messages={messages} />
+        )}
       </div>
 
       {/* Input */}
-      <div className="p-4 bg-white">
+      <div className="p-4 border-t">
         <MessageInput onSendMessage={sendMessage} isLoading={isLoading} />
       </div>
     </div>

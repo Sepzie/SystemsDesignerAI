@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { Message } from '@/types/chat';
 import { MessageItem } from './MessageItem';
+import { useChat } from '@/contexts/ChatContext';
 
 interface MessageListProps {
   messages: Message[];
@@ -10,14 +11,42 @@ interface MessageListProps {
 
 export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const { loadMoreMessages, isLoading, hasMoreMessages } = useChat();
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, scrollToBottom]);
+
+  useEffect(() => {
+    const options = {
+      root: null,
+      rootMargin: '20px',
+      threshold: 0.1,
+    };
+
+    observerRef.current = new IntersectionObserver((entries) => {
+      const [entry] = entries;
+      if (entry.isIntersecting && hasMoreMessages && !isLoading) {
+        loadMoreMessages();
+      }
+    }, options);
+
+    const target = document.getElementById('load-more-trigger');
+    if (target) {
+      observerRef.current.observe(target);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [hasMoreMessages, isLoading, loadMoreMessages]);
 
   if (messages.length === 0) {
     return (
@@ -40,6 +69,18 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
         <MessageItem key={message.id} message={message} />
       ))}
       <div ref={messagesEndRef} />
+      
+      {/* Load more trigger */}
+      {hasMoreMessages && (
+        <div id="load-more-trigger" className="h-10 flex items-center justify-center">
+          {isLoading && (
+            <div className="flex items-center space-x-2">
+              <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+              <span className="text-sm text-gray-500">Loading more messages...</span>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }; 

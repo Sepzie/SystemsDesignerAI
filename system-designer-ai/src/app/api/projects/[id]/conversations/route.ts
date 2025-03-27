@@ -10,25 +10,29 @@ import {
   CreateConversationResponse,
   ListConversationsResponse,
 } from '@/types/api';
+import { createClient } from '@/lib/supabase/server';
 
 export async function GET(
   req: NextRequest,
   { params }: { params: { projectId: string } }
 ) {
   try {
-    const supabase = await getServerSupabase();
-    const user = await validateUser(supabase);
-    await validateProjectAccess(supabase, user.id, params.projectId);
+    const supabase = await createClient();
+    const projectId = params.projectId;
 
     // Get conversations for the project
     const { data: conversations, error } = await supabase
-      .from('Conversation')
+      .from('conversations')
       .select('*')
-      .eq('project_id', params.projectId)
-      .order('started_at', { ascending: false });
+      .eq('project_id', projectId)
+      .order('updated_at', { ascending: false });
 
     if (error) {
-      throw new ApiError('Failed to fetch conversations', 500);
+      console.error('Failed to fetch conversations:', error);
+      return NextResponse.json(
+        { error: { message: 'Failed to fetch conversations' } },
+        { status: 500 }
+      );
     }
 
     const response: ListConversationsResponse = {
@@ -42,65 +46,62 @@ export async function GET(
 
     return NextResponse.json(response);
   } catch (error) {
-    if (error instanceof ApiError) {
-      return NextResponse.json(
-        { error: { message: error.message } },
-        { status: error.statusCode }
-      );
-    }
+    console.error('Error in get conversations:', error);
     return NextResponse.json(
-      { error: { message: 'An unexpected error occurred' } },
+      { error: { message: 'Internal server error' } },
       { status: 500 }
     );
   }
 }
 
 export async function POST(
-  req: NextRequest,
-  { params }: { params: { projectId: string } }
+  request: Request,
+  { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = await getServerSupabase();
-    const user = await validateUser(supabase);
-    await validateProjectAccess(supabase, user.id, params.projectId);
+    const supabase = await createClient();
+    const { projectId } = await request.json() as CreateConversationRequest;
 
-    const body: CreateConversationRequest = await req.json();
+    // Validate project exists and user has access
+    const { data: project, error: projectError } = await supabase
+      .from('projects')
+      .select('id')
+      .eq('id', projectId)
+      .single();
 
-    // Create a new conversation
-    const now = new Date().toISOString();
-    const { data: conversation, error } = await supabase
-      .from('Conversation')
-      .insert({
-        project_id: params.projectId,
-        started_at: now,
-        updated_at: now,
-      })
+    if (projectError || !project) {
+      return NextResponse.json(
+        { error: { message: 'Project not found' } },
+        { status: 404 }
+      );
+    }
+
+    // Create new conversation
+    const { data: conversation, error: conversationError } = await supabase
+      .from('conversations')
+      .insert([
+        {
+          project_id: projectId,
+          started_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        },
+      ])
       .select()
       .single();
 
-    if (error) {
-      throw new ApiError('Failed to create conversation', 500);
-    }
-
-    const response: CreateConversationResponse = {
-      conversation: {
-        id: conversation.id,
-        projectId: conversation.project_id,
-        startedAt: new Date(conversation.started_at),
-        updatedAt: new Date(conversation.updated_at),
-      },
-    };
-
-    return NextResponse.json(response);
-  } catch (error) {
-    if (error instanceof ApiError) {
+    if (conversationError) {
+      console.error('Failed to create conversation:', conversationError);
       return NextResponse.json(
-        { error: { message: error.message } },
-        { status: error.statusCode }
+        { error: { message: 'Failed to create conversation' } },
+        { status: 500 }
       );
     }
+
+    return NextResponse.json({ conversation });
+  } catch (error) {
+    console.error('Error in create conversation:', error);
     return NextResponse.json(
-      { error: { message: 'An unexpected error occurred' } },
+      { error: { message: 'Internal server error' } },
       { status: 500 }
     );
   }

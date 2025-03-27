@@ -1,96 +1,67 @@
 # Prompt 3: Message Handling Implementation
 
 ## Objective
-Connect the chat UI components to the conversation API endpoints, implementing the complete message handling functionality, including sending user messages and displaying conversation history.
+Connect the chat UI components to the conversation API endpoints, implementing complete message handling functionality.
 
-## Background
-With the UI components and API routes implemented in previous prompts, we now need to connect these components to create a functional chat interface. This implementation will focus on the client-side logic for managing conversations, sending messages, and displaying message history.
+## Project Structure Context
+Examine these key directories for implementation:
+- `src/components/chat/` - Location for chat UI components (ChatInterface, MessageInput, MessageItem, MessageList)
+- `src/app/api/projects/[id]/conversations/` - API routes for conversations
+- `src/app/api/projects/[id]/conversations/[conversationId]/messages/` - API routes for messages
+- `src/lib/supabase/` - Database access utilities
+- `src/contexts/` - For potential ChatContext implementation
+- `src/types/` - TypeScript interfaces (api.ts, chat.ts, project.ts)
 
 ## Requirements
 
-### Core Functionality to Implement
-1. **Conversation Initialization**
-   - Fetching or creating a conversation when a user enters the chat interface
-   - Loading existing messages if a conversation exists
+### Core Functionality
+1. **Message Sending**
+   - Capture user input from message form
+   - Submit messages to the API endpoint
+   - Handle loading states during submission
 
-2. **Message Sending**
-   - Capturing user input from the message form
-   - Submitting messages to the API
-   - Handling loading states and errors during submission
+2. **Message Display**
+   - Fetch and display message history
+   - Auto-scroll to new messages
+   - Update UI when new messages arrive
 
-3. **Message Display**
-   - Fetching and displaying the message history
-   - Auto-scrolling to new messages
-   - Handling real-time updates to the conversation
+3. **State Management**
+   - Manage conversation state
+   - Implement optimistic updates
+   - Handle error recovery
 
-4. **State Management**
-   - Managing conversation state in the client
-   - Handling optimistic updates for better UX
-   - Implementing proper error recovery
+### Technical Specifications
+- Use `api/projects/[id]/conversations/[conversationId]/messages/route.ts` endpoint for message operations
+- Check existing API patterns in `src/lib/api-client.ts` and `src/lib/api-utils.ts`
+- Utilize type definitions from `src/types/chat.ts` and `src/types/api.ts`
+- Implement proper error handling using patterns from `src/lib/error-handler.ts`
 
-### Technical Requirements
-- Use React hooks for state management (or your project's state management solution)
-- Implement API request handlers using fetch or Axios
-- Create TypeScript interfaces matching API request/response formats
-- Handle loading, error, and success states for all API interactions
-- Implement proper client-side validation
+## API Integration Functions
+Implement these core functions:
+```typescript
+// Create a new conversation
+function createConversation(projectId: string): Promise<Conversation>
 
-## Implementation Guidelines
+// Get conversation details
+function getConversation(projectId: string, conversationId: string): Promise<Conversation>
 
-### State Management
-Consider using React Context or a lightweight state management solution to handle:
-- Current conversation state
-- Message history
-- Input state
-- Loading/error states
+// Fetch message history
+function getMessages(projectId: string, conversationId: string): Promise<Message[]>
 
-### API Integration
-Implement the following client-side functions:
-1. `createConversation(projectId)` - Creates a new conversation
-2. `getConversation(projectId, conversationId)` - Gets conversation details
-3. `getMessages(projectId, conversationId)` - Fetches message history
-4. `sendMessage(projectId, conversationId, content)` - Sends a new user message
-
-### User Experience Enhancements
-- Implement optimistic updates (show messages immediately before API confirmation)
-- Add error recovery (retry options on failed sends)
-- Implement proper loading indicators
-- Add typing indicators for assistant responses (to be used in next prompt)
-
-### Connecting UI to API
-Modify the UI components from Prompt 1 to:
-- Use real data from API responses instead of mock data
-- Connect form submission to the sendMessage function
-- Display loading states during API requests
-- Handle error cases gracefully
+// Send a new user message
+function sendMessage(projectId: string, conversationId: string, content: string): Promise<Message>
+```
 
 ## Deliverables
-1. Client-side API integration functions for conversation management
-2. Connected UI components that use the actual API
-3. Complete message sending and receiving functionality
+1. Client-side API integration functions
+2. UI component connections to the API
+3. Complete message sending and receiving implementation
 4. State management for conversation data
-5. Error handling and loading states
+5. Error handling for API operations
 
 ## Acceptance Criteria
-- Users can create new conversations or open existing ones
+- Users can create and open conversations
 - Message history loads and displays correctly
-- Users can send messages and see them appear in the conversation
-- Loading states display appropriately during API requests
-- Errors are handled gracefully with user feedback
-- The interface remains responsive during API operations
-- Code follows project standards and conventions
-
-## References
-- The chat UI components from Prompt 1
-- The API routes implementation from Prompt 2
-- The conversation data structures in the database schema
-- The message flow in the design-generation-workflow diagram
-
-## Implementation Tips
-- Start by creating the API integration functions and testing them in isolation
-- Then connect them to your UI components
-- Consider implementing a custom hook for managing conversation state
-- Use try/catch blocks for proper error handling in async operations
-- Remember to handle the case where no conversation exists yet
-- Test the implementation with various network conditions (slow connections, errors)
-- Consider adding debounce for message sending to prevent duplicate submissions
+- Users can send messages and see them in the conversation
+- Loading states display during API requests
+- Errors are handled with appropriate user feedback
