@@ -2,14 +2,14 @@ import React from 'react';
 import { ProjectLayout } from '@/components/project/ProjectLayout';
 
 interface ProjectPageProps {
-  params: {
-    id: string;
-  };
+  params: Promise<{ id: string }>;
 }
 
-export default function ProjectPage({ params }: ProjectPageProps) {
+export default async function ProjectPage({ params }: ProjectPageProps) {
+  const resolvedParams = await params;
+  
   return (
-    <ProjectLayout>
+    <ProjectLayout projectId={resolvedParams.id}>
       <div className="h-full">
         <h2 className="text-xl font-semibold mb-4">System Context Diagram</h2>
         <div className="bg-white rounded-lg p-6 h-[calc(100%-2rem)] border">
