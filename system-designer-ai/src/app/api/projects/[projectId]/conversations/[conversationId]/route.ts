@@ -1,0 +1,72 @@
+import { NextRequest, NextResponse } from 'next/server';
+import {
+  getServerSupabase,
+  validateUser,
+  validateProjectAccess,
+  ApiError,
+} from '@/lib/api-utils';
+import { GetConversationResponse } from '@/types/api';
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { projectId: string; conversationId: string } }
+) {
+  try {
+    const supabase = await getServerSupabase();
+    const user = await validateUser(supabase);
+    await validateProjectAccess(supabase, user.id, params.projectId);
+
+    // Get the conversation
+    const { data: conversation, error: convError } = await supabase
+      .from('Conversation')
+      .select('*')
+      .eq('id', params.conversationId)
+      .eq('project_id', params.projectId)
+      .single();
+
+    if (convError || !conversation) {
+      throw new ApiError('Conversation not found', 404);
+    }
+
+    // Get messages for the conversation
+    const { data: messages, error: msgError } = await supabase
+      .from('Message')
+      .select('*')
+      .eq('conversation_id', params.conversationId)
+      .order('created_at', { ascending: true });
+
+    if (msgError) {
+      throw new ApiError('Failed to fetch messages', 500);
+    }
+
+    const response: GetConversationResponse = {
+      conversation: {
+        id: conversation.id,
+        projectId: conversation.project_id,
+        startedAt: new Date(conversation.started_at),
+        updatedAt: new Date(conversation.updated_at),
+      },
+      messages: messages.map(msg => ({
+        id: msg.id,
+        conversationId: msg.conversation_id,
+        role: msg.role,
+        content: msg.content,
+        metadata: msg.metadata,
+        timestamp: new Date(msg.created_at),
+      })),
+    };
+
+    return NextResponse.json(response);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return NextResponse.json(
+        { error: { message: error.message } },
+        { status: error.statusCode }
+      );
+    }
+    return NextResponse.json(
+      { error: { message: 'An unexpected error occurred' } },
+      { status: 500 }
+    );
+  }
+} 
