@@ -1,0 +1,443 @@
+{
+  "root": "C:\\Projects\\SystemDesignerAI\\system-designer-ai\\src",
+  "structure": {
+    "app": {
+      "type": "directory",
+      "contents": {
+        "api": {
+          "type": "directory",
+          "contents": {
+            "auth": {
+              "type": "directory",
+              "contents": {
+                "callback": {
+                  "type": "directory",
+                  "contents": {
+                    "route.ts": {
+                      "type": "file",
+                      "extension": ".ts",
+                      "size": 2292
+                    }
+                  }
+                },
+                "register": {
+                  "type": "directory",
+                  "contents": {
+                    "route.ts": {
+                      "type": "file",
+                      "extension": ".ts",
+                      "size": 2263
+                    }
+                  }
+                },
+                "signout": {
+                  "type": "directory",
+                  "contents": {
+                    "route.ts": {
+                      "type": "file",
+                      "extension": ".ts",
+                      "size": 953
+                    }
+                  }
+                }
+              }
+            },
+            "conversations": {
+              "type": "directory",
+              "contents": {
+                "route.ts": {
+                  "type": "file",
+                  "extension": ".ts",
+                  "size": 4224
+                }
+              }
+            },
+            "diagrams": {
+              "type": "directory",
+              "contents": {}
+            },
+            "export": {
+              "type": "directory",
+              "contents": {}
+            },
+            "projects": {
+              "type": "directory",
+              "contents": {
+                "route.ts": {
+                  "type": "file",
+                  "extension": ".ts",
+                  "size": 4481
+                },
+                "[id]": {
+                  "type": "directory",
+                  "contents": {
+                    "route.ts": {
+                      "type": "file",
+                      "extension": ".ts",
+                      "size": 4933
+                    }
+                  }
+                },
+                "[projectId]": {
+                  "type": "directory",
+                  "contents": {
+                    "conversations": {
+                      "type": "directory",
+                      "contents": {
+                        "route.ts": {
+                          "type": "file",
+                          "extension": ".ts",
+                          "size": 2974
+                        },
+                        "[conversationId]": {
+                          "type": "directory",
+                          "contents": {
+                            "messages": {
+                              "type": "directory",
+                              "contents": {
+                                "route.ts": {
+                                  "type": "file",
+                                  "extension": ".ts",
+                                  "size": 4213
+                                }
+                              }
+                            },
+                            "route.ts": {
+                              "type": "file",
+                              "extension": ".ts",
+                              "size": 2137
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "dashboard": {
+          "type": "directory",
+          "contents": {
+            "page.tsx": {
+              "type": "file",
+              "extension": ".tsx",
+              "size": 1165
+            }
+          }
+        },
+        "error.tsx": {
+          "type": "file",
+          "extension": ".tsx",
+          "size": 1747
+        },
+        "favicon.ico": {
+          "type": "file",
+          "extension": ".ico",
+          "size": 25931
+        },
+        "globals.css": {
+          "type": "file",
+          "extension": ".css",
+          "size": 488
+        },
+        "layout.tsx": {
+          "type": "file",
+          "extension": ".tsx",
+          "size": 584
+        },
+        "login": {
+          "type": "directory",
+          "contents": {
+            "page.tsx": {
+              "type": "file",
+              "extension": ".tsx",
+              "size": 3426
+            }
+          }
+        },
+        "page.tsx": {
+          "type": "file",
+          "extension": ".tsx",
+          "size": 2023
+        },
+        "projects": {
+          "type": "directory",
+          "contents": {
+            "layout.tsx": {
+              "type": "file",
+              "extension": ".tsx",
+              "size": 1109
+            },
+            "new": {
+              "type": "directory",
+              "contents": {
+                "page.tsx": {
+                  "type": "file",
+                  "extension": ".tsx",
+                  "size": 1078
+                }
+              }
+            },
+            "[id]": {
+              "type": "directory",
+              "contents": {
+                "page.tsx": {
+                  "type": "file",
+                  "extension": ".tsx",
+                  "size": 744
+                }
+              }
+            }
+          }
+        },
+        "register": {
+          "type": "directory",
+          "contents": {
+            "page.tsx": {
+              "type": "file",
+              "extension": ".tsx",
+              "size": 3990
+            }
+          }
+        }
+      }
+    },
+    "components": {
+      "type": "directory",
+      "contents": {
+        "chat": {
+          "type": "directory",
+          "contents": {
+            "ChatInterface.tsx": {
+              "type": "file",
+              "extension": ".tsx",
+              "size": 2323
+            },
+            "MessageInput.tsx": {
+              "type": "file",
+              "extension": ".tsx",
+              "size": 2409
+            },
+            "MessageItem.tsx": {
+              "type": "file",
+              "extension": ".tsx",
+              "size": 1355
+            },
+            "MessageList.tsx": {
+              "type": "file",
+              "extension": ".tsx",
+              "size": 1503
+            }
+          }
+        },
+        "diagrams": {
+          "type": "directory",
+          "contents": {}
+        },
+        "layout": {
+          "type": "directory",
+          "contents": {
+            "Footer.tsx": {
+              "type": "file",
+              "extension": ".tsx",
+              "size": 297
+            },
+            "Header.tsx": {
+              "type": "file",
+              "extension": ".tsx",
+              "size": 1795
+            },
+            "MainLayout.tsx": {
+              "type": "file",
+              "extension": ".tsx",
+              "size": 499
+            }
+          }
+        },
+        "project": {
+          "type": "directory",
+          "contents": {
+            "ChatInterface.tsx": {
+              "type": "file",
+              "extension": ".tsx",
+              "size": 967
+            },
+            "ProjectCard.tsx": {
+              "type": "file",
+              "extension": ".tsx",
+              "size": 1436
+            },
+            "ProjectCreationForm.tsx": {
+              "type": "file",
+              "extension": ".tsx",
+              "size": 4269
+            },
+            "ProjectLayout.tsx": {
+              "type": "file",
+              "extension": ".tsx",
+              "size": 1352
+            },
+            "ProjectList.tsx": {
+              "type": "file",
+              "extension": ".tsx",
+              "size": 2198
+            },
+            "ProjectSidebar.tsx": {
+              "type": "file",
+              "extension": ".tsx",
+              "size": 1714
+            },
+            "VersionHistory.tsx": {
+              "type": "file",
+              "extension": ".tsx",
+              "size": 811
+            }
+          }
+        },
+        "ui": {
+          "type": "directory",
+          "contents": {
+            "Button.tsx": {
+              "type": "file",
+              "extension": ".tsx",
+              "size": 2322
+            },
+            "Card.tsx": {
+              "type": "file",
+              "extension": ".tsx",
+              "size": 2258
+            },
+            "Input.tsx": {
+              "type": "file",
+              "extension": ".tsx",
+              "size": 1183
+            }
+          }
+        }
+      }
+    },
+    "contexts": {
+      "type": "directory",
+      "contents": {
+        "ChatContext.tsx": {
+          "type": "file",
+          "extension": ".tsx",
+          "size": 3732
+        }
+      }
+    },
+    "diagrams": {
+      "type": "directory",
+      "contents": {}
+    },
+    "lib": {
+      "type": "directory",
+      "contents": {
+        "api-client.ts": {
+          "type": "file",
+          "extension": ".ts",
+          "size": 2312
+        },
+        "api-utils.ts": {
+          "type": "file",
+          "extension": ".ts",
+          "size": 2555
+        },
+        "error-handler.ts": {
+          "type": "file",
+          "extension": ".ts",
+          "size": 2517
+        },
+        "langchain": {
+          "type": "directory",
+          "contents": {}
+        },
+        "supabase": {
+          "type": "directory",
+          "contents": {
+            "client.ts": {
+              "type": "file",
+              "extension": ".ts",
+              "size": 222
+            },
+            "server.ts": {
+              "type": "file",
+              "extension": ".ts",
+              "size": 681
+            }
+          }
+        },
+        "utils": {
+          "type": "directory",
+          "contents": {
+            "cn.ts": {
+              "type": "file",
+              "extension": ".ts",
+              "size": 775
+            }
+          }
+        },
+        "validators": {
+          "type": "directory",
+          "contents": {}
+        }
+      }
+    },
+    "middleware.ts": {
+      "type": "file",
+      "extension": ".ts",
+      "size": 2935
+    },
+    "styles": {
+      "type": "directory",
+      "contents": {}
+    },
+    "types": {
+      "type": "directory",
+      "contents": {
+        "api.ts": {
+          "type": "file",
+          "extension": ".ts",
+          "size": 1432
+        },
+        "chat.ts": {
+          "type": "file",
+          "extension": ".ts",
+          "size": 989
+        },
+        "project.ts": {
+          "type": "file",
+          "extension": ".ts",
+          "size": 436
+        },
+        "supabase.ts": {
+          "type": "file",
+          "extension": ".ts",
+          "size": 4781
+        }
+      }
+    },
+    "utils": {
+      "type": "directory",
+      "contents": {
+        "env.ts": {
+          "type": "file",
+          "extension": ".ts",
+          "size": 438
+        },
+        "supabase": {
+          "type": "directory",
+          "contents": {
+            "server.ts": {
+              "type": "file",
+              "extension": ".ts",
+              "size": 1005
+            }
+          }
+        }
+      }
+    }
+  }
+}
