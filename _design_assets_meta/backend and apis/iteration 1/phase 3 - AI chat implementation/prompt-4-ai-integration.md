@@ -1,103 +1,100 @@
 # Prompt 4: Basic AI Integration
 
-## Objective
-Implement a basic AI assistant capability in the chat functionality, connecting the conversation interface to a simple AI service that can respond to user messages.
+## Project Structure Context
+Examine these key directories for implementation:
+- `src/app/api/projects/[id]/conversations/[conversationId]/messages/route.ts` - Existing message handler
+- `src/app/api/projects/[id]/conversations/[conversationId]/stream/route.ts` - Existing streaming endpoint
+- `src/lib/langchain/` - Create this directory for LangChain implementation
+- `src/lib/supabase/` - Database access utilities for retrieving conversation history
 
-## Background
-With the chat UI and message handling in place, we now need to implement the AI assistant functionality. For Iteration 1, we'll focus on creating a simple AI integration that can respond to user messages with relevant content, laying the foundation for more advanced features in future iterations.
+## Part 1: Basic LangChain Setup
 
-## Requirements
+### Objective
+Create a minimal LangChain implementation for the AI assistant.
 
-### Core Functionality to Implement
-1. **AI Response Generation**
-   - Create a service that processes user messages and generates AI responses
-   - Implement basic context management to maintain conversation flow
-   - Return AI-generated responses to the chat interface
+### Requirements
+1. Create basic LangChain configuration file
+2. Implement a simple prompt template for the AI assistant
+3. Set up OpenAI integration (or mock implementation)
 
-2. **Assistant Message Integration**
-   - Automatically create assistant messages after user messages
-   - Display AI responses in the chat interface
-   - Show appropriate loading states during response generation
+### Expected Files
+- `src/lib/langchain/config.ts` - Configuration settings
+- `src/lib/langchain/prompts.ts` - Assistant prompt templates
+- `src/lib/langchain/client.ts` - LangChain client implementation
 
-3. **Streaming Support (Optional)**
-   - Implement streaming for AI responses if time allows
-   - Show incremental updates to the assistant message as content arrives
-   - Handle streaming connection errors gracefully
+### Acceptance Criteria
+- Configuration supports both mock and real implementation
+- Prompt template includes basic formatting for AI system designer assistant
+- Client can process a message and return an appropriate response
 
-### Technical Requirements
-- Implement a basic LangChain setup for AI orchestration
-- Create a simple prompt template for the AI assistant
-- Use feature flags to switch between mock and real AI responses
-- Handle timeouts and errors in AI response generation
-- Ensure TypeScript typing for all AI-related functions
+## Part 2: Integration with Existing Message Handlers
 
-## Implementation Guidelines
+### Objective
+Integrate the LangChain implementation with existing message endpoints.
 
-### AI Service Setup
-1. **Basic LangChain Implementation**
-   - Set up a simple LangChain configuration
-   - Create a basic chat model integration (or mock implementation)
-   - Implement a prompt template for the AI System Designer assistant
+### Requirements
+1. Modify existing message handler to trigger AI response after storing user message
+2. Connect to LangChain client for response generation
+3. Store AI-generated response in the database
 
-2. **Context Management**
-   - Implement basic context preservation between messages
-   - Include project details and recent message history in the context
-   - Limit context size appropriately
-
-3. **API Integration**
-   - Implement an API route for AI responses:
-     - Endpoint: `POST /api/projects/{projectId}/conversations/{conversationId}/generate`
-     - Accepts the latest user message and conversation context
-     - Returns an AI-generated response
-
-### Mocking Strategy
-For development and testing:
-- Create consistent mock responses for common user queries
-- Implement variable response timing to simulate real API calls
-- Use the feature flag system to toggle between mock and real AI
-
-### Message Processing Flow
-1. User sends a message via the UI
-2. Message is stored in the database
-3. AI generation is triggered automatically
-4. AI response is generated (real or mock)
-5. Assistant message is stored in the database
-6. UI updates to show the assistant message
-
-## Deliverables
-1. Basic LangChain implementation for AI orchestration
-2. AI response generation endpoint
-3. Integration with the existing chat functionality
-4. Mock AI implementation for testing
-5. Basic context management between messages
-
-## Acceptance Criteria
-- After a user sends a message, an assistant response is automatically generated
-- AI responses are contextually relevant to the conversation
-- The system handles AI generation errors gracefully
-- Loading states display correctly during response generation
-- The feature flag system allows switching between mock and real AI
-- Code follows project standards and conventions
-- Basic documentation for the AI integration is provided
-
-## References
-- LangChain documentation for chat model integration
-- The project's design-generation-workflow diagram
-- The existing message handling implementation
-- The database schema for message storage
-
-## Implementation Tips
-- Start with a mock implementation to test the flow end-to-end
-- Gradually replace mock components with real LangChain integration
-- Keep the initial AI capabilities simple to focus on the core workflow
-- Add extensive logging for debugging AI interactions
-- Consider implementing a retry mechanism for failed AI requests
-- Document prompt templates for future expansion
+### Expected Files
+- Updates to `src/app/api/projects/[id]/conversations/[conversationId]/messages/route.ts`
+- Updates to `src/app/api/projects/[id]/conversations/[conversationId]/stream/route.ts` (if using streaming)
 
 ### Implementation Notes
-For Iteration 1, focus on:
-- Getting the basic conversation flow working correctly
-- Ensuring messages are properly stored and displayed
-- Creating a foundation for more advanced AI capabilities in future iterations
+- After storing a user message, call LangChain client
+- Pass basic message to LangChain for AI response generation
+- Store the AI response as a new message with role="assistant"
 
-The goal is to create a functional, albeit simple, AI chat experience that can be enhanced in later iterations with more sophisticated capabilities like diagram generation and multi-agent orchestration.
+### Acceptance Criteria
+- User messages automatically trigger AI responses
+- AI responses are properly stored in the database
+- Frontend receives and displays AI responses correctly
+
+## Part 3: Conversation Context Management
+
+### Objective
+Add conversation history context to improve AI responses.
+
+### Requirements
+1. Create utility to fetch conversation history from database
+2. Format previous messages for inclusion in AI context
+3. Extract relevant project details to include in context
+
+### Expected Files
+- `src/lib/langchain/context.ts` - Context management utilities
+- Updates to message handlers to include context
+
+### Implementation Notes
+- Use Supabase client to query messages for a given conversation
+- Limit context to recent messages (e.g., last 10 messages)
+- Include project metadata relevant to the conversation
+
+### Acceptance Criteria
+- Successfully retrieves conversation history from database
+- Formats messages into appropriate context structure
+- AI responses reflect awareness of conversation history
+
+## Part 4: Response Enhancement
+
+### Objective
+Improve AI responses with system design knowledge and error handling.
+
+### Requirements
+1. Enhance prompt templates with system design expertise
+2. Implement error handling for failed AI calls
+3. Add retry mechanism for transient errors
+
+### Expected Files
+- Updates to prompt templates and LangChain implementation
+- Error handling additions to message handlers
+
+### Implementation Notes
+- Add system design expertise and guidelines to the prompt templates
+- Implement graceful fallbacks for AI service failures
+- Consider adding response validation to ensure quality
+
+### Acceptance Criteria
+- AI responses demonstrate understanding of system design concepts
+- Failed AI calls are handled gracefully with appropriate user feedback
+- System recovers from transient errors without user intervention
