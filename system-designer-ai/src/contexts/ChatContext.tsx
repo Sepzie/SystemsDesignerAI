@@ -104,7 +104,7 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
         id: `temp-${Date.now()}`,
         role: 'user',
         content,
-        timestamp: new Date(),
+        created_at: new Date(),
       };
       setMessages(prev => [...prev, optimisticMessage]);
 
