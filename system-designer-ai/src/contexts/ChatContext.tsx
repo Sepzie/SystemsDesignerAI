@@ -25,6 +25,7 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
   // State for managing messages, loading state, errors, and pagination
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isWaitingForAI, setIsWaitingForAI] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
@@ -120,6 +121,11 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
       return;
     }
 
+    // Prevent sending new messages while waiting for AI response
+    if (isWaitingForAI) {
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
@@ -172,12 +178,15 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
 
       // Handle AI response streaming if we have an AI message ID
       if (aiMessageId) {
+        setIsWaitingForAI(true);
+        
         // Add a placeholder AI message that will be updated via SSE
         const placeholderAiMessage: Message = {
           id: aiMessageId,
           role: 'assistant',
-          content: '',
+          content: 'Thinking...', // Initial loading state
           created_at: new Date(),
+          metadata: { isStreaming: true }, // Add metadata to indicate streaming state
         };
         setMessages(prev => [...prev, placeholderAiMessage]);
 
@@ -208,6 +217,15 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
           // Handle stream completion
           () => {
             setIsLoading(false);
+            setIsWaitingForAI(false);
+            // Remove streaming metadata when complete
+            setMessages(prev =>
+              prev.map(msg =>
+                msg.id === aiMessageId
+                  ? { ...msg, metadata: undefined }
+                  : msg
+              )
+            );
           }
         );
 
@@ -218,6 +236,7 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
       // Handle any errors during message sending
       setError(err instanceof Error ? err.message : 'Failed to send message');
       console.error('Failed to send message:', err);
+      setIsWaitingForAI(false);
 
       // Remove the optimistic message on error
       setMessages(prev =>
@@ -226,12 +245,13 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
     } finally {
       setIsLoading(false);
     }
-  }, [conversation, projectId]);
+  }, [conversation, projectId, isWaitingForAI]);
 
   // Provide the chat context value to children
   const value = {
     messages,
     isLoading,
+    isWaitingForAI,
     error,
     sendMessage,
     conversation,

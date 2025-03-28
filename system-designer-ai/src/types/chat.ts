@@ -7,11 +7,16 @@ export interface Message {
   role: MessageRole;
   content: string;
   created_at: Date;
+  metadata?: {
+    isStreaming?: boolean;
+    [key: string]: any;
+  };
 }
 
 export interface ChatContextType {
   messages: Message[];
   isLoading: boolean;
+  isWaitingForAI: boolean;
   error: string | null;
   sendMessage: (content: string) => Promise<(() => void) | undefined>;
   conversation: Conversation | null;

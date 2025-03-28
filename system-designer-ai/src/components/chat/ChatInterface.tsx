@@ -11,7 +11,7 @@ interface ChatInterfaceProps {
 }
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId, initialConversationId }) => {
-  const { messages, isLoading, error, sendMessage } = useChat();
+  const { messages, isLoading, isWaitingForAI, error, sendMessage } = useChat();
 
   return (
     <div className="h-64 border-t bg-white flex flex-col">
@@ -71,7 +71,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId, initial
 
       {/* Input */}
       <div className="p-4 border-t">
-        <MessageInput onSendMessage={sendMessage} isLoading={isLoading} />
+        <MessageInput 
+          onSendMessage={sendMessage} 
+          isLoading={isLoading || isWaitingForAI} 
+        />
       </div>
     </div>
   );
