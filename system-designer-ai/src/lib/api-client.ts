@@ -99,37 +99,30 @@ export function connectToMessageStream(
   onComplete: () => void
 ) {
   const params = new URLSearchParams({ messageId });
-  const url = `/api/projects/${projectId}/conversations/${conversationId}/stream?${params}`;
-  console.log('Creating EventSource connection to:', url);
-  
-  const eventSource = new EventSource(url);
+  const eventSource = new EventSource(
+    `/api/projects/${projectId}/conversations/${conversationId}/stream?${params}`
+  );
 
   eventSource.addEventListener('message', (event) => {
-    console.log('Received raw event:', event);
     try {
       const data = JSON.parse(event.data);
-      console.log('Parsed event data:', data);
       onMessage(data);
     } catch (error) {
-      console.error('Failed to parse message:', error);
       onError(error instanceof Error ? error : new Error('Failed to parse message'));
     }
   });
 
   eventSource.addEventListener('error', (event) => {
-    console.error('EventSource error:', event);
     onError(new Error('EventSource failed'));
     eventSource.close();
   });
 
   eventSource.addEventListener('complete', () => {
-    console.log('Received complete event');
     onComplete();
     eventSource.close();
   });
 
   return () => {
-    console.log('Cleaning up EventSource connection');
     eventSource.close();
   };
 } 
