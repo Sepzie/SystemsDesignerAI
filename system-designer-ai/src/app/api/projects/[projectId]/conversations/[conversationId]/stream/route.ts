@@ -5,6 +5,7 @@ import {
   ApiError,
 } from '@/lib/api-utils';
 import { createClient } from '@/lib/supabase/server';
+import { langChainClient } from '@/lib/langchain/client';
 
 export async function GET(
   request: Request,
@@ -40,27 +41,56 @@ export async function GET(
       );
     }
 
+    // Get conversation history for context
+    const { data: history } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('conversation_id', conversationId)
+      .order('created_at', { ascending: true })
+      .limit(10);
+
     // Set up SSE headers
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          // For now, we'll simulate an AI response
-          // In the future, this will connect to your actual AI service
-          const response = `This is a simulated AI response to the message with ID: ${messageId}`;
+          // Update message status to generating
+          await supabase
+            .from('messages')
+            .update({
+              metadata: {
+                status: 'generating',
+                model: 'gpt-4-turbo-preview',
+              },
+            })
+            .eq('id', messageId);
 
-          //delay for 2 seconds
-          await new Promise(resolve => setTimeout(resolve, 2000));
-          
+          // Generate response using LangChain
+          const context = history
+            ?.map(msg => `${msg.role}: ${msg.content}`)
+            .join('\n') || '';
+
+          const response = await langChainClient.processMessage(
+            message.content,
+            context
+          );
+
           // Send the response as a single event
           controller.enqueue(
-            encoder.encode(`event: message\ndata: ${JSON.stringify({ content: response })}\n\n`)
+            encoder.encode(`event: message\ndata: ${JSON.stringify({ content: response.text })}\n\n`)
           );
           
           // Update the message in the database with the complete response
           const { error: updateError } = await supabase
             .from('messages')
-            .update({ content: response })
+            .update({
+              content: response.text,
+              metadata: {
+                status: 'completed',
+                model: 'gpt-4-turbo-preview',
+                usage: response.usage,
+              },
+            })
             .eq('id', messageId);
 
           if (updateError) {
@@ -77,6 +107,19 @@ export async function GET(
           controller.close();
         } catch (error) {
           console.error('Error in stream:', error);
+          
+          // Update message with error status
+          await supabase
+            .from('messages')
+            .update({
+              content: 'Sorry, I encountered an error while generating the response. Please try again.',
+              metadata: {
+                status: 'error',
+                error: error.message,
+              },
+            })
+            .eq('id', messageId);
+
           // Send an error event
           controller.enqueue(
             encoder.encode(`event: error\ndata: ${JSON.stringify({ error: 'Failed to generate response' })}\n\n`)

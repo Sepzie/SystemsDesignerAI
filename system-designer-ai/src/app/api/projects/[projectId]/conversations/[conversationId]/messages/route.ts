@@ -11,6 +11,7 @@ import {
   ListMessagesResponse,
 } from '@/types/api';
 import { createClient } from '@/lib/supabase/server';
+import { langChainClient } from '@/lib/langchain/client';
 
 export async function GET(
   request: Request,
@@ -84,6 +85,14 @@ export async function POST(
       );
     }
 
+    // Get conversation history for context
+    const { data: history } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('conversation_id', conversationId)
+      .order('created_at', { ascending: true })
+      .limit(10); // Get last 10 messages for context
+
     // Create new message
     const { data: message, error: messageError } = await supabase
       .from('messages')
@@ -126,6 +135,10 @@ export async function POST(
           role: 'assistant',
           content: '', // Empty content that will be updated via SSE
           created_at: new Date().toISOString(),
+          metadata: {
+            status: 'generating',
+            model: 'gpt-4-turbo-preview',
+          },
         },
       ])
       .select()
@@ -135,9 +148,55 @@ export async function POST(
       console.error('Failed to create AI message placeholder:', aiMessageError);
     }
 
+    // Generate AI response using LangChain
+    try {
+      const context = history
+        ?.map(msg => `${msg.role}: ${msg.content}`)
+        .join('\n') || '';
+
+      const response = await langChainClient.processMessage(
+        messageData.content,
+        context
+      );
+
+      // Update the AI message with the response
+      const { error: updateAiError } = await supabase
+        .from('messages')
+        .update({
+          content: response.text,
+          metadata: {
+            status: 'completed',
+            model: 'gpt-4-turbo-preview',
+            usage: response.usage,
+          },
+        })
+        .eq('id', aiMessage?.id);
+
+      if (updateAiError) {
+        console.error('Failed to update AI message:', updateAiError);
+      }
+    } catch (aiError) {
+      console.error('Error generating AI response:', aiError);
+      // Update the AI message with error status
+      const { error: updateAiError } = await supabase
+        .from('messages')
+        .update({
+          content: 'Sorry, I encountered an error while generating the response. Please try again.',
+          metadata: {
+            status: 'error',
+            error: aiError.message,
+          },
+        })
+        .eq('id', aiMessage?.id);
+
+      if (updateAiError) {
+        console.error('Failed to update AI message with error:', updateAiError);
+      }
+    }
+
     return NextResponse.json({ 
       message,
-      aiMessageId: aiMessage?.id // Return the AI message ID for SSE connection
+      aiMessageId: aiMessage?.id
     });
   } catch (error) {
     console.error('Error in create message:', error);
