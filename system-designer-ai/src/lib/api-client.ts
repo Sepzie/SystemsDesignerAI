@@ -103,19 +103,19 @@ export function connectToMessageStream(
     `/api/projects/${projectId}/conversations/${conversationId}/stream?${params}`
   );
 
-  eventSource.onmessage = (event) => {
+  eventSource.addEventListener('message', (event) => {
     try {
       const data = JSON.parse(event.data);
       onMessage(data);
     } catch (error) {
       onError(error instanceof Error ? error : new Error('Failed to parse message'));
     }
-  };
+  });
 
-  eventSource.onerror = (error) => {
+  eventSource.addEventListener('error', (event) => {
     onError(new Error('EventSource failed'));
     eventSource.close();
-  };
+  });
 
   eventSource.addEventListener('complete', () => {
     onComplete();

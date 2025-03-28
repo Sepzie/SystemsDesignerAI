@@ -11,8 +11,6 @@ interface MessageItemProps {
 export const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
   const isAssistant = message.role === 'assistant';
 
-  console.log(message);
-  
   return (
     <div
       className={`flex ${isAssistant ? 'justify-start' : 'justify-end'} mb-4`}

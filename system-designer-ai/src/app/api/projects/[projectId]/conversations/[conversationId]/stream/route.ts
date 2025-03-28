@@ -25,6 +25,21 @@ export async function GET(
       );
     }
 
+    // Validate message exists and belongs to conversation
+    const { data: message, error: messageError } = await supabase
+      .from('messages')
+      .select('*')
+      .eq('id', messageId)
+      .eq('conversation_id', conversationId)
+      .single();
+
+    if (messageError || !message) {
+      return NextResponse.json(
+        { error: { message: 'Message not found' } },
+        { status: 404 }
+      );
+    }
+
     // Set up SSE headers
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
@@ -36,14 +51,23 @@ export async function GET(
           
           // Send the response as a single event
           controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify({ content: response })}\n\n`)
+            encoder.encode(`event: message\ndata: ${JSON.stringify({ content: response })}\n\n`)
+          );
+          
+          // Send a complete event
+          controller.enqueue(
+            encoder.encode(`event: complete\ndata: {}\n\n`)
           );
           
           // Close the stream
           controller.close();
         } catch (error) {
           console.error('Error in stream:', error);
-          controller.error(error);
+          // Send an error event
+          controller.enqueue(
+            encoder.encode(`event: error\ndata: ${JSON.stringify({ error: 'Failed to generate response' })}\n\n`)
+          );
+          controller.close();
         }
       }
     });
@@ -53,6 +77,7 @@ export async function GET(
         'Content-Type': 'text/event-stream',
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*',
       },
     });
   } catch (error) {
