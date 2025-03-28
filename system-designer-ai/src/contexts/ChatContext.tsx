@@ -147,6 +147,16 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
       // If we have an AI message ID, connect to the stream
       if (aiMessageId) {
         console.log('Connecting to stream with messageId:', aiMessageId);
+        
+        // Add a placeholder AI message
+        const placeholderAiMessage: Message = {
+          id: aiMessageId,
+          role: 'assistant',
+          content: '',
+          created_at: new Date(),
+        };
+        setMessages(prev => [...prev, placeholderAiMessage]);
+
         const cleanup = api.connectToMessageStream(
           projectId,
           conversation.id,
@@ -165,6 +175,10 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
           (err) => {
             console.error('Stream error:', err);
             setError(err.message);
+            // Remove the placeholder message on error
+            setMessages(prev =>
+              prev.filter(msg => msg.id !== aiMessageId)
+            );
           },
           () => {
             console.log('Stream completed');
