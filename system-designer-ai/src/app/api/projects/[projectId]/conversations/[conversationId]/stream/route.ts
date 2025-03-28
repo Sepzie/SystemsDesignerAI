@@ -48,11 +48,25 @@ export async function GET(
           // For now, we'll simulate an AI response
           // In the future, this will connect to your actual AI service
           const response = `This is a simulated AI response to the message with ID: ${messageId}`;
+
+          //delay for 2 seconds
+          await new Promise(resolve => setTimeout(resolve, 2000));
           
           // Send the response as a single event
           controller.enqueue(
             encoder.encode(`event: message\ndata: ${JSON.stringify({ content: response })}\n\n`)
           );
+          
+          // Update the message in the database with the complete response
+          const { error: updateError } = await supabase
+            .from('messages')
+            .update({ content: response })
+            .eq('id', messageId);
+
+          if (updateError) {
+            console.error('Failed to update message in database:', updateError);
+            throw new Error('Failed to save AI response');
+          }
           
           // Send a complete event
           controller.enqueue(
