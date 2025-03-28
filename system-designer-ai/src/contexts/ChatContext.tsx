@@ -99,7 +99,7 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
     setError(null);
 
     try {
-      // Create optimistic update
+      // Create optimistic update for user message
       const optimisticMessage: Message = {
         id: `temp-${Date.now()}`,
         role: 'user',
@@ -112,6 +112,7 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
       let retryCount = 0;
       const maxRetries = 3;
       let sentMessage: Message | null = null;
+      let aiMessageId: string | undefined;
 
       while (retryCount < maxRetries) {
         try {
@@ -124,6 +125,7 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
             }
           );
           sentMessage = response.message;
+          aiMessageId = response.aiMessageId;
           break;
         } catch (err) {
           retryCount++;
@@ -141,17 +143,34 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
         )
       );
 
-      // Get AI response
-      const { message: assistantMessage } = await api.sendMessage(
-        projectId,
-        conversation.id,
-        {
-          role: 'assistant',
-          content: `This is a simulated response to: "${content}"`,
-        }
-      );
+      // If we have an AI message ID, connect to the stream
+      if (aiMessageId) {
+        const cleanup = api.connectToMessageStream(
+          projectId,
+          conversation.id,
+          aiMessageId,
+          (data) => {
+            // Update the AI message with the streamed content
+            setMessages(prev =>
+              prev.map(msg =>
+                msg.id === aiMessageId
+                  ? { ...msg, content: data.content }
+                  : msg
+              )
+            );
+          },
+          (err) => {
+            setError(err.message);
+            console.error('Stream error:', err);
+          },
+          () => {
+            setIsLoading(false);
+          }
+        );
 
-      setMessages(prev => [...prev, assistantMessage]);
+        // Clean up the stream connection when component unmounts
+        return cleanup;
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send message');
       console.error('Failed to send message:', err);

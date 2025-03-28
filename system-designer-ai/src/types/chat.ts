@@ -13,7 +13,7 @@ export interface ChatContextType {
   messages: Message[];
   isLoading: boolean;
   error: string | null;
-  sendMessage: (content: string) => Promise<void>;
+  sendMessage: (content: string) => Promise<(() => void) | undefined>;
   conversation: Conversation | null;
   loadMoreMessages: () => Promise<void>;
   hasMoreMessages: boolean;
