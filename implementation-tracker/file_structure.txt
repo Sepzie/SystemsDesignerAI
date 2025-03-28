@@ -9,18 +9,20 @@ src/
 │   │   │   └── signout
 │   │   │       └── route.ts
 │   │   ├── diagrams
-
+|   |   |
 │   │   ├── export
-
+|   |   |
 │   │   └── projects
 │   │       ├── route.ts
-│   │       └── [id]
+│   │       └── [projectId]
 │   │           ├── conversations
 │   │           │   ├── route.ts
 │   │           │   └── [conversationId]
 │   │           │       ├── messages
 │   │           │       │   └── route.ts
-│   │           │       └── route.ts
+│   │           │       ├── route.ts
+│   │           │       └── stream
+│   │           │           └── route.ts
 │   │           └── route.ts
 │   ├── dashboard
 │   │   └── page.tsx
@@ -35,7 +37,7 @@ src/
 │   │   ├── layout.tsx
 │   │   ├── new
 │   │   │   └── page.tsx
-│   │   └── [id]
+│   │   └── [projectId]
 │   │       ├── page.tsx
 │   │       └── settings
 │   │           └── page.tsx
@@ -48,7 +50,7 @@ src/
 │   │   ├── MessageItem.tsx
 │   │   └── MessageList.tsx
 │   ├── diagrams
-
+|   |
 │   ├── layout
 │   │   ├── Footer.tsx
 │   │   ├── Header.tsx
@@ -68,29 +70,27 @@ src/
 ├── contexts
 │   └── ChatContext.tsx
 ├── diagrams
-
+|
 ├── lib
 │   ├── api-client.ts
 │   ├── api-utils.ts
 │   ├── error-handler.ts
 │   ├── langchain
-
+|   |
 │   ├── supabase
 │   │   ├── client.ts
 │   │   └── server.ts
 │   ├── utils
 │   │   └── cn.ts
 │   └── validators
-
+|
 ├── middleware.ts
 ├── styles
-
+|
 ├── types
 │   ├── api.ts
 │   ├── chat.ts
 │   ├── project.ts
 │   └── supabase.ts
 └── utils
-    ├── env.ts
-    └── supabase
-        └── server.ts
+    └── env.ts
