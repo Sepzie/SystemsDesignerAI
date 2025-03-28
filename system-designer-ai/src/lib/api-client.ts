@@ -88,4 +88,41 @@ export async function sendMessage(
   );
 
   return handleResponse<CreateMessageResponse>(response);
+}
+
+export function connectToMessageStream(
+  projectId: string,
+  conversationId: string,
+  messageId: string,
+  onMessage: (data: { content: string }) => void,
+  onError: (error: Error) => void,
+  onComplete: () => void
+) {
+  const params = new URLSearchParams({ messageId });
+  const eventSource = new EventSource(
+    `/api/projects/${projectId}/conversations/${conversationId}/stream?${params}`
+  );
+
+  eventSource.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      onMessage(data);
+    } catch (error) {
+      onError(error instanceof Error ? error : new Error('Failed to parse message'));
+    }
+  };
+
+  eventSource.onerror = (error) => {
+    onError(new Error('EventSource failed'));
+    eventSource.close();
+  };
+
+  eventSource.addEventListener('complete', () => {
+    onComplete();
+    eventSource.close();
+  });
+
+  return () => {
+    eventSource.close();
+  };
 } 

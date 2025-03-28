@@ -39,6 +39,7 @@ export interface CreateMessageRequest {
 
 export interface CreateMessageResponse {
   message: ConversationMessage;
+  aiMessageId?: string; // ID of the placeholder AI message for SSE connection
 }
 
 export interface ListMessagesResponse {

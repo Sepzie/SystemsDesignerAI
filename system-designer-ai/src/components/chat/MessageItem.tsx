@@ -10,6 +10,8 @@ interface MessageItemProps {
 
 export const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
   const isAssistant = message.role === 'assistant';
+
+  console.log(message);
   
   return (
     <div
@@ -36,7 +38,7 @@ export const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
         <div className="whitespace-pre-wrap">{message.content}</div>
         
         <div className={`text-xs mt-2 ${isAssistant ? 'text-gray-500' : 'text-blue-100'}`}>
-          {formatDistanceToNow(message.timestamp, { addSuffix: true })}
+          {formatDistanceToNow(message.created_at, { addSuffix: true })}
         </div>
       </div>
     </div>

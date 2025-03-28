@@ -61,6 +61,14 @@ export async function POST(
     const { projectId, conversationId } = await context.params;
     const messageData = await request.json() as CreateMessageRequest;
 
+    // Only allow user messages to be posted directly
+    if (messageData.role !== 'user') {
+      return NextResponse.json(
+        { error: { message: 'Only user messages can be posted directly' } },
+        { status: 400 }
+      );
+    }
+
     // Validate conversation exists and belongs to project
     const { data: conversation, error: conversationError } = await supabase
       .from('conversations')
@@ -109,7 +117,28 @@ export async function POST(
       console.error('Failed to update conversation timestamp:', updateError);
     }
 
-    return NextResponse.json({ message });
+    // Create a placeholder AI message that will be updated via SSE
+    const { data: aiMessage, error: aiMessageError } = await supabase
+      .from('messages')
+      .insert([
+        {
+          conversation_id: conversationId,
+          role: 'assistant',
+          content: '', // Empty content that will be updated via SSE
+          created_at: new Date().toISOString(),
+        },
+      ])
+      .select()
+      .single();
+
+    if (aiMessageError) {
+      console.error('Failed to create AI message placeholder:', aiMessageError);
+    }
+
+    return NextResponse.json({ 
+      message,
+      aiMessageId: aiMessage?.id // Return the AI message ID for SSE connection
+    });
   } catch (error) {
     console.error('Error in create message:', error);
     return NextResponse.json(
