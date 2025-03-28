@@ -47,18 +47,24 @@ export async function GET(
     const stream = new ReadableStream({
       async start(controller) {
         try {
+          console.log('\n=== Starting AI Response Generation ===');
+          console.log('Message ID:', messageId);
+          console.log('Conversation ID:', conversationId);
+          console.log('Project ID:', projectId);
+
           // Update message status to generating
           await supabase
             .from('messages')
             .update({
               metadata: {
                 status: 'generating',
-                model: 'gpt-4-turbo-preview',
+                started_at: new Date().toISOString(),
               },
             })
             .eq('id', messageId);
 
           // Build conversation context
+          console.log('Building conversation context...');
           const conversationContext = await buildConversationContext(
             projectId,
             conversationId
@@ -68,6 +74,7 @@ export async function GET(
           const formattedContext = formatCompleteContext(conversationContext);
 
           // Generate response using LangChain
+          console.log('Generating AI response...');
           const response = await langChainClient.processMessage(
             message.content,
             formattedContext
@@ -87,6 +94,7 @@ export async function GET(
                 status: 'completed',
                 model: 'gpt-4-turbo-preview',
                 usage: response.usage,
+                completed_at: new Date().toISOString(),
               },
             })
             .eq('id', messageId);
@@ -95,6 +103,9 @@ export async function GET(
             console.error('Failed to update message in database:', updateError);
             throw new Error('Failed to save AI response');
           }
+          
+          console.log('AI response generation completed successfully');
+          console.log('========================\n');
           
           // Send a complete event
           controller.enqueue(
@@ -114,6 +125,7 @@ export async function GET(
               metadata: {
                 status: 'error',
                 error: error instanceof Error ? error.message : 'Unknown error occurred',
+                completed_at: new Date().toISOString(),
               },
             })
             .eq('id', messageId);
