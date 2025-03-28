@@ -1,6 +1,12 @@
-import { ChatOpenAI } from 'langchain/chat_models/openai';
+import { ChatOpenAI } from '@langchain/openai';
+import { PromptTemplate } from '@langchain/core/prompts';
 import { config } from './config';
-import { getPromptTemplate } from './prompts';
+import { 
+  getPromptTemplate,
+  DesignPromptInput,
+  ReviewPromptInput,
+  SelectionPromptInput 
+} from './prompts';
 
 // Mock implementation for development/testing
 class MockLangChainClient {
@@ -39,13 +45,42 @@ class LangChainClient {
     type: 'design' | 'review' | 'selection' = 'design'
   ) {
     const prompt = getPromptTemplate(type);
-    const formattedPrompt = await prompt.format({
-      systemMessage: config.systemMessage,
-      context,
-      question: message,
-    });
+    
+    // Format the prompt based on the type
+    let formattedPrompt: string;
+    switch (type) {
+      case 'design': {
+        const designPrompt = prompt as PromptTemplate<DesignPromptInput>;
+        formattedPrompt = await designPrompt.format({
+          systemMessage: config.systemMessage,
+          context,
+          question: message,
+        });
+        break;
+      }
+      case 'review': {
+        const reviewPrompt = prompt as PromptTemplate<ReviewPromptInput>;
+        formattedPrompt = await reviewPrompt.format({
+          systemMessage: config.systemMessage,
+          architecture: context,
+          reviewRequest: message,
+        });
+        break;
+      }
+      case 'selection': {
+        const selectionPrompt = prompt as PromptTemplate<SelectionPromptInput>;
+        formattedPrompt = await selectionPrompt.format({
+          systemMessage: config.systemMessage,
+          requirements: message,
+          constraints: context,
+        });
+        break;
+      }
+      default:
+        throw new Error(`Unsupported prompt type: ${type}`);
+    }
 
-    const response = await this.model.call([
+    const response = await this.model.invoke([
       {
         role: 'system',
         content: config.systemMessage,
@@ -56,9 +91,19 @@ class LangChainClient {
       },
     ]);
 
+    // Get the last message's content
+    const content = response.content;
+    
+    // Create a usage object based on the response
+    const usage = {
+      promptTokens: 0, // These would come from the actual API response
+      completionTokens: 0,
+      totalTokens: 0,
+    };
+
     return {
-      text: response.content,
-      usage: response.usage,
+      text: content,
+      usage,
     };
   }
 }

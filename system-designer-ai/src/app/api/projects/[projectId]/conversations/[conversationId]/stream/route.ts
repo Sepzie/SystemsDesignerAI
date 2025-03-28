@@ -115,7 +115,7 @@ export async function GET(
               content: 'Sorry, I encountered an error while generating the response. Please try again.',
               metadata: {
                 status: 'error',
-                error: error.message,
+                error: error instanceof Error ? error.message : 'Unknown error occurred',
               },
             })
             .eq('id', messageId);

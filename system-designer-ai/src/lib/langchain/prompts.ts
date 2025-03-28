@@ -1,8 +1,27 @@
-import { PromptTemplate } from 'langchain/prompts';
+import { PromptTemplate } from '@langchain/core/prompts';
 import { config } from './config';
 
+// Define types for each prompt's input variables
+export type DesignPromptInput = {
+  systemMessage: string;
+  context: string;
+  question: string;
+};
+
+export type ReviewPromptInput = {
+  systemMessage: string;
+  architecture: string;
+  reviewRequest: string;
+};
+
+export type SelectionPromptInput = {
+  systemMessage: string;
+  requirements: string;
+  constraints: string;
+};
+
 // Base system design prompt template
-export const systemDesignPrompt = new PromptTemplate({
+export const systemDesignPrompt = new PromptTemplate<DesignPromptInput>({
   template: `{systemMessage}
 
 Context:
@@ -21,7 +40,7 @@ Response:`,
 });
 
 // Architecture review prompt template
-export const architectureReviewPrompt = new PromptTemplate({
+export const architectureReviewPrompt = new PromptTemplate<ReviewPromptInput>({
   template: `{systemMessage}
 
 Current Architecture:
@@ -40,7 +59,7 @@ Response:`,
 });
 
 // Technology selection prompt template
-export const technologySelectionPrompt = new PromptTemplate({
+export const technologySelectionPrompt = new PromptTemplate<SelectionPromptInput>({
   template: `{systemMessage}
 
 Requirements:
