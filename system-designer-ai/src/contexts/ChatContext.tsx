@@ -126,6 +126,7 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
           );
           sentMessage = response.message;
           aiMessageId = response.aiMessageId;
+          console.log('Got response from sendMessage:', { sentMessage, aiMessageId });
           break;
         } catch (err) {
           retryCount++;
@@ -145,11 +146,13 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
 
       // If we have an AI message ID, connect to the stream
       if (aiMessageId) {
+        console.log('Connecting to stream with messageId:', aiMessageId);
         const cleanup = api.connectToMessageStream(
           projectId,
           conversation.id,
           aiMessageId,
           (data) => {
+            console.log('Received message from stream:', data);
             // Update the AI message with the streamed content
             setMessages(prev =>
               prev.map(msg =>
@@ -160,10 +163,11 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
             );
           },
           (err) => {
-            setError(err.message);
             console.error('Stream error:', err);
+            setError(err.message);
           },
           () => {
+            console.log('Stream completed');
             setIsLoading(false);
           }
         );
@@ -172,8 +176,8 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
         return cleanup;
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send message');
       console.error('Failed to send message:', err);
+      setError(err instanceof Error ? err.message : 'Failed to send message');
 
       // Remove optimistic message on error
       setMessages(prev =>

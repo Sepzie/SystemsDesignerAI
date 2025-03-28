@@ -17,8 +17,10 @@ export async function GET(
     // Get messageId from query parameters
     const url = new URL(request.url);
     const messageId = url.searchParams.get('messageId');
+    console.log('Stream endpoint received request:', { projectId, conversationId, messageId });
 
     if (!messageId) {
+      console.log('No messageId provided');
       return NextResponse.json(
         { error: { message: 'Message ID is required' } },
         { status: 400 }
@@ -34,11 +36,14 @@ export async function GET(
       .single();
 
     if (messageError || !message) {
+      console.log('Message not found:', { messageError, message });
       return NextResponse.json(
         { error: { message: 'Message not found' } },
         { status: 404 }
       );
     }
+
+    console.log('Message validated, starting stream');
 
     // Set up SSE headers
     const encoder = new TextEncoder();
@@ -49,16 +54,19 @@ export async function GET(
           // In the future, this will connect to your actual AI service
           const response = `This is a simulated AI response to the message with ID: ${messageId}`;
           
+          console.log('Sending message event');
           // Send the response as a single event
           controller.enqueue(
             encoder.encode(`event: message\ndata: ${JSON.stringify({ content: response })}\n\n`)
           );
           
+          console.log('Sending complete event');
           // Send a complete event
           controller.enqueue(
             encoder.encode(`event: complete\ndata: {}\n\n`)
           );
           
+          console.log('Closing stream');
           // Close the stream
           controller.close();
         } catch (error) {
