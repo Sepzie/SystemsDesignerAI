@@ -81,6 +81,16 @@ class LangChainClient {
         throw new Error(`Unsupported prompt type: ${type}`);
     }
 
+    // Log the final prompt before sending to OpenAI
+    console.log('\n=== AI Prompt Details ===');
+    console.log('Type:', type);
+    console.log('System Message:', config.systemMessage);
+    console.log('Formatted Prompt:', formattedPrompt);
+    console.log('Context Length:', context.length);
+    console.log('Message Length:', message.length);
+    console.log('Total Prompt Length:', formattedPrompt.length);
+    console.log('========================\n');
+
     const response = await this.model.invoke([
       {
         role: 'system',
