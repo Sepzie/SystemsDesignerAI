@@ -6,6 +6,7 @@ import {
 } from '@/lib/api-utils';
 import { createClient } from '@/lib/supabase/server';
 import { langChainClient } from '@/lib/langchain/client';
+import { buildConversationContext, formatCompleteContext } from '@/lib/langchain/context';
 
 export async function GET(
   request: Request,
@@ -41,14 +42,6 @@ export async function GET(
       );
     }
 
-    // Get conversation history for context
-    const { data: history } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('conversation_id', conversationId)
-      .order('created_at', { ascending: true })
-      .limit(10);
-
     // Set up SSE headers
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
@@ -65,14 +58,19 @@ export async function GET(
             })
             .eq('id', messageId);
 
-          // Generate response using LangChain
-          const context = history
-            ?.map(msg => `${msg.role}: ${msg.content}`)
-            .join('\n') || '';
+          // Build conversation context
+          const conversationContext = await buildConversationContext(
+            projectId,
+            conversationId
+          );
+          
+          // Format the context for the AI
+          const formattedContext = formatCompleteContext(conversationContext);
 
+          // Generate response using LangChain
           const response = await langChainClient.processMessage(
             message.content,
-            context
+            formattedContext
           );
 
           // Send the response as a single event

@@ -12,6 +12,7 @@ import {
 } from '@/types/api';
 import { createClient } from '@/lib/supabase/server';
 import { langChainClient } from '@/lib/langchain/client';
+import { buildConversationContext, formatCompleteContext } from '@/lib/langchain/context';
 
 export async function GET(
   request: Request,
@@ -85,14 +86,6 @@ export async function POST(
       );
     }
 
-    // Get conversation history for context
-    const { data: history } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('conversation_id', conversationId)
-      .order('created_at', { ascending: true })
-      .limit(10); // Get last 10 messages for context
-
     // Create new message
     const { data: message, error: messageError } = await supabase
       .from('messages')
@@ -148,15 +141,20 @@ export async function POST(
       console.error('Failed to create AI message placeholder:', aiMessageError);
     }
 
-    // Generate AI response using LangChain
+    // Generate AI response using LangChain with context
     try {
-      const context = history
-        ?.map(msg => `${msg.role}: ${msg.content}`)
-        .join('\n') || '';
+      // Build conversation context
+      const conversationContext = await buildConversationContext(
+        projectId,
+        conversationId
+      );
+      
+      // Format the context for the AI
+      const formattedContext = formatCompleteContext(conversationContext);
 
       const response = await langChainClient.processMessage(
         messageData.content,
-        context
+        formattedContext
       );
 
       // Update the AI message with the response
@@ -184,7 +182,7 @@ export async function POST(
           content: 'Sorry, I encountered an error while generating the response. Please try again.',
           metadata: {
             status: 'error',
-            error: aiError.message,
+            error: aiError instanceof Error ? aiError.message : 'Unknown error occurred',
           },
         })
         .eq('id', aiMessage?.id);

@@ -7,10 +7,11 @@ import {
   ReviewPromptInput,
   SelectionPromptInput 
 } from './prompts';
+import { LangChainResponse } from '@/types/langchain';
 
 // Mock implementation for development/testing
 class MockLangChainClient {
-  async processMessage(message: string, context: string = '') {
+  async processMessage(message: string, context: string = ''): Promise<LangChainResponse> {
     return {
       text: `Mock response for: ${message}\nContext: ${context}`,
       usage: {
@@ -43,7 +44,7 @@ class LangChainClient {
     message: string,
     context: string = '',
     type: 'design' | 'review' | 'selection' = 'design'
-  ) {
+  ): Promise<LangChainResponse> {
     const prompt = getPromptTemplate(type);
     
     // Format the prompt based on the type
@@ -91,8 +92,10 @@ class LangChainClient {
       },
     ]);
 
-    // Get the last message's content
-    const content = response.content;
+    // Get the last message's content and ensure it's a string
+    const content = typeof response.content === 'string' 
+      ? response.content 
+      : JSON.stringify(response.content);
     
     // Create a usage object based on the response
     const usage = {
@@ -111,14 +114,4 @@ class LangChainClient {
 // Export the appropriate client based on configuration
 export const langChainClient = config.useMock
   ? new MockLangChainClient()
-  : new LangChainClient();
-
-// Type for the client response
-export interface LangChainResponse {
-  text: string;
-  usage: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
-  };
-} 
+  : new LangChainClient(); 
