@@ -3,42 +3,44 @@
 import React from 'react';
 import { Message } from '@/types/chat';
 import { formatDistanceToNow } from 'date-fns';
+import { AssetReference } from '../asset/AssetReference';
+import { Asset } from '@/types/asset';
 
 interface MessageItemProps {
   message: Message;
+  onAssetClick: (asset: Asset) => void;
 }
 
-export const MessageItem: React.FC<MessageItemProps> = ({ message }) => {
-  const isAssistant = message.role === 'assistant';
+export function MessageItem({ message, onAssetClick }: MessageItemProps) {
+  const isUser = message.role === 'user';
 
   return (
-    <div
-      className={`flex ${isAssistant ? 'justify-start' : 'justify-end'} mb-4`}
-      role="listitem"
-    >
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
       <div
-        className={`
-          max-w-[80%] rounded-lg p-4
-          ${isAssistant 
-            ? 'bg-white border border-gray-200 shadow-sm text-gray-800' 
-            : 'bg-blue-600 text-white shadow-sm'}
-        `}
+        className={`max-w-[80%] rounded-lg p-4 ${
+          isUser ? 'bg-blue-500 text-white' : 'bg-gray-100'
+        }`}
       >
-        {isAssistant && (
-          <div className="flex items-center mb-2">
-            <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-white text-sm mr-2">
-              AI
-            </div>
-            <span className="font-semibold text-gray-800">AI Assistant</span>
+        <div className="prose prose-sm max-w-none">
+          {message.content.split(/\n/).map((line, index) => (
+            <p key={index}>{line}</p>
+          ))}
+        </div>
+        {message.metadata?.assets && message.metadata.assets.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {message.metadata.assets.map((assetRef) => (
+              <AssetReference
+                key={assetRef.id}
+                asset={assetRef}
+                onClick={() => onAssetClick(assetRef)}
+              />
+            ))}
           </div>
         )}
-        
-        <div className="whitespace-pre-wrap">{message.content}</div>
-        
-        <div className={`text-xs mt-2 ${isAssistant ? 'text-gray-500' : 'text-blue-100'}`}>
-          {formatDistanceToNow(message.created_at, { addSuffix: true })}
+        <div className="mt-2 text-xs opacity-70">
+          {new Date(message.created_at).toLocaleTimeString()}
         </div>
       </div>
     </div>
   );
-}; 
+} 
