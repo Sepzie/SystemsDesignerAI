@@ -6,7 +6,7 @@ import { ChatInterface } from '../chat/ChatInterface';
 import { ChatProvider } from '@/contexts/ChatContext';
 import { AssetViewer } from '../asset/AssetViewer';
 import { AssetList } from '../asset/AssetList';
-import { Asset } from '@/types/asset';
+import { Asset, StoredAsset } from '@/types/asset';
 import { AssetService } from '@/lib/asset/asset-service';
 
 interface ProjectLayoutProps {
@@ -23,8 +23,21 @@ export function ProjectLayout({ children, projectId }: ProjectLayoutProps) {
     const loadAssets = async () => {
       try {
         const assetService = new AssetService();
-        const projectAssets = await assetService.getProjectAssets(projectId);
-        setAssets(projectAssets);
+        const storedAssets = await assetService.getProjectAssets(projectId);
+        
+        // Transform StoredAsset to Asset format
+        const transformedAssets: Asset[] = storedAssets.map(storedAsset => ({
+          id: storedAsset.id,
+          project_id: storedAsset.project_id,
+          name: storedAsset.name,
+          type: storedAsset.asset_type,
+          content: storedAsset.current_content,
+          metadata: storedAsset.metadata,
+          created_at: storedAsset.created_at,
+          updated_at: storedAsset.updated_at
+        }));
+        
+        setAssets(transformedAssets);
       } catch (error) {
         console.error('Failed to load assets:', error);
       } finally {

@@ -1,4 +1,4 @@
-import { AssetType } from '@/types/asset';
+import { AssetType, ExtractedAsset } from '@/types/asset';
 import { Asset } from '@/types/asset';
 import { AssetExtractionResult, StoredAsset, AssetReference, AssetMetadata } from '@/types/asset';
 import { validateMermaidDiagram } from '../validators/mermaid-validator';
@@ -12,7 +12,7 @@ const ASSET_REFERENCE_PATTERN = /\[See asset: ([^\]]+)\]\(([^)]+)\)/g;
  * @param asset The asset to validate
  * @returns boolean indicating if the asset is valid
  */
-async function validateAsset(asset: Asset): Promise<boolean> {
+async function validateAsset(asset: ExtractedAsset): Promise<boolean> {
   if (asset.type === 'mermaid_diagram') {
     const validationResult = await validateMermaidDiagram(asset.content);
     if (!validationResult.isValid) {
@@ -31,7 +31,7 @@ async function validateAsset(asset: Asset): Promise<boolean> {
  * @returns A stored asset ready for database insertion
  */
 function createStoredAsset(
-  asset: Asset,
+  asset: ExtractedAsset,
   projectId: string,
   messageId: string
 ): StoredAsset {
@@ -85,8 +85,8 @@ function createAssetReference(
  * @param text The response text from the AI
  * @returns Array of extracted assets
  */
-function extractAssets(text: string): Asset[] {
-  const assets: Asset[] = [];
+function extractAssets(text: string): ExtractedAsset[] {
+  const assets: ExtractedAsset[] = [];
   let match;
 
   while ((match = ASSET_PATTERN.exec(text)) !== null) {

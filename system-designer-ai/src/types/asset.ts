@@ -7,6 +7,13 @@ export type AssetType =
   | 'state_diagram'
   | 'deployment_diagram';
 
+export interface ExtractedAsset {
+  type: AssetType;
+  name: string;
+  content: string;
+  description?: string;
+}
+
 export interface AssetMetadata {
   language?: string;
   created_at: Date;
@@ -63,6 +70,7 @@ export interface Asset {
   name: string;
   type: AssetType;
   content: string;
+  description?: string;
   metadata: AssetMetadata;
   created_at: Date;
   updated_at: Date;
