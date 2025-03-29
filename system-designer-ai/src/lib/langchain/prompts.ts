@@ -3,28 +3,23 @@ import { config } from './config';
 
 // Define types for each prompt's input variables
 export type DesignPromptInput = {
-  systemMessage: string;
   context: string;
   question: string;
 };
 
 export type ReviewPromptInput = {
-  systemMessage: string;
   architecture: string;
   reviewRequest: string;
 };
 
 export type SelectionPromptInput = {
-  systemMessage: string;
   requirements: string;
   constraints: string;
 };
 
 // Base system design prompt template
 export const systemDesignPrompt = new PromptTemplate<DesignPromptInput>({
-  template: `{systemMessage}
-
-Context:
+  template: `Context:
 {context}
 
 User Question: {question}
@@ -36,14 +31,12 @@ Please provide a detailed response that includes:
 4. Recommendations for implementation
 
 Response:`,
-  inputVariables: ['systemMessage', 'context', 'question'],
+  inputVariables: ['context', 'question'],
 });
 
 // Architecture review prompt template
 export const architectureReviewPrompt = new PromptTemplate<ReviewPromptInput>({
-  template: `{systemMessage}
-
-Current Architecture:
+  template: `Current Architecture:
 {architecture}
 
 Review Request: {reviewRequest}
@@ -55,14 +48,12 @@ Please provide a detailed review that includes:
 4. Improvement recommendations
 
 Response:`,
-  inputVariables: ['systemMessage', 'architecture', 'reviewRequest'],
+  inputVariables: ['architecture', 'reviewRequest'],
 });
 
 // Technology selection prompt template
 export const technologySelectionPrompt = new PromptTemplate<SelectionPromptInput>({
-  template: `{systemMessage}
-
-Requirements:
+  template: `Requirements:
 {requirements}
 
 Constraints:
@@ -75,7 +66,7 @@ Please recommend appropriate technologies and justify your choices based on:
 4. Cost considerations
 
 Response:`,
-  inputVariables: ['systemMessage', 'requirements', 'constraints'],
+  inputVariables: ['requirements', 'constraints'],
 });
 
 // Helper function to get the appropriate prompt template based on the type

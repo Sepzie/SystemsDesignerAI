@@ -53,7 +53,6 @@ class LangChainClient {
       case 'design': {
         const designPrompt = prompt as PromptTemplate<DesignPromptInput>;
         formattedPrompt = await designPrompt.format({
-          systemMessage: config.systemMessage,
           context,
           question: message,
         });
@@ -62,7 +61,6 @@ class LangChainClient {
       case 'review': {
         const reviewPrompt = prompt as PromptTemplate<ReviewPromptInput>;
         formattedPrompt = await reviewPrompt.format({
-          systemMessage: config.systemMessage,
           architecture: context,
           reviewRequest: message,
         });
@@ -71,7 +69,6 @@ class LangChainClient {
       case 'selection': {
         const selectionPrompt = prompt as PromptTemplate<SelectionPromptInput>;
         formattedPrompt = await selectionPrompt.format({
-          systemMessage: config.systemMessage,
           requirements: message,
           constraints: context,
         });
