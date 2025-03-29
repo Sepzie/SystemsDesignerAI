@@ -7,7 +7,6 @@ import { ChatProvider } from '@/contexts/ChatContext';
 import { AssetViewer } from '../asset/AssetViewer';
 import { AssetList } from '../asset/AssetList';
 import { Asset, StoredAsset } from '@/types/asset';
-import { AssetService } from '@/lib/asset/asset-service';
 
 interface ProjectLayoutProps {
   children: React.ReactNode;
@@ -22,19 +21,22 @@ export function ProjectLayout({ children, projectId }: ProjectLayoutProps) {
   useEffect(() => {
     const loadAssets = async () => {
       try {
-        const assetService = new AssetService();
-        const storedAssets = await assetService.getProjectAssets(projectId);
+        const response = await fetch(`/api/projects/${projectId}/assets`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch assets');
+        }
+        const storedAssets = await response.json();
         
         // Transform StoredAsset to Asset format
-        const transformedAssets: Asset[] = storedAssets.map(storedAsset => ({
+        const transformedAssets: Asset[] = storedAssets.map((storedAsset: StoredAsset) => ({
           id: storedAsset.id,
           project_id: storedAsset.project_id,
           name: storedAsset.name,
           type: storedAsset.asset_type,
           content: storedAsset.current_content,
           metadata: storedAsset.metadata,
-          created_at: storedAsset.created_at,
-          updated_at: storedAsset.updated_at
+          created_at: new Date(storedAsset.created_at),
+          updated_at: new Date(storedAsset.updated_at)
         }));
         
         setAssets(transformedAssets);
