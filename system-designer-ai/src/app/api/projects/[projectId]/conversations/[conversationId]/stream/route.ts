@@ -77,23 +77,26 @@ export async function GET(
           console.log('Generating AI response...');
           const response = await langChainClient.processMessage(
             message.content,
-            formattedContext
+            formattedContext,
+            'design', // Default to design type
+            projectId,
+            conversationId
           );
 
           // Send the response as a single event
           controller.enqueue(
-            encoder.encode(`event: message\ndata: ${JSON.stringify({ content: response.text })}\n\n`)
+            encoder.encode(`event: message\ndata: ${JSON.stringify({ content: response.message.content })}\n\n`)
           );
           
           // Update the message in the database with the complete response
           const { error: updateError } = await supabase
             .from('messages')
             .update({
-              content: response.text,
+              content: response.message.content,
               metadata: {
                 status: 'completed',
                 model: 'gpt-4-turbo-preview',
-                usage: response.usage,
+                tokens: response.message.metadata?.tokens,
                 completed_at: new Date().toISOString(),
               },
             })

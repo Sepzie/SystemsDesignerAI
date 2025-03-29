@@ -107,8 +107,8 @@ export async function POST(
           asset_type: asset.type as AssetType,
           current_content: asset.content,
           current_version: 1,
-          created_at: now.toISOString(),
-          updated_at: now.toISOString(),
+          created_at: now,
+          updated_at: now,
           metadata: {
             created_at: new Date(now),
             updated_at: new Date(now),

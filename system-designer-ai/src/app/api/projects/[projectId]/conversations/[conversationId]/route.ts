@@ -48,11 +48,12 @@ export async function GET(
       },
       messages: messages.map(msg => ({
         id: msg.id,
+        conversation_id: msg.conversation_id,
         conversationId: msg.conversation_id,
         role: msg.role,
         content: msg.content,
         metadata: msg.metadata,
-        timestamp: new Date(msg.created_at),
+        created_at: msg.created_at,
       })),
     };
 
