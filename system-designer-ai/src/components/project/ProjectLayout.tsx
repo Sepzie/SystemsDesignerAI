@@ -9,11 +9,10 @@ import { AssetList } from '../asset/AssetList';
 import { Asset, StoredAsset } from '@/types/asset';
 
 interface ProjectLayoutProps {
-  children: React.ReactNode;
   projectId: string;
 }
 
-export function ProjectLayout({ children, projectId }: ProjectLayoutProps) {
+export function ProjectLayout({ projectId }: ProjectLayoutProps) {
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -71,11 +70,6 @@ export function ProjectLayout({ children, projectId }: ProjectLayoutProps) {
               onAssetSelect={setSelectedAsset}
             />
           </div>
-
-          {/* Main Content Area */}
-          <main className="flex-1 overflow-auto p-4">
-            {children}
-          </main>
 
           {/* Asset Viewer */}
           <div className="w-1/2 border-l">
