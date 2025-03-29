@@ -11,9 +11,9 @@ import {
   ListMessagesResponse,
 } from '@/types/api';
 import { createClient } from '@/lib/supabase/server';
-import { langChainClient } from '@/lib/langchain/client';
 import { Message } from '@/types/chat';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { v4 as uuidv4 } from 'uuid';
 
 let supabase: SupabaseClient;
 
@@ -68,36 +68,43 @@ export async function POST(
       );
     }
 
-    // Process the message through LangChain
-    const response = await langChainClient.processMessage(
-      content,
-      '', // Context will be built by the client
-      type as 'design' | 'review' | 'selection' | 'asset',
-      params.projectId,
-      params.conversationId
-    );
-
-    // Store the message with its asset references
+    // Create a placeholder message for the user's input
+    const messageId = uuidv4();
     const { data: message, error: messageError } = await supabase
       .from('messages')
       .insert([{
-        id: response.message.id,
+        id: messageId,
         conversation_id: params.conversationId,
-        role: response.message.role,
-        content: response.message.content,
-        metadata: response.message.metadata,
-        created_at: response.message.created_at
+        role: 'user',
+        content,
+        metadata: {
+          type,
+          status: 'pending',
+          created_at: new Date().toISOString()
+        },
+        created_at: new Date().toISOString()
       }])
       .select()
       .single();
 
     if (messageError) throw messageError;
 
-    return NextResponse.json(response);
+    // Return the message ID for the stream endpoint
+    return NextResponse.json({
+      messageId,
+      message: {
+        id: messageId,
+        conversation_id: params.conversationId,
+        role: 'user',
+        content,
+        metadata: message.metadata,
+        created_at: message.created_at
+      }
+    });
   } catch (error) {
-    console.error('Error processing message:', error);
+    console.error('Error storing message:', error);
     return NextResponse.json(
-      { error: 'Failed to process message' },
+      { error: 'Failed to store message' },
       { status: 500 }
     );
   }
