@@ -1,7 +1,4 @@
-import { Asset, AssetType } from '@/types/asset';
-import { DiagramEditor } from '@/components/diagram/DiagramEditor';
-import { DataModelEditor } from '@/components/diagram/DataModelEditor';
-import { CodeEditor } from '@/components/editor/CodeEditor';
+import { Asset } from '@/types/asset';
 
 interface AssetViewerProps {
   asset: Asset | null;
@@ -17,49 +14,49 @@ export function AssetViewer({ asset, onAssetUpdate }: AssetViewerProps) {
     );
   }
 
-  const renderAssetContent = () => {
-    switch (asset.type) {
-      case 'mermaid_diagram':
-        return (
-          <DiagramEditor
-            content={asset.content}
-            onChange={(content: string) => onAssetUpdate?.({ ...asset, content })}
-            readOnly={!onAssetUpdate}
-          />
-        );
-      case 'data_model':
-        return (
-          <DataModelEditor
-            content={asset.content}
-            onChange={(content: string) => onAssetUpdate?.({ ...asset, content })}
-            readOnly={!onAssetUpdate}
-          />
-        );
-      case 'component_diagram':
-      case 'sequence_diagram':
-      case 'state_diagram':
-      case 'deployment_diagram':
-        return (
-          <DiagramEditor
-            content={asset.content}
-            onChange={(content: string) => onAssetUpdate?.({ ...asset, content })}
-            readOnly={!onAssetUpdate}
-          />
-        );
-      case 'system_context':
-        return (
-          <div className="p-4">
-            <pre className="whitespace-pre-wrap">{asset.content}</pre>
-          </div>
-        );
-      default:
-        return (
-          <div className="p-4">
-            <pre className="whitespace-pre-wrap">{asset.content}</pre>
-          </div>
-        );
-    }
-  };
+//   const renderAssetContent = () => {
+//     switch (asset.type) {
+//       case 'mermaid_diagram':
+//         return (
+//           <DiagramEditor
+//             content={asset.content}
+//             onChange={(content: string) => onAssetUpdate?.({ ...asset, content })}
+//             readOnly={!onAssetUpdate}
+//           />
+//         );
+//       case 'data_model':
+//         return (
+//           <DataModelEditor
+//             content={asset.content}
+//             onChange={(content: string) => onAssetUpdate?.({ ...asset, content })}
+//             readOnly={!onAssetUpdate}
+//           />
+//         );
+//       case 'component_diagram':
+//       case 'sequence_diagram':
+//       case 'state_diagram':
+//       case 'deployment_diagram':
+//         return (
+//           <DiagramEditor
+//             content={asset.content}
+//             onChange={(content: string) => onAssetUpdate?.({ ...asset, content })}
+//             readOnly={!onAssetUpdate}
+//           />
+//         );
+//       case 'system_context':
+//         return (
+//           <div className="p-4">
+//             <pre className="whitespace-pre-wrap">{asset.content}</pre>
+//           </div>
+//         );
+//       default:
+//         return (
+//           <div className="p-4">
+//             <pre className="whitespace-pre-wrap">{asset.content}</pre>
+//           </div>
+//         );
+//     }
+//   };
 
   return (
     <div className="flex flex-col h-full">
@@ -71,8 +68,8 @@ export function AssetViewer({ asset, onAssetUpdate }: AssetViewerProps) {
           </p>
         </div>
       </div>
-      <div className="flex-1 overflow-auto">
-        {renderAssetContent()}
+      <div className="flex-1 overflow-auto p-4">
+        <pre className="whitespace-pre-wrap">{asset.content}</pre>
       </div>
     </div>
   );
