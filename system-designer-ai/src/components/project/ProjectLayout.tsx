@@ -6,7 +6,7 @@ import { ChatInterface } from '../chat/ChatInterface';
 import { ChatProvider } from '@/contexts/ChatContext';
 import { AssetViewer } from '../asset/AssetViewer';
 import { AssetList } from '../asset/AssetList';
-import { Asset, StoredAsset } from '@/types/asset';
+import { Asset } from '@/types/asset';
 
 interface ProjectLayoutProps {
   projectId: string;
@@ -24,21 +24,8 @@ export function ProjectLayout({ projectId }: ProjectLayoutProps) {
         if (!response.ok) {
           throw new Error('Failed to fetch assets');
         }
-        const storedAssets = await response.json();
-        
-        // Transform StoredAsset to Asset format
-        const transformedAssets: Asset[] = storedAssets.map((storedAsset: StoredAsset) => ({
-          id: storedAsset.id,
-          project_id: storedAsset.project_id,
-          name: storedAsset.name,
-          type: storedAsset.asset_type,
-          content: storedAsset.current_content,
-          metadata: storedAsset.metadata,
-          created_at: new Date(storedAsset.created_at),
-          updated_at: new Date(storedAsset.updated_at)
-        }));
-        
-        setAssets(transformedAssets);
+        const assets = await response.json() as Asset[];
+        setAssets(assets);
       } catch (error) {
         console.error('Failed to load assets:', error);
       } finally {

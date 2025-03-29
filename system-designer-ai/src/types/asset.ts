@@ -40,20 +40,21 @@ export interface AssetReference {
   reference_type: 'creation' | 'modification' | 'mention';
 }
 
-export interface StoredAsset {
+export interface Asset {
   id: string;
   project_id: string;
   name: string;
-  asset_type: AssetType;
-  current_content: string;
+  type: AssetType;
+  content: string;
   current_version: number;
+  description?: string;
+  metadata: AssetMetadata;
   created_at: Date;
   updated_at: Date;
-  metadata: AssetMetadata;
 }
 
 export interface AssetExtractionResult {
-  assets: StoredAsset[];
+  assets: Asset[];
   references: AssetReference[];
   cleanedText: string;
 }
@@ -62,16 +63,4 @@ export interface MermaidValidationResult {
   isValid: boolean;
   errors?: string[];
   warnings?: string[];
-}
-
-export interface Asset {
-  id: string;
-  project_id: string;
-  name: string;
-  type: AssetType;
-  content: string;
-  description?: string;
-  metadata: AssetMetadata;
-  created_at: Date;
-  updated_at: Date;
 }

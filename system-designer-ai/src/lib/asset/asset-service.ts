@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { 
-  StoredAsset, 
+  Asset, 
   AssetVersion, 
   AssetReference,
   AssetType 
@@ -20,7 +20,7 @@ export class AssetService {
    * @param asset The asset to store
    * @returns The stored asset
    */
-  async storeAsset(asset: Omit<StoredAsset, 'id'>): Promise<StoredAsset> {
+  async storeAsset(asset: Omit<Asset, 'id'>): Promise<Asset> {
     // Convert string dates to Date objects
     const assetWithDates = {
       ...asset,
@@ -101,7 +101,7 @@ export class AssetService {
    * @param assetId The ID of the asset
    * @returns The asset
    */
-  async getAssetById(assetId: string): Promise<StoredAsset | null> {
+  async getAssetById(assetId: string): Promise<Asset | null> {
     const { data, error } = await this.supabase
       .from('assets')
       .select('*')
@@ -117,7 +117,7 @@ export class AssetService {
    * @param projectId The project ID
    * @returns Array of assets
    */
-  async getAssetsByProject(projectId: string): Promise<StoredAsset[]> {
+  async getAssetsByProject(projectId: string): Promise<Asset[]> {
     const { data, error } = await this.supabase
       .from('assets')
       .select('*')
@@ -136,12 +136,12 @@ export class AssetService {
   async getAssetsByType(
     projectId: string,
     type: AssetType
-  ): Promise<StoredAsset[]> {
+  ): Promise<Asset[]> {
     const { data, error } = await this.supabase
       .from('assets')
       .select('*')
       .eq('project_id', projectId)
-      .eq('asset_type', type);
+      .eq('type', type);
 
     if (error) throw error;
     return data;
@@ -201,7 +201,7 @@ export class AssetService {
    * @returns Array of assets with their references
    */
   async getMessageAssets(messageId: string): Promise<{
-    asset: StoredAsset;
+    asset: Asset;
     reference: AssetReference;
   }[]> {
     const { data, error } = await this.supabase
@@ -239,7 +239,7 @@ export class AssetService {
     if (error) throw error;
   }
 
-  async getProjectAssets(projectId: string): Promise<StoredAsset[]> {
+  async getProjectAssets(projectId: string): Promise<Asset[]> {
     const { data, error } = await this.supabase
       .from('assets')
       .select('*')
@@ -250,7 +250,7 @@ export class AssetService {
     return data;
   }
 
-  async getAsset(id: string): Promise<StoredAsset> {
+  async getAsset(id: string): Promise<Asset> {
     const { data, error } = await this.supabase
       .from('assets')
       .select('*')
@@ -261,7 +261,7 @@ export class AssetService {
     return data;
   }
 
-  async createAsset(asset: Omit<StoredAsset, 'id'>): Promise<StoredAsset> {
+  async createAsset(asset: Omit<Asset, 'id'>): Promise<Asset> {
     const { data, error } = await this.supabase
       .from('assets')
       .insert([asset])
@@ -272,7 +272,7 @@ export class AssetService {
     return data;
   }
 
-  async updateAsset(id: string, asset: Partial<StoredAsset>): Promise<StoredAsset> {
+  async updateAsset(id: string, asset: Partial<Asset>): Promise<Asset> {
     const { data, error } = await this.supabase
       .from('assets')
       .update(asset)

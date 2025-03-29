@@ -154,9 +154,9 @@ class LangChainClient {
       message: messageObj,
       assets: assets.map(asset => ({
         id: asset.id,
-        type: asset.asset_type,
+        type: asset.type,
         name: asset.name,
-        content: asset.current_content
+        content: asset.content
       }))
     };
   }
