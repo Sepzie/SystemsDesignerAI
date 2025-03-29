@@ -4,9 +4,9 @@ import { NextResponse } from 'next/server'
 // GET: Fetch a specific project by ID
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  
+  const { id } = await params;
   const supabase = await createClient()
 
   const { data: { session } } = await supabase.auth.getSession()
@@ -18,7 +18,7 @@ export async function GET(
   const { data, error } = await supabase
     .from('projects')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .eq('user_id', session.user.id)
     .single()
 
@@ -35,8 +35,9 @@ export async function GET(
 // PUT: Update a project
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const supabase = await createClient()
 
   const { data: { session } } = await supabase.auth.getSession()
@@ -52,7 +53,7 @@ export async function PUT(
     const { data: projectData, error: projectError } = await supabase
       .from('projects')
       .select('user_id')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
     
     if (projectError || !projectData) {
@@ -75,7 +76,7 @@ export async function PUT(
         ...updates,
         updated_at: new Date().toISOString() 
       })
-      .eq('id', params.id)
+      .eq('id', id)
       .select()
       .single()
 
@@ -95,8 +96,9 @@ export async function PUT(
 // DELETE: Delete a project
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   const supabase = await createClient()
 
   const { data: { session } } = await supabase.auth.getSession()
@@ -109,7 +111,7 @@ export async function DELETE(
   const { data: projectData, error: projectError } = await supabase
     .from('projects')
     .select('user_id')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
   
   if (projectError || !projectData) {
@@ -129,7 +131,7 @@ export async function DELETE(
   const { error } = await supabase
     .from('projects')
     .delete()
-    .eq('id', params.id)
+    .eq('id', id)
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })

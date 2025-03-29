@@ -8,19 +8,13 @@ import {
 import { SupabaseClient } from '@supabase/supabase-js';
 
 export class AssetService {
-  private supabase: SupabaseClient;
-
-  constructor() {
-    // Initialize the Supabase client synchronously
-    this.supabase = createClient() as unknown as SupabaseClient;
-  }
-
   /**
    * Stores a new asset in the database
    * @param asset The asset to store
    * @returns The stored asset
    */
   async storeAsset(asset: Omit<Asset, 'id'>): Promise<Asset> {
+    const supabase = await createClient();
     // Convert string dates to Date objects
     const assetWithDates = {
       ...asset,
@@ -33,7 +27,7 @@ export class AssetService {
       }
     };
 
-    const { data, error } = await this.supabase
+    const { data, error } = await supabase
       .from('assets')
       .insert([assetWithDates])
       .select()
@@ -55,8 +49,9 @@ export class AssetService {
     content: string,
     messageId: string
   ): Promise<AssetVersion> {
+    const supabase = await createClient();
     // Start a transaction
-    const { data: asset, error: assetError } = await this.supabase
+    const { data: asset, error: assetError } = await supabase
       .from('assets')
       .select('current_version')
       .eq('id', assetId)
@@ -67,7 +62,7 @@ export class AssetService {
     const newVersion = asset.current_version + 1;
 
     // Create the new version
-    const { data: version, error: versionError } = await this.supabase
+    const { data: version, error: versionError } = await supabase
       .from('asset_versions')
       .insert([{
         asset_id: assetId,
@@ -82,7 +77,7 @@ export class AssetService {
     if (versionError) throw versionError;
 
     // Update the asset's current version
-    const { error: updateError } = await this.supabase
+    const { error: updateError } = await supabase
       .from('assets')
       .update({
         current_content: content,
@@ -102,7 +97,8 @@ export class AssetService {
    * @returns The asset
    */
   async getAssetById(assetId: string): Promise<Asset | null> {
-    const { data, error } = await this.supabase
+    const supabase = await createClient();
+    const { data, error } = await supabase
       .from('assets')
       .select('*')
       .eq('id', assetId)
@@ -118,7 +114,8 @@ export class AssetService {
    * @returns Array of assets
    */
   async getAssetsByProject(projectId: string): Promise<Asset[]> {
-    const { data, error } = await this.supabase
+    const supabase = await createClient();
+    const { data, error } = await supabase
       .from('assets')
       .select('*')
       .eq('project_id', projectId);
@@ -137,7 +134,8 @@ export class AssetService {
     projectId: string,
     type: AssetType
   ): Promise<Asset[]> {
-    const { data, error } = await this.supabase
+    const supabase = await createClient();
+    const { data, error } = await supabase
       .from('assets')
       .select('*')
       .eq('project_id', projectId)
@@ -153,7 +151,8 @@ export class AssetService {
    * @returns Array of versions
    */
   async getAssetVersions(assetId: string): Promise<AssetVersion[]> {
-    const { data, error } = await this.supabase
+    const supabase = await createClient();
+    const { data, error } = await supabase
       .from('asset_versions')
       .select('*')
       .eq('asset_id', assetId)
@@ -169,7 +168,8 @@ export class AssetService {
    * @returns The created reference
    */
   async createAssetReference(reference: Omit<AssetReference, 'id'>): Promise<AssetReference> {
-    const { data, error } = await this.supabase
+    const supabase = await createClient();
+    const { data, error } = await supabase
       .from('asset_references')
       .insert([reference])
       .select()
@@ -185,7 +185,8 @@ export class AssetService {
    * @returns Array of references
    */
   async getAssetReferences(assetId: string): Promise<AssetReference[]> {
-    const { data, error } = await this.supabase
+    const supabase = await createClient();
+    const { data, error } = await supabase
       .from('asset_references')
       .select('*')
       .eq('asset_id', assetId)
@@ -204,7 +205,8 @@ export class AssetService {
     asset: Asset;
     reference: AssetReference;
   }[]> {
-    const { data, error } = await this.supabase
+    const supabase = await createClient();
+    const { data, error } = await supabase
       .from('asset_references')
       .select(`
         *,
@@ -231,7 +233,8 @@ export class AssetService {
    * @param assetId The ID of the asset to delete
    */
   async deleteAsset(assetId: string): Promise<void> {
-    const { error } = await this.supabase
+    const supabase = await createClient();
+    const { error } = await supabase
       .from('assets')
       .delete()
       .eq('id', assetId);
@@ -240,7 +243,8 @@ export class AssetService {
   }
 
   async getProjectAssets(projectId: string): Promise<Asset[]> {
-    const { data, error } = await this.supabase
+    const supabase = await createClient();
+    const { data, error } = await supabase
       .from('assets')
       .select('*')
       .eq('project_id', projectId)
@@ -251,7 +255,8 @@ export class AssetService {
   }
 
   async getAsset(id: string): Promise<Asset> {
-    const { data, error } = await this.supabase
+    const supabase = await createClient();
+    const { data, error } = await supabase
       .from('assets')
       .select('*')
       .eq('id', id)
@@ -262,7 +267,8 @@ export class AssetService {
   }
 
   async createAsset(asset: Omit<Asset, 'id'>): Promise<Asset> {
-    const { data, error } = await this.supabase
+    const supabase = await createClient();
+    const { data, error } = await supabase
       .from('assets')
       .insert([asset])
       .select()
@@ -273,7 +279,8 @@ export class AssetService {
   }
 
   async updateAsset(id: string, asset: Partial<Asset>): Promise<Asset> {
-    const { data, error } = await this.supabase
+    const supabase = await createClient();
+    const { data, error } = await supabase
       .from('assets')
       .update(asset)
       .eq('id', id)

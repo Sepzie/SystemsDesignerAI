@@ -5,10 +5,11 @@ const assetService = new AssetService();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { projectId: string; assetId: string } }
+  { params }: { params: Promise<{ projectId: string; assetId: string }> }
 ) {
   try {
-    const asset = await assetService.getAssetById(params.assetId);
+    const { projectId, assetId } = await params;
+    const asset = await assetService.getAssetById(assetId);
     
     if (!asset) {
       return NextResponse.json(
@@ -18,14 +19,14 @@ export async function GET(
     }
 
     // Verify the asset belongs to the project
-    if (asset.project_id !== params.projectId) {
+    if (asset.project_id !== projectId) {
       return NextResponse.json(
         { error: 'Asset not found in project' },
         { status: 404 }
       );
     }
 
-    const versions = await assetService.getAssetVersions(params.assetId);
+    const versions = await assetService.getAssetVersions(assetId);
     return NextResponse.json(versions);
   } catch (error) {
     console.error('Error fetching asset versions:', error);

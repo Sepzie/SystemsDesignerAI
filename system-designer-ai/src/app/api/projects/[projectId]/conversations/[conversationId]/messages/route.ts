@@ -12,29 +12,19 @@ import {
 } from '@/types/api';
 import { createClient } from '@/lib/supabase/server';
 import { Message } from '@/types/chat';
-import { SupabaseClient } from '@supabase/supabase-js';
 import { v4 as uuidv4 } from 'uuid';
-
-let supabase: SupabaseClient;
-
-// Initialize Supabase client
-createClient().then(client => {
-  supabase = client;
-});
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { projectId: string; conversationId: string } }
+  { params }: { params: Promise<{ projectId: string; conversationId: string }> }
 ) {
   try {
-    if (!supabase) {
-      throw new Error('Supabase client not initialized');
-    }
-
+    const supabase = await createClient();
+    const { conversationId } = await params;
     const { data: messages, error } = await supabase
       .from('messages')
       .select('*')
-      .eq('conversation_id', params.conversationId)
+      .eq('conversation_id', conversationId)
       .order('created_at', { ascending: true });
 
     if (error) throw error;
@@ -51,13 +41,11 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { projectId: string; conversationId: string } }
+  { params }: { params: Promise<{ projectId: string; conversationId: string }> }
 ) {
   try {
-    if (!supabase) {
-      throw new Error('Supabase client not initialized');
-    }
-
+    const supabase = await createClient();
+    const { conversationId } = await params;
     const body = await request.json();
     const { content, type = 'design' } = body;
 
@@ -74,7 +62,7 @@ export async function POST(
       .from('messages')
       .insert([{
         id: messageId,
-        conversation_id: params.conversationId,
+        conversation_id: conversationId,
         role: 'user',
         content,
         metadata: {
@@ -94,7 +82,7 @@ export async function POST(
       messageId,
       message: {
         id: messageId,
-        conversation_id: params.conversationId,
+        conversation_id: conversationId,
         role: 'user',
         content,
         metadata: message.metadata,

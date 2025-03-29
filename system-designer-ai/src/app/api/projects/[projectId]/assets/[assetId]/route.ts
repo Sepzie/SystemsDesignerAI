@@ -5,10 +5,11 @@ const assetService = new AssetService();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { projectId: string; assetId: string } }
+  { params }: { params: Promise<{ projectId: string; assetId: string }> }
 ) {
   try {
-    const asset = await assetService.getAssetById(params.assetId);
+    const { projectId, assetId } = await params;
+    const asset = await assetService.getAssetById(assetId);
     
     if (!asset) {
       return NextResponse.json(
@@ -18,7 +19,7 @@ export async function GET(
     }
 
     // Verify the asset belongs to the project
-    if (asset.project_id !== params.projectId) {
+    if (asset.project_id !== projectId) {
       return NextResponse.json(
         { error: 'Asset not found in project' },
         { status: 404 }
@@ -37,9 +38,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { projectId: string; assetId: string } }
+  { params }: { params: Promise<{ projectId: string; assetId: string }> }
 ) {
   try {
+    const { assetId } = await params;
     const body = await request.json();
     const { content, message_id } = body;
 
@@ -51,7 +53,7 @@ export async function PUT(
     }
 
     const version = await assetService.createAssetVersion(
-      params.assetId,
+      assetId,
       content,
       message_id
     );
@@ -68,10 +70,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { projectId: string; assetId: string } }
+  { params }: { params: Promise<{ projectId: string; assetId: string }> }
 ) {
   try {
-    const asset = await assetService.getAssetById(params.assetId);
+    const { projectId, assetId } = await params;
+    const asset = await assetService.getAssetById(assetId);
     
     if (!asset) {
       return NextResponse.json(
@@ -81,7 +84,7 @@ export async function DELETE(
     }
 
     // Verify the asset belongs to the project
-    if (asset.project_id !== params.projectId) {
+    if (asset.project_id !== projectId) {
       return NextResponse.json(
         { error: 'Asset not found in project' },
         { status: 404 }
@@ -89,7 +92,7 @@ export async function DELETE(
     }
 
     // Delete the asset and all its versions
-    await assetService.deleteAsset(params.assetId);
+    await assetService.deleteAsset(assetId);
 
     return NextResponse.json({ success: true });
   } catch (error) {

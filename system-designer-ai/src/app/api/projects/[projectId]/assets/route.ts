@@ -2,21 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { AssetService } from '@/lib/asset/asset-service';
 import { AssetType } from '@/types/asset';
 
-const assetService = new AssetService();
+const assetService =  new AssetService();
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {
+    const { projectId } = await params;
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type') as AssetType | null;
 
     let assets;
     if (type) {
-      assets = await assetService.getAssetsByType(params.projectId, type);
+      assets = await assetService.getAssetsByType(projectId, type);
     } else {
-      assets = await assetService.getAssetsByProject(params.projectId);
+      assets = await assetService.getAssetsByProject(projectId);
     }
 
     return NextResponse.json(assets);
@@ -31,13 +32,14 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {
+    const { projectId } = await params;
     const body = await request.json();
     const asset = await assetService.storeAsset({
       ...body,
-      project_id: params.projectId,
+      project_id: projectId,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     });
