@@ -8,7 +8,8 @@ import {
   SelectionPromptInput,
   AssetGenerationInput
 } from './prompts';
-import { LangChainResponse, AssetType } from '@/types/langchain';
+import { LangChainResponse } from '@/types/langchain';
+import { AssetType } from '@/types/asset';
 import { processAIResponse } from './asset-extraction';
 
 // Mock implementation for development/testing

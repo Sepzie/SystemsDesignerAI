@@ -1,21 +1,6 @@
+import { Asset, AssetType } from './asset';
 import { Message } from './chat';
 import { Project } from './project';
-
-export type AssetType = 
-  | 'mermaid_diagram'
-  | 'system_context'
-  | 'component_diagram'
-  | 'data_model'
-  | 'sequence_diagram'
-  | 'state_diagram'
-  | 'deployment_diagram';
-
-export interface Asset {
-  type: AssetType;
-  name: string;
-  content: string;
-  description?: string;
-}
 
 export interface ConversationContext {
   messages: Message[];

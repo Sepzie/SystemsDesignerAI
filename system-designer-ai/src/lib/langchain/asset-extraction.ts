@@ -1,4 +1,5 @@
-import { Asset, AssetType } from '@/types/langchain';
+import { AssetType } from '@/types/asset';
+import { Asset } from '@/types/asset';
 import { AssetExtractionResult, StoredAsset, AssetReference, AssetMetadata } from '@/types/asset';
 import { validateMermaidDiagram } from '../validators/mermaid-validator';
 import { v4 as uuidv4 } from 'uuid';

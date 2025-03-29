@@ -1,4 +1,3 @@
-import { AssetType } from './langchain';
 
 export interface AssetMetadata {
   created_at: Date;
@@ -47,4 +46,17 @@ export interface MermaidValidationResult {
   isValid: boolean;
   errors?: string[];
   warnings?: string[];
-} 
+}export interface Asset {
+  type: AssetType;
+  name: string;
+  content: string;
+  description?: string;
+}
+export type AssetType = 'mermaid_diagram' |
+  'system_context' |
+  'component_diagram' |
+  'data_model' |
+  'sequence_diagram' |
+  'state_diagram' |
+  'deployment_diagram';
+ 
