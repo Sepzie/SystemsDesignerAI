@@ -13,6 +13,7 @@ import { processAIResponse } from './asset-extraction';
 import { AssetService } from '../asset/asset-service';
 import { Message, ChatResponse } from '@/types/chat';
 import { v4 as uuidv4 } from 'uuid';
+import { SYSTEM_MESSAGE } from './prompts';
 
 const assetService = new AssetService();
 
@@ -101,7 +102,7 @@ class LangChainClient {
     // Log the final prompt before sending to OpenAI
     console.log('\n=== AI Prompt Details ===');
     console.log('Type:', type);
-    console.log('System Message:', config.systemMessage);
+    console.log('System Message:', SYSTEM_MESSAGE);
     console.log('Formatted Prompt:', formattedPrompt);
     console.log('Context Length:', context.length);
     console.log('Message Length:', message.length);
@@ -111,7 +112,7 @@ class LangChainClient {
     const response = await this.model.invoke([
       {
         role: 'system',
-        content: config.systemMessage,
+        content: SYSTEM_MESSAGE,
       },
       {
         role: 'user',

@@ -24,13 +24,4 @@ export const config = {
     maxTokens: 2000,
   },
 
-  // System message for the AI assistant
-  systemMessage: `You are an expert AI system designer assistant. Your role is to help users design, 
-  analyze, and improve their software systems. You should provide clear, practical advice while 
-  considering scalability, maintainability, and best practices.`,
-
-  // Default prompt template
-  defaultPrompt: `As an AI system designer assistant, I'll help you with your system design questions.
-  Please provide your question or describe the system you'd like to design, and I'll guide you through 
-  the process.`,
 } as const; 

@@ -24,6 +24,11 @@ export type AssetGenerationInput = {
   assetTypes?: AssetType[];
 };
 
+
+export const SYSTEM_MESSAGE =`You are an expert AI Systems Designer. Your role is to help users design, 
+analyze, and improve their software systems. You should provide clear, practical advice while 
+considering scalability, maintainability, and best practices.`;
+
 // Asset generation format instructions
 const ASSET_FORMAT_INSTRUCTIONS = `
 When generating assets, use the following format:
