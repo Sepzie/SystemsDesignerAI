@@ -5,9 +5,11 @@ import {
   getPromptTemplate,
   DesignPromptInput,
   ReviewPromptInput,
-  SelectionPromptInput 
+  SelectionPromptInput,
+  AssetGenerationInput
 } from './prompts';
-import { LangChainResponse } from '@/types/langchain';
+import { LangChainResponse, AssetType } from '@/types/langchain';
+import { processAIResponse } from './asset-extraction';
 
 // Mock implementation for development/testing
 class MockLangChainClient {
@@ -43,7 +45,8 @@ class LangChainClient {
   async processMessage(
     message: string,
     context: string = '',
-    type: 'design' | 'review' | 'selection' = 'design'
+    type: 'design' | 'review' | 'selection' | 'asset' = 'design',
+    assetTypes?: AssetType[]
   ): Promise<LangChainResponse> {
     const prompt = getPromptTemplate(type);
     
@@ -71,6 +74,15 @@ class LangChainClient {
         formattedPrompt = await selectionPrompt.format({
           requirements: message,
           constraints: context,
+        });
+        break;
+      }
+      case 'asset': {
+        const assetPrompt = prompt as PromptTemplate<AssetGenerationInput>;
+        formattedPrompt = await assetPrompt.format({
+          context,
+          question: message,
+          assetTypes: assetTypes?.join(', ') || 'all',
         });
         break;
       }
@@ -104,6 +116,9 @@ class LangChainClient {
       ? response.content 
       : JSON.stringify(response.content);
     
+    // Process the response to extract assets and clean text
+    const { text, assets } = processAIResponse(content);
+    
     // Create a usage object based on the response
     const usage = {
       promptTokens: 0, // These would come from the actual API response
@@ -112,7 +127,8 @@ class LangChainClient {
     };
 
     return {
-      text: content,
+      text,
+      assets,
       usage,
     };
   }
