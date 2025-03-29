@@ -238,4 +238,49 @@ export class AssetService {
 
     if (error) throw error;
   }
+
+  async getProjectAssets(projectId: string): Promise<StoredAsset[]> {
+    const { data, error } = await this.supabase
+      .from('assets')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return data;
+  }
+
+  async getAsset(id: string): Promise<StoredAsset> {
+    const { data, error } = await this.supabase
+      .from('assets')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async createAsset(asset: Omit<StoredAsset, 'id'>): Promise<StoredAsset> {
+    const { data, error } = await this.supabase
+      .from('assets')
+      .insert([asset])
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async updateAsset(id: string, asset: Partial<StoredAsset>): Promise<StoredAsset> {
+    const { data, error } = await this.supabase
+      .from('assets')
+      .update(asset)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
 } 

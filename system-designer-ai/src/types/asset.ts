@@ -1,12 +1,20 @@
+export type AssetType = 
+  | 'mermaid_diagram'
+  | 'system_context'
+  | 'component_diagram'
+  | 'data_model'
+  | 'sequence_diagram'
+  | 'state_diagram'
+  | 'deployment_diagram';
 
 export interface AssetMetadata {
+  language?: string;
   created_at: Date;
   updated_at: Date;
   created_by_message_id: string;
   version_number: number;
   reference_type: 'creation' | 'modification' | 'mention';
 }
-
 
 export interface AssetVersion {
   id: string;
@@ -47,19 +55,15 @@ export interface MermaidValidationResult {
   isValid: boolean;
   errors?: string[];
   warnings?: string[];
-}export interface Asset {
-  type: AssetType;
-  name: string;
-  content: string;
-  description?: string;
 }
 
-export type AssetType = 
-  | 'mermaid_diagram'
-  | 'system_context'
-  | 'component_diagram'
-  | 'data_model'
-  | 'sequence_diagram'
-  | 'state_diagram'
-  | 'deployment_diagram';
- 
+export interface Asset {
+  id: string;
+  project_id: string;
+  name: string;
+  type: AssetType;
+  content: string;
+  metadata: AssetMetadata;
+  created_at: Date;
+  updated_at: Date;
+}

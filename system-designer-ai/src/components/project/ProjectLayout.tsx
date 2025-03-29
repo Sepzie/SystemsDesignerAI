@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
-import { ProjectSidebar } from './ProjectSidebar';
+import React, { useState, useEffect } from 'react';
 import { VersionHistory } from './VersionHistory';
 import { ChatInterface } from '../chat/ChatInterface';
 import { ChatProvider } from '@/contexts/ChatContext';
 import { AssetViewer } from '../asset/AssetViewer';
+import { AssetList } from '../asset/AssetList';
 import { Asset } from '@/types/asset';
+import { AssetService } from '@/lib/asset/asset-service';
 
 interface ProjectLayoutProps {
   children: React.ReactNode;
@@ -15,6 +16,24 @@ interface ProjectLayoutProps {
 
 export function ProjectLayout({ children, projectId }: ProjectLayoutProps) {
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadAssets = async () => {
+      try {
+        const assetService = new AssetService();
+        const projectAssets = await assetService.getProjectAssets(projectId);
+        setAssets(projectAssets);
+      } catch (error) {
+        console.error('Failed to load assets:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadAssets();
+  }, [projectId]);
 
   return (
     <ChatProvider projectId={projectId}>
@@ -29,35 +48,34 @@ export function ProjectLayout({ children, projectId }: ProjectLayoutProps) {
 
         {/* Main Content */}
         <div className="flex flex-1 overflow-hidden">
-          {/* Left Sidebar */}
-          <ProjectSidebar
-            projectId={projectId}
-            selectedAssetId={selectedAsset?.id || null}
-            onAssetSelect={setSelectedAsset}
-          />
+          {/* Asset List */}
+          <div className="w-64 border-r bg-white">
+            <AssetList
+              assets={assets}
+              selectedAssetId={selectedAsset?.id || null}
+              onAssetSelect={setSelectedAsset}
+            />
+          </div>
 
           {/* Main Content Area */}
           <main className="flex-1 overflow-auto p-4">
             {children}
           </main>
 
-          {/* Right Sidebar - Version History */}
-          <VersionHistory />
+          {/* Asset Viewer */}
+          <div className="w-1/2 border-l">
+            <AssetViewer
+              asset={selectedAsset}
+              onAssetUpdate={(asset) => {
+                // TODO: Implement asset update logic
+                console.log('Asset updated:', asset);
+              }}
+            />
+          </div>
         </div>
 
         {/* Chat Interface */}
         <ChatInterface projectId={projectId} />
-
-        {/* Asset Viewer */}
-        <div className="w-1/2 border-l">
-          <AssetViewer
-            asset={selectedAsset}
-            onAssetUpdate={(asset) => {
-              // TODO: Implement asset update logic
-              console.log('Asset updated:', asset);
-            }}
-          />
-        </div>
       </div>
     </ChatProvider>
   );

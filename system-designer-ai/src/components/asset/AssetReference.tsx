@@ -1,19 +1,28 @@
-import { Asset, AssetType } from '@/types/asset';
+import { AssetReference as AssetReferenceType, Asset } from '@/types/asset';
 
 interface AssetReferenceProps {
+  reference: AssetReferenceType;
   asset: Asset;
   onClick: () => void;
 }
 
-export function AssetReference({ asset, onClick }: AssetReferenceProps) {
-  const getAssetIcon = (type: AssetType) => {
+export function AssetReference({ reference, asset, onClick }: AssetReferenceProps) {
+  const getAssetIcon = (type: string) => {
     switch (type) {
-      case AssetType.MermaidDiagram:
+      case 'mermaid_diagram':
         return '📊';
-      case AssetType.DataModel:
+      case 'data_model':
         return '🗄️';
-      case AssetType.Code:
-        return '💻';
+      case 'component_diagram':
+        return '🔧';
+      case 'sequence_diagram':
+        return '⏱️';
+      case 'state_diagram':
+        return '🔄';
+      case 'deployment_diagram':
+        return '🚀';
+      case 'system_context':
+        return '🌐';
       default:
         return '📄';
     }
