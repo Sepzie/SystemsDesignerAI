@@ -1,6 +1,7 @@
-import { Asset, AssetType } from './asset';
+import { Asset, AssetType} from './asset';
 import { Message } from './chat';
 import { Project } from './project';
+
 
 export interface ConversationContext {
   messages: Message[];
@@ -11,9 +12,9 @@ export interface LangChainResponse {
   text: string;
   assets?: Asset[];
   usage: {
-    promptTokens: number;
-    completionTokens: number;
-    totalTokens: number;
+    prompt: number;
+    completion: number;
+    total: number;
   };
 }
 

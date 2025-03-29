@@ -89,12 +89,7 @@ export async function DELETE(
     }
 
     // Delete the asset and all its versions
-    const { error } = await assetService.supabase
-      .from('assets')
-      .delete()
-      .eq('id', params.assetId);
-
-    if (error) throw error;
+    await assetService.deleteAsset(params.assetId);
 
     return NextResponse.json({ success: true });
   } catch (error) {

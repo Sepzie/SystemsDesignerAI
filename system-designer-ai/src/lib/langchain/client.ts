@@ -8,20 +8,25 @@ import {
   SelectionPromptInput,
   AssetGenerationInput
 } from './prompts';
-import { LangChainResponse } from '@/types/langchain';
 import { AssetType } from '@/types/asset';
 import { processAIResponse } from './asset-extraction';
+import { AssetService } from '../asset/asset-service';
+import { Message, ChatResponse } from '@/types/chat';
+import { v4 as uuidv4 } from 'uuid';
+
+const assetService = new AssetService();
 
 // Mock implementation for development/testing
 class MockLangChainClient {
-  async processMessage(message: string, context: string = ''): Promise<LangChainResponse> {
+  async processMessage(message: string, context: string = ''): Promise<ChatResponse> {
     return {
-      text: `Mock response for: ${message}\nContext: ${context}`,
-      usage: {
-        promptTokens: 0,
-        completionTokens: 0,
-        totalTokens: 0,
-      },
+      message: {
+        id: uuidv4(),
+        conversation_id: 'mock-conv',
+        role: 'assistant',
+        content: `Mock response for: ${message}\nContext: ${context}`,
+        created_at: new Date().toISOString()
+      }
     };
   }
 }
@@ -47,8 +52,10 @@ class LangChainClient {
     message: string,
     context: string = '',
     type: 'design' | 'review' | 'selection' | 'asset' = 'design',
+    projectId: string,
+    conversationId: string,
     assetTypes?: AssetType[]
-  ): Promise<LangChainResponse> {
+  ): Promise<ChatResponse> {
     const prompt = getPromptTemplate(type);
     
     // Format the prompt based on the type
@@ -118,19 +125,38 @@ class LangChainClient {
       : JSON.stringify(response.content);
     
     // Process the response to extract assets and clean text
-    const { text, assets } = processAIResponse(content);
-    
-    // Create a usage object based on the response
-    const usage = {
-      promptTokens: 0, // These would come from the actual API response
-      completionTokens: 0,
-      totalTokens: 0,
+    const { cleanedText, assets, references } = await processAIResponse(
+      content,
+      projectId,
+      conversationId
+    );
+
+    // Create the message object
+    const messageId = uuidv4();
+    const messageObj: Message = {
+      id: messageId,
+      conversation_id: conversationId,
+      role: 'assistant',
+      content: cleanedText,
+      metadata: {
+        assets: references,
+        tokens: {
+          prompt: 0, // These would come from the actual API response
+          completion: 0,
+          total: 0,
+        }
+      },
+      created_at: new Date().toISOString()
     };
 
     return {
-      text,
-      assets,
-      usage,
+      message: messageObj,
+      assets: assets.map(asset => ({
+        id: asset.id,
+        type: asset.asset_type,
+        name: asset.name,
+        content: asset.current_content
+      }))
     };
   }
 }

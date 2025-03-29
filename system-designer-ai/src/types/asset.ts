@@ -7,6 +7,7 @@ export interface AssetMetadata {
   reference_type: 'creation' | 'modification' | 'mention';
 }
 
+
 export interface AssetVersion {
   id: string;
   asset_id: string;
@@ -52,11 +53,13 @@ export interface MermaidValidationResult {
   content: string;
   description?: string;
 }
-export type AssetType = 'mermaid_diagram' |
-  'system_context' |
-  'component_diagram' |
-  'data_model' |
-  'sequence_diagram' |
-  'state_diagram' |
-  'deployment_diagram';
+
+export type AssetType = 
+  | 'mermaid_diagram'
+  | 'system_context'
+  | 'component_diagram'
+  | 'data_model'
+  | 'sequence_diagram'
+  | 'state_diagram'
+  | 'deployment_diagram';
  

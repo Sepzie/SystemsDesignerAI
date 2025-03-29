@@ -5,9 +5,15 @@ import {
   AssetReference,
   AssetType 
 } from '@/types/asset';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 export class AssetService {
-  private supabase = createClient();
+  private supabase: SupabaseClient;
+
+  constructor() {
+    // Initialize the Supabase client synchronously
+    this.supabase = createClient() as unknown as SupabaseClient;
+  }
 
   /**
    * Stores a new asset in the database
@@ -15,9 +21,21 @@ export class AssetService {
    * @returns The stored asset
    */
   async storeAsset(asset: Omit<StoredAsset, 'id'>): Promise<StoredAsset> {
+    // Convert string dates to Date objects
+    const assetWithDates = {
+      ...asset,
+      created_at: new Date(asset.created_at),
+      updated_at: new Date(asset.updated_at),
+      metadata: {
+        ...asset.metadata,
+        created_at: new Date(asset.metadata.created_at),
+        updated_at: new Date(asset.metadata.updated_at)
+      }
+    };
+
     const { data, error } = await this.supabase
       .from('assets')
-      .insert([asset])
+      .insert([assetWithDates])
       .select()
       .single();
 
@@ -196,7 +214,7 @@ export class AssetService {
 
     if (error) throw error;
 
-    return data.map(item => ({
+    return data.map((item: any) => ({
       asset: item.asset,
       reference: {
         id: item.id,
@@ -206,5 +224,18 @@ export class AssetService {
         reference_type: item.reference_type
       }
     }));
+  }
+
+  /**
+   * Deletes an asset and all its versions
+   * @param assetId The ID of the asset to delete
+   */
+  async deleteAsset(assetId: string): Promise<void> {
+    const { error } = await this.supabase
+      .from('assets')
+      .delete()
+      .eq('id', assetId);
+
+    if (error) throw error;
   }
 } 

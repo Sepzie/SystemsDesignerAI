@@ -11,146 +11,128 @@ import {
   ListMessagesResponse,
 } from '@/types/api';
 import { createClient } from '@/lib/supabase/server';
+import { langChainClient } from '@/lib/langchain/client';
+import { AssetService } from '@/lib/asset/asset-service';
+import { Message } from '@/types/chat';
+import { AssetType } from '@/types/asset';
+import { SupabaseClient } from '@supabase/supabase-js';
+
+const assetService = new AssetService();
+let supabase: SupabaseClient;
+
+// Initialize Supabase client
+createClient().then(client => {
+  supabase = client;
+});
 
 export async function GET(
-  request: Request,
-  context: { params: Promise<{ projectId: string; conversationId: string }> }
+  request: NextRequest,
+  { params }: { params: { projectId: string; conversationId: string } }
 ) {
   try {
-    const supabase = await createClient();
-    const { projectId, conversationId } = await context.params;
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
 
-    // Get URL parameters for pagination
-    const url = new URL(request.url);
-    const page = parseInt(url.searchParams.get('page') || '1');
-    const limit = parseInt(url.searchParams.get('limit') || '20');
-    const offset = (page - 1) * limit;
-
-    // Get messages for conversation
     const { data: messages, error } = await supabase
       .from('messages')
       .select('*')
-      .eq('conversation_id', conversationId)
-      .order('created_at', { ascending: true })
-      .range(offset, offset + limit - 1);
+      .eq('conversation_id', params.conversationId)
+      .order('created_at', { ascending: true });
 
-    if (error) {
-      console.error('Failed to fetch messages:', error);
-      return NextResponse.json(
-        { error: { message: 'Failed to fetch messages' } },
-        { status: 500 }
-      );
-    }
+    if (error) throw error;
 
-    return NextResponse.json({ messages });
+    return NextResponse.json(messages);
   } catch (error) {
-    console.error('Error in get messages:', error);
+    console.error('Error fetching messages:', error);
     return NextResponse.json(
-      { error: { message: 'Internal server error' } },
+      { error: 'Failed to fetch messages' },
       { status: 500 }
     );
   }
 }
 
 export async function POST(
-  request: Request,
-  context: { params: Promise<{ projectId: string; conversationId: string }> }
+  request: NextRequest,
+  { params }: { params: { projectId: string; conversationId: string } }
 ) {
   try {
-    const supabase = await createClient();
-    const { projectId, conversationId } = await context.params;
-    const messageData = await request.json() as CreateMessageRequest;
+    if (!supabase) {
+      throw new Error('Supabase client not initialized');
+    }
 
-    // Only allow user messages to be posted directly
-    if (messageData.role !== 'user') {
+    const body = await request.json();
+    const { content, type = 'design' } = body;
+
+    if (!content) {
       return NextResponse.json(
-        { error: { message: 'Only user messages can be posted directly' } },
+        { error: 'Message content is required' },
         { status: 400 }
       );
     }
 
-    // Validate conversation exists and belongs to project
-    const { data: conversation, error: conversationError } = await supabase
-      .from('conversations')
-      .select('id')
-      .eq('id', conversationId)
-      .eq('project_id', projectId)
-      .single();
+    // Process the message through LangChain
+    const response = await langChainClient.processMessage(
+      content,
+      '', // Context will be built by the client
+      type as 'design' | 'review' | 'selection' | 'asset',
+      params.projectId,
+      params.conversationId
+    );
 
-    if (conversationError || !conversation) {
-      return NextResponse.json(
-        { error: { message: 'Conversation not found' } },
-        { status: 404 }
-      );
-    }
-
-    // Create new message
+    // Store the message
     const { data: message, error: messageError } = await supabase
       .from('messages')
-      .insert([
-        {
-          conversation_id: conversationId,
-          role: messageData.role,
-          content: messageData.content,
-          created_at: new Date().toISOString(),
-          metadata: messageData.metadata,
-        },
-      ])
+      .insert([{
+        id: response.message.id,
+        conversation_id: params.conversationId,
+        role: response.message.role,
+        content: response.message.content,
+        metadata: response.message.metadata,
+        created_at: response.message.created_at
+      }])
       .select()
       .single();
 
-    if (messageError) {
-      console.error('Failed to create message:', messageError);
-      return NextResponse.json(
-        { error: { message: 'Failed to create message' } },
-        { status: 500 }
-      );
-    }
+    if (messageError) throw messageError;
 
-    // Update conversation's updated_at timestamp
-    const { error: updateError } = await supabase
-      .from('conversations')
-      .update({ updated_at: new Date().toISOString() })
-      .eq('id', conversationId);
-
-    if (updateError) {
-      console.error('Failed to update conversation timestamp:', updateError);
-    }
-
-    // Create a placeholder AI message that will be updated via SSE
-    const { data: aiMessage, error: aiMessageError } = await supabase
-      .from('messages')
-      .insert([
-        {
-          conversation_id: conversationId,
-          role: 'assistant',
-          content: '', // Empty content that will be updated via SSE
-          created_at: new Date().toISOString(),
+    // Store assets and create references
+    if (response.assets) {
+      for (const asset of response.assets) {
+        const now = new Date();
+        // Store the asset
+        const storedAsset = await assetService.storeAsset({
+          project_id: params.projectId,
+          name: asset.name,
+          asset_type: asset.type as AssetType,
+          current_content: asset.content,
+          current_version: 1,
+          created_at: now.toISOString(),
+          updated_at: now.toISOString(),
           metadata: {
-            status: 'generating',
-            model: '', // empty model that will be updated via SSE or langchain
-          },
-        },
-      ])
-      .select()
-      .single();
+            created_at: new Date(now),
+            updated_at: new Date(now),
+            created_by_message_id: response.message.id,
+            version_number: 1,
+            reference_type: 'creation'
+          }
+        });
 
-    if (aiMessageError) {
-      console.error('Failed to create AI message placeholder:', aiMessageError);
-      return NextResponse.json(
-        { error: { message: 'Failed to create AI message placeholder' } },
-        { status: 500 }
-      );
+        // Create the asset reference
+        await assetService.createAssetReference({
+          message_id: response.message.id,
+          asset_id: storedAsset.id,
+          version_referenced: 1,
+          reference_type: 'creation'
+        });
+      }
     }
 
-    return NextResponse.json({ 
-      message,
-      aiMessageId: aiMessage.id
-    });
+    return NextResponse.json(response);
   } catch (error) {
-    console.error('Error in create message:', error);
+    console.error('Error processing message:', error);
     return NextResponse.json(
-      { error: { message: 'Internal server error' } },
+      { error: 'Failed to process message' },
       { status: 500 }
     );
   }
