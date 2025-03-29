@@ -67,7 +67,7 @@
                         "route.ts": {
                           "type": "file",
                           "extension": ".ts",
-                          "size": 2886
+                          "size": 2992
                         },
                         "[conversationId]": {
                           "type": "directory",
@@ -78,7 +78,7 @@
                                 "route.ts": {
                                   "type": "file",
                                   "extension": ".ts",
-                                  "size": 4361
+                                  "size": 4602
                                 }
                               }
                             },
@@ -93,7 +93,7 @@
                                 "route.ts": {
                                   "type": "file",
                                   "extension": ".ts",
-                                  "size": 3337
+                                  "size": 5093
                                 }
                               }
                             }
@@ -118,7 +118,7 @@
             "page.tsx": {
               "type": "file",
               "extension": ".tsx",
-              "size": 1051
+              "size": 1084
             }
           }
         },
@@ -148,7 +148,7 @@
             "page.tsx": {
               "type": "file",
               "extension": ".tsx",
-              "size": 3528
+              "size": 3647
             }
           }
         },
@@ -181,7 +181,7 @@
                 "page.tsx": {
                   "type": "file",
                   "extension": ".tsx",
-                  "size": 815
+                  "size": 838
                 },
                 "settings": {
                   "type": "directory",
@@ -218,7 +218,7 @@
             "ChatInterface.tsx": {
               "type": "file",
               "extension": ".tsx",
-              "size": 3032
+              "size": 3112
             },
             "MessageInput.tsx": {
               "type": "file",
@@ -233,7 +233,7 @@
             "MessageList.tsx": {
               "type": "file",
               "extension": ".tsx",
-              "size": 2815
+              "size": 2900
             }
           }
         },
@@ -348,7 +348,7 @@
         "api-utils.ts": {
           "type": "file",
           "extension": ".ts",
-          "size": 1883
+          "size": 1962
         },
         "error-handler.ts": {
           "type": "file",
@@ -357,7 +357,28 @@
         },
         "langchain": {
           "type": "directory",
-          "contents": {}
+          "contents": {
+            "client.ts": {
+              "type": "file",
+              "extension": ".ts",
+              "size": 3537
+            },
+            "config.ts": {
+              "type": "file",
+              "extension": ".ts",
+              "size": 1194
+            },
+            "context.ts": {
+              "type": "file",
+              "extension": ".ts",
+              "size": 2673
+            },
+            "prompts.ts": {
+              "type": "file",
+              "extension": ".ts",
+              "size": 2108
+            }
+          }
         },
         "supabase": {
           "type": "directory",
@@ -393,7 +414,7 @@
     "middleware.ts": {
       "type": "file",
       "extension": ".ts",
-      "size": 2849
+      "size": 2946
     },
     "styles": {
       "type": "directory",
@@ -405,12 +426,17 @@
         "api.ts": {
           "type": "file",
           "extension": ".ts",
-          "size": 1443
+          "size": 1512
         },
         "chat.ts": {
           "type": "file",
           "extension": ".ts",
-          "size": 1146
+          "size": 1186
+        },
+        "langchain.ts": {
+          "type": "file",
+          "extension": ".ts",
+          "size": 377
         },
         "project.ts": {
           "type": "file",

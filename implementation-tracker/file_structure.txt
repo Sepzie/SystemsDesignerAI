@@ -9,9 +9,9 @@ src/
 │   │   │   └── signout
 │   │   │       └── route.ts
 │   │   ├── diagrams
-|   |   |
+
 │   │   ├── export
-|   |   |
+
 │   │   └── projects
 │   │       ├── route.ts
 │   │       └── [projectId]
@@ -50,7 +50,7 @@ src/
 │   │   ├── MessageItem.tsx
 │   │   └── MessageList.tsx
 │   ├── diagrams
-|   |
+
 │   ├── layout
 │   │   ├── Footer.tsx
 │   │   ├── Header.tsx
@@ -70,26 +70,30 @@ src/
 ├── contexts
 │   └── ChatContext.tsx
 ├── diagrams
-|
+
 ├── lib
 │   ├── api-client.ts
 │   ├── api-utils.ts
 │   ├── error-handler.ts
 │   ├── langchain
-|   |
+│   │   ├── client.ts
+│   │   ├── config.ts
+│   │   ├── context.ts
+│   │   └── prompts.ts
 │   ├── supabase
 │   │   ├── client.ts
 │   │   └── server.ts
 │   ├── utils
 │   │   └── cn.ts
 │   └── validators
-|
+
 ├── middleware.ts
 ├── styles
-|
+
 ├── types
 │   ├── api.ts
 │   ├── chat.ts
+│   ├── langchain.ts
 │   ├── project.ts
 │   └── supabase.ts
 └── utils
