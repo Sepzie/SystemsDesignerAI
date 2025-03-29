@@ -12,12 +12,9 @@ import {
 } from '@/types/api';
 import { createClient } from '@/lib/supabase/server';
 import { langChainClient } from '@/lib/langchain/client';
-import { AssetService } from '@/lib/asset/asset-service';
 import { Message } from '@/types/chat';
-import { AssetType } from '@/types/asset';
 import { SupabaseClient } from '@supabase/supabase-js';
 
-const assetService = new AssetService();
 let supabase: SupabaseClient;
 
 // Initialize Supabase client
@@ -80,7 +77,7 @@ export async function POST(
       params.conversationId
     );
 
-    // Store the message
+    // Store the message with its asset references
     const { data: message, error: messageError } = await supabase
       .from('messages')
       .insert([{
@@ -95,38 +92,6 @@ export async function POST(
       .single();
 
     if (messageError) throw messageError;
-
-    // Store assets and create references
-    if (response.assets) {
-      for (const asset of response.assets) {
-        const now = new Date();
-        // Store the asset
-        const storedAsset = await assetService.storeAsset({
-          project_id: params.projectId,
-          name: asset.name,
-          asset_type: asset.type as AssetType,
-          current_content: asset.content,
-          current_version: 1,
-          created_at: now,
-          updated_at: now,
-          metadata: {
-            created_at: new Date(now),
-            updated_at: new Date(now),
-            created_by_message_id: response.message.id,
-            version_number: 1,
-            reference_type: 'creation'
-          }
-        });
-
-        // Create the asset reference
-        await assetService.createAssetReference({
-          message_id: response.message.id,
-          asset_id: storedAsset.id,
-          version_referenced: 1,
-          reference_type: 'creation'
-        });
-      }
-    }
 
     return NextResponse.json(response);
   } catch (error) {
