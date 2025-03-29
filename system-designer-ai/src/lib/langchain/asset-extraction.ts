@@ -1,6 +1,6 @@
 import { AssetType, ExtractedAsset } from '@/types/asset';
 import { Asset } from '@/types/asset';
-import { AssetExtractionResult, StoredAsset, AssetReference, AssetMetadata } from '@/types/asset';
+import { AssetExtractionResult, AssetReference, AssetMetadata } from '@/types/asset';
 import { validateMermaidDiagram } from '../validators/mermaid-validator';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -24,17 +24,17 @@ async function validateAsset(asset: ExtractedAsset): Promise<boolean> {
 }
 
 /**
- * Creates a stored asset from an extracted asset
+ * Creates an asset from an extracted asset
  * @param asset The extracted asset
  * @param projectId The project ID
  * @param messageId The message ID that created the asset
- * @returns A stored asset ready for database insertion
+ * @returns An asset ready for database insertion
  */
-function createStoredAsset(
+function createAsset(
   asset: ExtractedAsset,
   projectId: string,
   messageId: string
-): StoredAsset {
+): Asset {
   const now = new Date();
   const metadata: AssetMetadata = {
     created_at: now,
@@ -48,12 +48,13 @@ function createStoredAsset(
     id: uuidv4(),
     project_id: projectId,
     name: asset.name,
-    asset_type: asset.type,
-    current_content: asset.content,
+    type: asset.type,
+    content: asset.content,
     current_version: 1,
+    description: asset.description,
+    metadata,
     created_at: now,
-    updated_at: now,
-    metadata
+    updated_at: now
   };
 }
 
@@ -152,6 +153,7 @@ export async function processAIResponse(
   projectId: string,
   messageId: string
 ): Promise<AssetExtractionResult> {
+  // Extract assets from the response
   const extractedAssets = extractAssets(response);
   
   // Create a map of asset names to their IDs for reference replacement
@@ -165,21 +167,21 @@ export async function processAIResponse(
     })
   );
   
-  // Create stored assets and references
-  const storedAssets: StoredAsset[] = [];
+  // Create assets and references
+  const assets: Asset[] = [];
   const references: AssetReference[] = [];
   
   for (const asset of validAssets) {
     if (!asset) continue;
     
-    const storedAsset = createStoredAsset(asset, projectId, messageId);
-    storedAssets.push(storedAsset);
-    assetMap.set(asset.name, storedAsset.id);
+    const createdAsset = createAsset(asset, projectId, messageId);
+    assets.push(createdAsset);
+    assetMap.set(asset.name, createdAsset.id);
     
     const reference = createAssetReference(
       messageId,
-      storedAsset.id,
-      storedAsset.current_version,
+      createdAsset.id,
+      createdAsset.current_version,
       'creation'
     );
     references.push(reference);
@@ -188,7 +190,7 @@ export async function processAIResponse(
   const cleanedText = replaceAssetBlocks(response, assetMap);
   
   return {
-    assets: storedAssets,
+    assets,
     references,
     cleanedText
   };
