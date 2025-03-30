@@ -5,20 +5,22 @@ import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '@/lib/utils/cn'
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none',
+  'inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-all duration-200 focus-visible:outline-none disabled:opacity-50 disabled:pointer-events-none',
   {
     variants: {
       variant: {
-        default: 'bg-blue-600 text-white hover:bg-blue-700',
-        outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50',
+        default: 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm hover:shadow',
+        secondary: 'bg-teal-500 text-white hover:bg-teal-600 shadow-sm hover:shadow',
+        outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50 hover:border-gray-400',
         ghost: 'text-gray-600 hover:text-gray-900 hover:bg-gray-100',
-        link: 'text-blue-600 underline-offset-4 hover:underline',
+        link: 'text-indigo-600 underline-offset-4 hover:underline',
+        destructive: 'bg-red-600 text-white hover:bg-red-700',
       },
       size: {
         default: 'h-10 px-4 py-2',
-        sm: 'h-8 px-3 py-1 text-xs',
-        lg: 'h-12 px-6 py-3 text-base',
-        icon: 'h-9 w-9 p-0',
+        sm: 'h-8 px-3 py-1 text-xs rounded-sm',
+        lg: 'h-12 px-6 py-3 text-base rounded-lg',
+        icon: 'h-9 w-9 p-0 rounded-full',
       },
       fullWidth: {
         true: 'w-full',
@@ -64,4 +66,4 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 
 Button.displayName = 'Button'
 
-export { Button, buttonVariants } 
+export { Button, buttonVariants }
