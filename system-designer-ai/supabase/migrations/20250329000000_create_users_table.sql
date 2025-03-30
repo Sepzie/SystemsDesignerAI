@@ -30,8 +30,13 @@ CREATE POLICY "Users can update their own data"
     ON users FOR UPDATE
     USING (auth.uid() = id);
 
+    -- Allow users to insert their own records upon registration
+CREATE POLICY "Users can insert their own record"
+    ON users FOR INSERT
+    WITH CHECK (auth.uid() = id);
+
 -- Allow Supabase Auth to create user records
-CREATE POLICY "Enable insert for service role only"
+CREATE POLICY "Enable insert for service role"
     ON users FOR INSERT
     WITH CHECK (auth.role() = 'service_role');
 

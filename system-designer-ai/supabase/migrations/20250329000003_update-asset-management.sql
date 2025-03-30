@@ -1,10 +1,7 @@
 -- migrate:up
 -- Update projects table
 ALTER TABLE projects
-ADD COLUMN metadata jsonb DEFAULT '{}'::jsonb,
-DROP COLUMN requirements,
-DROP COLUMN tech_stack,
-DROP COLUMN progress;
+ADD COLUMN metadata jsonb DEFAULT '{}'::jsonb;
 
 -- Update design_assets table to match Asset in diagram
 ALTER TABLE design_assets

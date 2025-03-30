@@ -7,7 +7,7 @@ CREATE TABLE projects (
     description text,
     requirements jsonb DEFAULT '{}'::jsonb,
     tech_stack text,
-    progress text,
+    progress int,
     created_at timestamptz DEFAULT now(),
     updated_at timestamptz DEFAULT now()
 );
