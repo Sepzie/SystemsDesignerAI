@@ -38,9 +38,9 @@ export function ProjectLayout({ projectId }: ProjectLayoutProps) {
 
   return (
     <ChatProvider projectId={projectId}>
-      <div className="flex flex-col h-screen">
+      <div className="flex flex-col h-screen overflow-hidden">
         {/* Header */}
-        <header className="bg-primary text-white p-4">
+        <header className="bg-primary text-white p-4 flex-shrink-0">
           <div className="flex justify-between items-center">
             <h1 className="text-xl font-semibold">AI System Designer</h1>
             <div>E-Commerce Platform User Account</div>
@@ -49,29 +49,31 @@ export function ProjectLayout({ projectId }: ProjectLayoutProps) {
 
         {/* Main Content */}
         <div className="flex flex-1 overflow-hidden">
-          {/* Asset List */}
-          <div className="w-64 border-r bg-white">
-            <AssetList
-              assets={assets}
-              selectedAssetId={selectedAsset?.id || null}
-              onAssetSelect={setSelectedAsset}
-            />
+          {/* Chat Interface */}
+          <div className="w-1/2 border-r flex flex-col">
+            <ChatInterface projectId={projectId} />
           </div>
 
-          {/* Asset Viewer */}
-          <div className="w-1/2 border-l">
-            <AssetViewer
-              asset={selectedAsset}
-              onAssetUpdate={(asset) => {
-                // TODO: Implement asset update logic
-                console.log('Asset updated:', asset);
-              }}
-            />
+          {/* Right Side - Asset Viewer and List */}
+          <div className="w-1/2 flex flex-col">
+            <div className="flex-1 overflow-hidden">
+              <AssetViewer
+                asset={selectedAsset}
+                onAssetUpdate={(asset) => {
+                  // TODO: Implement asset update logic
+                  console.log('Asset updated:', asset);
+                }}
+              />
+            </div>
+            <div className="h-56 border-t bg-white flex-shrink-0">
+              <AssetList
+                assets={assets}
+                selectedAssetId={selectedAsset?.id || null}
+                onAssetSelect={setSelectedAsset}
+              />
+            </div>
           </div>
         </div>
-
-        {/* Chat Interface */}
-        <ChatInterface projectId={projectId} />
       </div>
     </ChatProvider>
   );

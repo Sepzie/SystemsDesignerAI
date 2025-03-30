@@ -16,15 +16,19 @@ export function MessageItem({ message, onAssetClick, assets }: MessageItemProps)
   const isUser = message.role === 'user';
 
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
       <div
-        className={`max-w-[80%] rounded-lg p-4 ${
-          isUser ? 'bg-blue-500 text-white' : 'bg-gray-100'
+        className={`max-w-[85%] rounded-2xl p-4 ${
+          isUser 
+            ? 'bg-blue-600 text-white shadow-sm' 
+            : 'bg-white text-gray-800 shadow-sm border border-gray-100'
         }`}
       >
         <div className="prose prose-sm max-w-none">
           {message.content.split(/\n/).map((line, index) => (
-            <p key={index}>{line}</p>
+            <p key={index} className={`${isUser ? 'text-white' : 'text-gray-800'} mb-2 last:mb-0`}>
+              {line}
+            </p>
           ))}
         </div>
         {message.metadata?.assets && message.metadata.assets.length > 0 && (
@@ -43,7 +47,7 @@ export function MessageItem({ message, onAssetClick, assets }: MessageItemProps)
             })}
           </div>
         )}
-        <div className="mt-2 text-xs opacity-70">
+        <div className={`mt-2 text-xs ${isUser ? 'text-blue-100' : 'text-gray-500'}`}>
           {new Date(message.created_at).toLocaleTimeString()}
         </div>
       </div>

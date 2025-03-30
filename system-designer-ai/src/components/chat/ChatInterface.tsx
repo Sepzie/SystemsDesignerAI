@@ -14,9 +14,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId, initial
   const { messages, isLoading, isWaitingForAI, error, sendMessage } = useChat();
 
   return (
-    <div className="h-64 border-t bg-white flex flex-col">
+    <div className="h-full flex flex-col bg-white">
       {/* Header */}
-      <div className="p-4 border-b">
+      <div className="p-4 border-b bg-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm mr-2">
@@ -35,7 +35,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId, initial
 
       {/* Error Message */}
       {error && (
-        <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
+        <div className="bg-red-50 border-l-4 border-red-400 p-4">
           <div className="flex">
             <div className="flex-shrink-0">
               <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -70,7 +70,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId, initial
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t">
+      <div className="p-4 border-t bg-white">
         <MessageInput 
           onSendMessage={sendMessage} 
           isLoading={isLoading || isWaitingForAI} 
