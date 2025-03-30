@@ -1,3 +1,4 @@
+-- migrate:up
 -- Create conversations table
 CREATE TABLE conversations (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),

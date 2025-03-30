@@ -1,3 +1,4 @@
+-- migrate:down
 -- Drop index
 DROP INDEX IF EXISTS idx_projects_user_id;
 

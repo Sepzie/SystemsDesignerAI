@@ -1,3 +1,5 @@
+--migrate:down
+
 -- Drop indexes
 DROP INDEX IF EXISTS idx_conversations_project_id;
 DROP INDEX IF EXISTS idx_messages_conversation_id;

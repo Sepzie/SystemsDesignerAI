@@ -1,3 +1,4 @@
+-- migrate:up
 -- Update projects table
 ALTER TABLE projects
 ADD COLUMN metadata jsonb DEFAULT '{}'::jsonb,
@@ -64,4 +65,4 @@ CREATE INDEX idx_asset_references_message_id ON asset_references(message_id);
 CREATE INDEX idx_asset_references_asset_id ON asset_references(asset_id);
 
 -- Rename index to match new table name
-ALTER INDEX idx_design_assets_project_id RENAME TO idx_assets_project_id; 
+ALTER INDEX idx_design_assets_project_id RENAME TO idx_assets_project_id;

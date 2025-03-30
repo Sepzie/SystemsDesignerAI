@@ -1,3 +1,4 @@
+-- migrate:down
 -- Drop indexes
 DROP INDEX IF EXISTS idx_asset_references_message_id;
 DROP INDEX IF EXISTS idx_asset_references_asset_id;
