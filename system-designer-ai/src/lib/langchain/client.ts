@@ -14,6 +14,7 @@ import { AssetService } from '../asset/asset-service';
 import { Message, ChatResponse } from '@/types/chat';
 import { v4 as uuidv4 } from 'uuid';
 import { SYSTEM_MESSAGE } from './prompts';
+import { MOCK_LLM_RESPONSE_MARKDOWN_WITH_DIAGRAM } from './api-mocks';
 
 const assetService = new AssetService();
 
@@ -109,16 +110,19 @@ class LangChainClient {
     console.log('Total Prompt Length:', formattedPrompt.length);
     console.log('========================\n');
 
-    const response = await this.model.invoke([
-      {
-        role: 'system',
-        content: SYSTEM_MESSAGE,
-      },
-      {
-        role: 'user',
-        content: formattedPrompt,
-      },
-    ]);
+    const response = MOCK_LLM_RESPONSE_MARKDOWN_WITH_DIAGRAM;
+    // await this.model.invoke([
+    //   {
+    //     role: 'system',
+    //     content: SYSTEM_MESSAGE,
+    //   },
+    //   {
+    //     role: 'user',
+    //     content: formattedPrompt,
+    //   },
+    // ]);
+
+    console.log('LLM API Response:', response);
 
     // Get the last message's content and ensure it's a string
     const content = typeof response.content === 'string' 
