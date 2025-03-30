@@ -31,7 +31,6 @@ export async function GET(
 
     return NextResponse.json(messages);
   } catch (error) {
-    console.error('Error fetching messages:', error);
     return NextResponse.json(
       { error: 'Failed to fetch messages' },
       { status: 500 }
@@ -57,40 +56,68 @@ export async function POST(
     }
 
     // Create a placeholder message for the user's input
-    const messageId = uuidv4();
-    const { data: message, error: messageError } = await supabase
-      .from('messages')
-      .insert([{
-        id: messageId,
-        conversation_id: conversationId,
-        role: 'user',
-        content,
-        metadata: {
-          type,
-          status: 'pending',
-          created_at: new Date().toISOString()
-        },
+    const userMessageId = uuidv4();
+    
+    const userMessageData = {
+      id: userMessageId,
+      conversation_id: conversationId,
+      role: 'user',
+      content,
+      metadata: {
+        type,
+        status: 'pending',
         created_at: new Date().toISOString()
-      }])
+      },
+      created_at: new Date().toISOString()
+    };
+
+    const { data: userMessage, error: userMessageError } = await supabase
+      .from('messages')
+      .insert([userMessageData])
       .select()
       .single();
 
-    if (messageError) throw messageError;
+    if (userMessageError) throw userMessageError;
 
-    // Return the message ID for the stream endpoint
-    return NextResponse.json({
-      messageId,
+    // Create a placeholder AI message for streaming
+    const aiMessageId = uuidv4();
+    
+    const aiMessageData = {
+      id: aiMessageId,
+      conversation_id: conversationId,
+      role: 'assistant',
+      content: 'Thinking...',
+      metadata: {
+        type,
+        status: 'pending',
+        created_at: new Date().toISOString()
+      },
+      created_at: new Date().toISOString()
+    };
+
+    const { data: aiMessage, error: aiMessageError } = await supabase
+      .from('messages')
+      .insert([aiMessageData])
+      .select()
+      .single();
+
+    if (aiMessageError) throw aiMessageError;
+
+    const response = {
+      messageId: userMessageId,
+      aiMessageId: aiMessageId,
       message: {
-        id: messageId,
+        id: userMessageId,
         conversation_id: conversationId,
         role: 'user',
         content,
-        metadata: message.metadata,
-        created_at: message.created_at
+        metadata: userMessage.metadata,
+        created_at: userMessage.created_at
       }
-    });
+    };
+    
+    return NextResponse.json(response);
   } catch (error) {
-    console.error('Error storing message:', error);
     return NextResponse.json(
       { error: 'Failed to store message' },
       { status: 500 }
