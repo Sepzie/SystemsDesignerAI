@@ -19,6 +19,10 @@ CREATE POLICY "Users can update their own data"
     ON users FOR UPDATE
     USING (auth.uid() = id);
 
+CREATE POLICY "Enable insert for authenticated users with matching ID"
+    ON users FOR INSERT
+    WITH CHECK (auth.uid() = id);
+
 -- Add trigger for updated_at
 CREATE TRIGGER update_users_updated_at
     BEFORE UPDATE ON users
