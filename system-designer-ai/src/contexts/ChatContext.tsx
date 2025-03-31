@@ -24,8 +24,6 @@ function mapApiConversationToChat(apiConv: ApiConversation | { id: string; proje
  */
 interface ChatProviderProps {
   children: React.ReactNode;
-  projectId: string;
-  initialConversationId?: string; // Optional ID for loading an existing conversation
 }
 
 // Create the chat context with undefined as initial value
@@ -35,8 +33,8 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
  * ChatProvider component that manages the chat state and provides chat functionality
  * to its children through the ChatContext.
  */
-export function ChatProvider({ children, projectId, initialConversationId }: ChatProviderProps) {
-  const { handleAssetReference, subscribe, latestConversation: projectLatestConversation } = useProject();
+export function ChatProvider({ children }: ChatProviderProps) {
+  const { handleAssetReference, subscribe, openConversation: projectOpenConversation, project, isLoading: isProjectLoading } = useProject();
   
   // State for managing messages, loading state, errors, and pagination
   const [messages, setMessages] = useState<Message[]>([]);
@@ -58,38 +56,38 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
 
   /**
    * Initialize or load an existing conversation when the component mounts
-   * or when projectId/initialConversationId changes
+   * or when projectOpenConversation changes
    */
   useEffect(() => {
     async function initializeConversation() {
+      // Don't initialize if project is still loading or not available
+      if (isProjectLoading || !project) {
+        return;
+      }
+
+      const projectId = project.id; // Store projectId after null check
+
       try {
         setIsLoading(true);
         setError(null);
 
         let apiConversation: ApiConversation;
-        if (initialConversationId) {
-          // Load an existing conversation
-          const { conversation: existingConversation } = await api.getConversation(
-            projectId,
-            initialConversationId
-          );
-          apiConversation = existingConversation;
-        } else if (projectLatestConversation) {
-          // Use the latest conversation from project context
+        if (projectOpenConversation) {
+          // Use the open conversation from project context
           apiConversation = {
-            id: projectLatestConversation.id,
+            id: projectOpenConversation.id,
             projectId,
-            startedAt: new Date(projectLatestConversation.started_at),
-            updatedAt: new Date(projectLatestConversation.updated_at),
+            startedAt: new Date(projectOpenConversation.started_at),
+            updatedAt: new Date(projectOpenConversation.updated_at),
           };
           // Set initial messages from project context
-          setMessages(projectLatestConversation.messages.map(msg => ({
+          setMessages(projectOpenConversation.messages.map((msg: { id: string; role: string; content: string; metadata?: Record<string, any>; created_at: string }) => ({
             ...msg,
-            conversation_id: projectLatestConversation.id,
+            conversation_id: projectOpenConversation.id,
             role: msg.role as MessageRole,
           })));
         } else {
-          // Create a new conversation
+          // Create a new conversation if no open conversation exists
           const { conversation: createdConversation } = await api.createConversation(projectId);
           apiConversation = createdConversation;
         }
@@ -99,7 +97,7 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
         setConversation(chatConversation);
 
         // Load messages if we don't have them from project context
-        if (!projectLatestConversation || projectLatestConversation.id !== chatConversation.id) {
+        if (!projectOpenConversation || projectOpenConversation.id !== chatConversation.id) {
           await loadMessages(chatConversation.id, 1);
         }
       } catch (err) {
@@ -111,7 +109,7 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
     }
 
     initializeConversation();
-  }, [projectId, initialConversationId, projectLatestConversation]);
+  }, [project, projectOpenConversation, isProjectLoading]);
 
   // Subscribe to project events
   useEffect(() => {
@@ -135,9 +133,11 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
    * Load messages for a conversation with pagination support
    */
   const loadMessages = useCallback(async (conversationId: string, page: number) => {
+    if (!project) return; // Early return if project is not available
+
     try {
       const { messages: newMessages } = await api.getMessages(
-        projectId,
+        project.id,
         conversationId,
         page,
         MESSAGES_PER_PAGE
@@ -156,13 +156,13 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
       setError(err instanceof Error ? err.message : 'Failed to load messages');
       console.error('Failed to load messages:', err);
     }
-  }, [projectId]);
+  }, [project]);
 
   /**
    * Load more messages when scrolling up (pagination)
    */
   const loadMoreMessages = useCallback(async () => {
-    if (!conversation || isLoading || !hasMoreMessages) return;
+    if (!conversation || isLoading || !hasMoreMessages || !project) return;
     
     setIsLoading(true);
     try {
@@ -170,15 +170,15 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
     } finally {
       setIsLoading(false);
     }
-  }, [conversation, isLoading, hasMoreMessages, currentPage, loadMessages]);
+  }, [conversation, isLoading, hasMoreMessages, currentPage, loadMessages, project]);
 
   /**
    * Send a new message and handle the AI response stream
    * This function implements optimistic updates and retry logic
    */
   const sendMessage = useCallback(async (content: string) => {
-    if (!conversation) {
-      setError('No active conversation');
+    if (!conversation || !project) {
+      setError('No active conversation or project');
       return;
     }
 
@@ -211,7 +211,7 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
       while (retryCount < maxRetries) {
         try {
           const response = await api.sendMessage(
-            projectId,
+            project.id,
             conversation.id,
             {
               role: 'user',
@@ -255,7 +255,7 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
 
         // Connect to the SSE stream for AI response
         const cleanup = api.connectToMessageStream(
-          projectId,
+          project.id,
           conversation.id,
           aiMessageId,
           // Handle incoming message chunks
@@ -329,12 +329,12 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
     } finally {
       setIsLoading(false);
     }
-  }, [conversation, projectId, isWaitingForAI, handleAssetReference]);
+  }, [conversation, project, isWaitingForAI, handleAssetReference]);
 
   // Provide the chat context value to children
   const value = {
     messages,
-    isLoading,
+    isLoading: isLoading || isProjectLoading,
     isWaitingForAI,
     error,
     sendMessage,

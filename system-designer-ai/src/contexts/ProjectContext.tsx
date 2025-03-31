@@ -11,7 +11,7 @@ const ProjectContext = createContext<ProjectContextType | null>(null);
 export function ProjectProvider({ children, projectId }: { children: React.ReactNode; projectId: string }) {
   const [project, setProject] = useState<Project | null>(null);
   const [assets, setAssets] = useState<Asset[]>([]);
-  const [latestConversation, setLatestConversation] = useState<ProjectContextType['latestConversation']>(undefined);
+  const [openConversation, setOpenConversation] = useState<ProjectContextType['openConversation']>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [subscribers, setSubscribers] = useState<Map<ProjectEventType, Set<(event: ProjectEvent) => void>>>(new Map());
@@ -56,8 +56,8 @@ export function ProjectProvider({ children, projectId }: { children: React.React
           },
         })));
 
-        // Set latest conversation
-        setLatestConversation(projectData.latest_conversation);
+        // Set open conversation (initially using the latest conversation)
+        setOpenConversation(projectData.latest_conversation);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load project');
       } finally {
@@ -104,7 +104,7 @@ export function ProjectProvider({ children, projectId }: { children: React.React
   const value: ProjectContextType = {
     project,
     assets,
-    latestConversation,
+    openConversation,
     isLoading,
     error,
     subscribe,

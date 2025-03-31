@@ -47,7 +47,7 @@ export interface ProjectContextType {
   // Project state
   project: Project | null;
   assets: Asset[];
-  latestConversation?: {
+  openConversation?: {
     id: string;
     title: string;
     started_at: string;
