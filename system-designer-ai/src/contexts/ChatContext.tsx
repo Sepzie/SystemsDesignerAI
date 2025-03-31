@@ -36,7 +36,7 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
  * to its children through the ChatContext.
  */
 export function ChatProvider({ children, projectId, initialConversationId }: ChatProviderProps) {
-  const { handleAssetReference } = useProject();
+  const { handleAssetReference, subscribe } = useProject();
   
   // State for managing messages, loading state, errors, and pagination
   const [messages, setMessages] = useState<Message[]>([]);
@@ -88,6 +88,23 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
 
     initializeConversation();
   }, [projectId, initialConversationId]);
+
+  // Subscribe to project events
+  useEffect(() => {
+    const unsubscribe = subscribe('message:asset-referenced', (event) => {
+      // Handle asset references from other parts of the application
+      if (event.type === 'message:asset-referenced') {
+        const payload = event.payload as { message: Message; assetId: string };
+        if (payload.message.conversation_id === conversation?.id) {
+          handleAssetReference(payload.message, payload.assetId);
+        }
+      }
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [subscribe, handleAssetReference, conversation?.id]);
 
   /**
    * Load messages for a conversation with pagination support
@@ -148,17 +165,17 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
     setIsLoading(true);
     setError(null);
 
-    try {
-      // Create an optimistic update for the user's message
-      const optimisticMessage: Message = {
-        id: `temp-${Date.now()}`,
-        conversation_id: conversation.id,
-        role: 'user',
-        content,
-        created_at: new Date().toISOString(),
-      };
-      setMessages(prev => [...prev, optimisticMessage]);
+    // Create an optimistic update for the user's message
+    const optimisticMessage: Message = {
+      id: `temp-${Date.now()}`,
+      conversation_id: conversation.id,
+      role: 'user',
+      content,
+      created_at: new Date().toISOString(),
+    };
+    setMessages(prev => [...prev, optimisticMessage]);
 
+    try {
       // Send the message to the API with retry logic
       let retryCount = 0;
       const maxRetries = 3;
@@ -221,7 +238,14 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
             setMessages(prevMessages => {
               const updatedMessages = prevMessages.map(message =>
                 message.id === aiMessageId
-                  ? { ...message, content: data.content }
+                  ? { 
+                      ...message, 
+                      content: data.content,
+                      metadata: {
+                        ...message.metadata,
+                        isStreaming: true
+                      }
+                    }
                   : message
               );
 
@@ -249,31 +273,33 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
           },
           // Handle stream completion
           () => {
-            setIsLoading(false);
             setIsWaitingForAI(false);
-            // Remove streaming metadata when complete
+            // Update the message to remove streaming state
             setMessages(prev =>
               prev.map(msg =>
                 msg.id === aiMessageId
-                  ? { ...msg, metadata: undefined }
+                  ? {
+                      ...msg,
+                      metadata: {
+                        ...msg.metadata,
+                        isStreaming: false
+                      }
+                    }
                   : msg
               )
             );
           }
         );
 
-        // Return cleanup function to be called on unmount
-        return cleanup;
+        return () => {
+          cleanup();
+        };
       }
     } catch (err) {
-      // Handle any errors during message sending
       setError(err instanceof Error ? err.message : 'Failed to send message');
-      console.error('Failed to send message:', err);
-      setIsWaitingForAI(false);
-
       // Remove the optimistic message on error
       setMessages(prev =>
-        prev.filter(msg => !msg.id.startsWith('temp-'))
+        prev.filter(msg => msg.id !== optimisticMessage.id)
       );
     } finally {
       setIsLoading(false);
