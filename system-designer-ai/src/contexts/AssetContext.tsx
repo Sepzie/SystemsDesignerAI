@@ -58,19 +58,7 @@ export function AssetProvider({ children, projectId }: AssetProviderProps) {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetch(`/api/projects/${projectId}/assets`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(assetData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create asset');
-      }
-
-      const newAsset = await response.json() as Asset;
+      const newAsset = await api.createAsset(projectId, assetData);
       notify('asset:created', newAsset);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create asset');
@@ -85,19 +73,7 @@ export function AssetProvider({ children, projectId }: AssetProviderProps) {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetch(`/api/projects/${projectId}/assets/${assetId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(assetData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to update asset');
-      }
-
-      const updatedAsset = await response.json() as Asset;
+      const updatedAsset = await api.updateAsset(projectId, assetId, assetData);
       
       if (selectedAsset?.id === assetId) {
         setSelectedAsset(updatedAsset);
@@ -117,13 +93,7 @@ export function AssetProvider({ children, projectId }: AssetProviderProps) {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await fetch(`/api/projects/${projectId}/assets/${assetId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete asset');
-      }
+      await api.deleteAsset(projectId, assetId);
 
       if (selectedAsset?.id === assetId) {
         setSelectedAsset(null);
@@ -142,11 +112,7 @@ export function AssetProvider({ children, projectId }: AssetProviderProps) {
   // Asset versioning
   const getAssetVersion = useCallback(async (assetId: string, versionNumber: number): Promise<AssetVersion | null> => {
     try {
-      const response = await fetch(`/api/projects/${projectId}/assets/${assetId}/versions/${versionNumber}`);
-      if (!response.ok) {
-        return null;
-      }
-      return await response.json() as AssetVersion;
+      return await api.getAssetVersion(projectId, assetId, versionNumber);
     } catch (err) {
       console.error('Failed to get asset version:', err);
       return null;
@@ -155,11 +121,7 @@ export function AssetProvider({ children, projectId }: AssetProviderProps) {
 
   const getAssetVersions = useCallback(async (assetId: string): Promise<AssetVersion[]> => {
     try {
-      const response = await fetch(`/api/projects/${projectId}/assets/${assetId}/versions`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch asset versions');
-      }
-      return await response.json() as AssetVersion[];
+      return await api.getAssetVersions(projectId, assetId);
     } catch (err) {
       console.error('Failed to get asset versions:', err);
       return [];
@@ -169,19 +131,7 @@ export function AssetProvider({ children, projectId }: AssetProviderProps) {
   // Asset validation
   const validateMermaidDiagram = useCallback(async (content: string): Promise<MermaidValidationResult> => {
     try {
-      const response = await fetch('/api/validate/mermaid', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ content }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to validate diagram');
-      }
-
-      return await response.json() as MermaidValidationResult;
+      return await api.validateMermaidDiagram(content);
     } catch (err) {
       console.error('Failed to validate diagram:', err);
       return {

@@ -9,6 +9,7 @@ import {
 } from '@/types/api';
 import { Message } from '@/types/chat';
 import { Project } from '@/types/project';
+import { Asset, AssetVersion, MermaidValidationResult } from '@/types/asset';
 
 class ApiError extends Error {
   constructor(
@@ -139,4 +140,58 @@ export function connectToMessageStream(
 export async function getProject(projectId: string): Promise<ProjectResponse> {
   const response = await fetch(`/api/projects/${projectId}`);
   return handleResponse<ProjectResponse>(response);
+}
+
+// Asset-related API functions
+export async function createAsset(projectId: string, assetData: Omit<Asset, 'id' | 'project_id' | 'current_version' | 'metadata' | 'created_at' | 'updated_at'>): Promise<Asset> {
+  const response = await fetch(`/api/projects/${projectId}/assets`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(assetData),
+  });
+  return handleResponse<Asset>(response);
+}
+
+export async function updateAsset(projectId: string, assetId: string, assetData: Partial<Asset>): Promise<Asset> {
+  const response = await fetch(`/api/projects/${projectId}/assets/${assetId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(assetData),
+  });
+  return handleResponse<Asset>(response);
+}
+
+export async function deleteAsset(projectId: string, assetId: string): Promise<void> {
+  const response = await fetch(`/api/projects/${projectId}/assets/${assetId}`, {
+    method: 'DELETE',
+  });
+  return handleResponse<void>(response);
+}
+
+export async function getAssetVersion(projectId: string, assetId: string, versionNumber: number): Promise<AssetVersion | null> {
+  const response = await fetch(`/api/projects/${projectId}/assets/${assetId}/versions/${versionNumber}`);
+  if (!response.ok) {
+    return null;
+  }
+  return handleResponse<AssetVersion>(response);
+}
+
+export async function getAssetVersions(projectId: string, assetId: string): Promise<AssetVersion[]> {
+  const response = await fetch(`/api/projects/${projectId}/assets/${assetId}/versions`);
+  return handleResponse<AssetVersion[]>(response);
+}
+
+export async function validateMermaidDiagram(content: string): Promise<MermaidValidationResult> {
+  const response = await fetch('/api/validate/mermaid', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ content }),
+  });
+  return handleResponse<MermaidValidationResult>(response);
 } 
