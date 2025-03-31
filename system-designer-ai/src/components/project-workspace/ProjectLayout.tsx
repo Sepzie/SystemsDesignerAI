@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { VersionHistory } from './VersionHistory';
-import { ChatInterface } from '../chat/ChatInterface';
+import { ChatInterface } from './chat/ChatInterface';
 import { ChatProvider } from '@/contexts/ChatContext';
-import { AssetViewer } from '../asset/AssetViewer';
-import { AssetList } from '../asset/AssetList';
+import { AssetViewer } from './asset/AssetViewer';
+import { AssetList } from './asset/AssetList';
 import { Asset } from '@/types/asset';
 
 interface ProjectLayoutProps {

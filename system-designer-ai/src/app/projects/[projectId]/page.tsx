@@ -1,5 +1,5 @@
 import React from 'react';
-import { ProjectLayout } from '@/components/project/ProjectLayout';
+import { ProjectLayout } from '@/components/project-workspace/ProjectLayout';
 
 interface ProjectPageProps {
   params: Promise<{ projectId: string }>;
