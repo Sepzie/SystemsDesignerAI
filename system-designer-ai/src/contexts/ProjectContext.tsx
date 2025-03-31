@@ -4,11 +4,14 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { Project, ProjectContextType, ProjectEvent, ProjectEventType } from '@/types/project';
 import { Message } from '@/types/chat';
 import { getProject } from '@/lib/api-client';
+import { Asset, AssetType } from '@/types/asset';
 
 const ProjectContext = createContext<ProjectContextType | null>(null);
 
 export function ProjectProvider({ children, projectId }: { children: React.ReactNode; projectId: string }) {
   const [project, setProject] = useState<Project | null>(null);
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [latestConversation, setLatestConversation] = useState<ProjectContextType['latestConversation']>(undefined);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [subscribers, setSubscribers] = useState<Map<ProjectEventType, Set<(event: ProjectEvent) => void>>>(new Map());
@@ -18,7 +21,43 @@ export function ProjectProvider({ children, projectId }: { children: React.React
       try {
         setIsLoading(true);
         const projectData = await getProject(projectId);
-        setProject(projectData);
+
+        console.log('projectData', projectData);
+        
+        // Transform the API response into the expected format
+        setProject({
+          id: projectData.id,
+          user_id: '', // This will be set by the backend
+          name: projectData.name,
+          description: projectData.description,
+          requirements: { functional: [], nonFunctional: [] }, // Default empty requirements
+          tech_stack: projectData.tech_stack.join(','), // Convert array to string
+          created_at: projectData.created_at,
+          updated_at: projectData.updated_at,
+          progress: 0, // Default progress
+        });
+
+        // Set assets with proper metadata
+        setAssets(projectData.assets.map(asset => ({
+          id: asset.id,
+          project_id: projectId,
+          name: asset.name,
+          type: asset.type as AssetType,
+          content: asset.current_content,
+          current_version: asset.current_version,
+          created_at: new Date(asset.created_at),
+          updated_at: new Date(asset.updated_at),
+          metadata: {
+            created_at: new Date(asset.created_at),
+            updated_at: new Date(asset.updated_at),
+            created_by_message_id: '', // This will be set by the backend
+            version_number: asset.current_version,
+            reference_type: 'creation' as const, // Default reference type
+          },
+        })));
+
+        // Set latest conversation
+        setLatestConversation(projectData.latest_conversation);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load project');
       } finally {
@@ -64,6 +103,8 @@ export function ProjectProvider({ children, projectId }: { children: React.React
 
   const value: ProjectContextType = {
     project,
+    assets,
+    latestConversation,
     isLoading,
     error,
     subscribe,

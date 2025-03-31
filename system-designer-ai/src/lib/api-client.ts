@@ -5,6 +5,7 @@ import {
   CreateMessageRequest,
   CreateMessageResponse,
   ConversationMessage,
+  ProjectResponse,
 } from '@/types/api';
 import { Message } from '@/types/chat';
 import { Project } from '@/types/project';
@@ -135,7 +136,7 @@ export function connectToMessageStream(
   };
 }
 
-export async function getProject(projectId: string): Promise<Project> {
+export async function getProject(projectId: string): Promise<ProjectResponse> {
   const response = await fetch(`/api/projects/${projectId}`);
-  return handleResponse<Project>(response);
+  return handleResponse<ProjectResponse>(response);
 } 

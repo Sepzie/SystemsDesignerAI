@@ -46,6 +46,20 @@ export interface ProjectEvent {
 export interface ProjectContextType {
   // Project state
   project: Project | null;
+  assets: Asset[];
+  latestConversation?: {
+    id: string;
+    title: string;
+    started_at: string;
+    updated_at: string;
+    messages: {
+      id: string;
+      role: string;
+      content: string;
+      metadata?: Record<string, any>;
+      created_at: string;
+    }[];
+  };
   isLoading: boolean;
   error: string | null;
 

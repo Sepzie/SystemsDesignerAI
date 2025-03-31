@@ -18,51 +18,24 @@ const AssetContext = createContext<AssetContextType | undefined>(undefined);
  * to its children through the AssetContext.
  */
 export function AssetProvider({ children, projectId }: AssetProviderProps) {
-  const { project, subscribe, notify } = useProject();
+  const { assets: projectAssets, subscribe, notify } = useProject();
   
   // Asset state
-  const [assets, setAssets] = useState<Asset[]>([]);
   const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Load assets when project changes
-  useEffect(() => {
-    if (project?.id) {
-      loadAssets();
-    }
-  }, [project?.id]);
 
   // Subscribe to project events
   useEffect(() => {
     const unsubscribe = subscribe('asset:selected', (event) => {
-      const { assetId } = event.payload;
-      selectAsset(assetId);
+      const payload = event.payload as { assetId: string };
+      selectAsset(payload.assetId);
     });
 
     return () => {
       unsubscribe();
     };
   }, [subscribe]);
-
-  // Asset operations
-  const loadAssets = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const response = await fetch(`/api/projects/${projectId}/assets`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch assets');
-      }
-      const assets = await response.json() as Asset[];
-      setAssets(assets);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load assets');
-      console.error('Failed to load assets:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [projectId]);
 
   const selectAsset = useCallback((assetOrId: Asset | string | null) => {
     if (!assetOrId) {
@@ -72,14 +45,14 @@ export function AssetProvider({ children, projectId }: AssetProviderProps) {
 
     const assetId = typeof assetOrId === 'string' ? assetOrId : assetOrId.id;
     const asset = typeof assetOrId === 'string' 
-      ? assets.find(a => a.id === assetOrId)
+      ? projectAssets.find(a => a.id === assetOrId)
       : assetOrId;
 
     if (asset) {
       setSelectedAsset(asset);
       notify('asset:selected', { assetId });
     }
-  }, [assets, notify]);
+  }, [projectAssets, notify]);
 
   const createAsset = useCallback(async (assetData: Omit<Asset, 'id' | 'project_id' | 'current_version' | 'metadata' | 'created_at' | 'updated_at'>) => {
     try {
@@ -98,7 +71,6 @@ export function AssetProvider({ children, projectId }: AssetProviderProps) {
       }
 
       const newAsset = await response.json() as Asset;
-      setAssets(prev => [...prev, newAsset]);
       notify('asset:created', newAsset);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create asset');
@@ -126,9 +98,6 @@ export function AssetProvider({ children, projectId }: AssetProviderProps) {
       }
 
       const updatedAsset = await response.json() as Asset;
-      setAssets(prev => prev.map(asset => 
-        asset.id === assetId ? updatedAsset : asset
-      ));
       
       if (selectedAsset?.id === assetId) {
         setSelectedAsset(updatedAsset);
@@ -156,7 +125,6 @@ export function AssetProvider({ children, projectId }: AssetProviderProps) {
         throw new Error('Failed to delete asset');
       }
 
-      setAssets(prev => prev.filter(asset => asset.id !== assetId));
       if (selectedAsset?.id === assetId) {
         setSelectedAsset(null);
       }
@@ -225,7 +193,7 @@ export function AssetProvider({ children, projectId }: AssetProviderProps) {
 
   // Create the context value
   const contextValue: AssetContextType = {
-    assets,
+    assets: projectAssets,
     selectedAsset,
     isLoading,
     error,
@@ -233,7 +201,7 @@ export function AssetProvider({ children, projectId }: AssetProviderProps) {
     createAsset,
     updateAsset,
     deleteAsset,
-    loadAssets,
+    loadAssets: () => Promise.resolve(), // No-op since we're using project assets
     getAssetVersion,
     getAssetVersions,
     validateMermaidDiagram,

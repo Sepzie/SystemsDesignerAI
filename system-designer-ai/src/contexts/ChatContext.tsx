@@ -1,20 +1,20 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
-import { Message, ChatContextType, Conversation as ChatConversation } from '@/types/chat';
+import { Message, ChatContextType, Conversation as ChatConversation, MessageRole } from '@/types/chat';
 import { Conversation as ApiConversation } from '@/types/api';
 import * as api from '@/lib/api-client';
 import { useProject } from './ProjectContext';
 
 // Helper function to map API conversation to Chat conversation
-function mapApiConversationToChat(apiConv: ApiConversation): ChatConversation {
+function mapApiConversationToChat(apiConv: ApiConversation | { id: string; projectId: string; startedAt: string | Date; updatedAt: string | Date }): ChatConversation {
   return {
     id: apiConv.id,
     project_id: apiConv.projectId,
     title: `Conversation ${apiConv.id.slice(0, 8)}`, // Generate a title from the ID
-    created_at: apiConv.startedAt.toISOString(),
-    updated_at: apiConv.updatedAt.toISOString(),
-    last_message_at: apiConv.updatedAt.toISOString(),
+    created_at: typeof apiConv.startedAt === 'string' ? apiConv.startedAt : apiConv.startedAt.toISOString(),
+    updated_at: typeof apiConv.updatedAt === 'string' ? apiConv.updatedAt : apiConv.updatedAt.toISOString(),
+    last_message_at: typeof apiConv.updatedAt === 'string' ? apiConv.updatedAt : apiConv.updatedAt.toISOString(),
     message_count: 0, // This will be updated when messages are loaded
   };
 }
@@ -36,7 +36,7 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
  * to its children through the ChatContext.
  */
 export function ChatProvider({ children, projectId, initialConversationId }: ChatProviderProps) {
-  const { handleAssetReference, subscribe } = useProject();
+  const { handleAssetReference, subscribe, latestConversation: projectLatestConversation } = useProject();
   
   // State for managing messages, loading state, errors, and pagination
   const [messages, setMessages] = useState<Message[]>([]);
@@ -74,6 +74,20 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
             initialConversationId
           );
           apiConversation = existingConversation;
+        } else if (projectLatestConversation) {
+          // Use the latest conversation from project context
+          apiConversation = {
+            id: projectLatestConversation.id,
+            projectId,
+            startedAt: new Date(projectLatestConversation.started_at),
+            updatedAt: new Date(projectLatestConversation.updated_at),
+          };
+          // Set initial messages from project context
+          setMessages(projectLatestConversation.messages.map(msg => ({
+            ...msg,
+            conversation_id: projectLatestConversation.id,
+            role: msg.role as MessageRole,
+          })));
         } else {
           // Create a new conversation
           const { conversation: createdConversation } = await api.createConversation(projectId);
@@ -84,8 +98,10 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
         const chatConversation = mapApiConversationToChat(apiConversation);
         setConversation(chatConversation);
 
-        // Load initial messages for the conversation
-        await loadMessages(chatConversation.id, 1);
+        // Load messages if we don't have them from project context
+        if (!projectLatestConversation || projectLatestConversation.id !== chatConversation.id) {
+          await loadMessages(chatConversation.id, 1);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to initialize conversation');
         console.error('Failed to initialize conversation:', err);
@@ -95,7 +111,7 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
     }
 
     initializeConversation();
-  }, [projectId, initialConversationId]);
+  }, [projectId, initialConversationId, projectLatestConversation]);
 
   // Subscribe to project events
   useEffect(() => {
