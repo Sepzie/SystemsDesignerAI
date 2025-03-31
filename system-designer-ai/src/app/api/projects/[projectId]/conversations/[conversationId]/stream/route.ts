@@ -63,21 +63,12 @@ export async function GET(
             })
             .eq('id', messageId);
 
-          // Build conversation context
-          console.log('Building conversation context...');
-          const conversationContext = await buildConversationContext(
-            projectId,
-            conversationId
-          );
-          
-          // Format the context for the AI
-          const formattedContext = formatCompleteContext(conversationContext);
+
 
           // Generate response using LangChain
           console.log('Generating AI response...');
           const response = await langChainClient.processMessage(
             message.content,
-            formattedContext,
             'design', // Default to design type
             projectId,
             conversationId

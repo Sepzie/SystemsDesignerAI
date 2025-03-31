@@ -15,6 +15,8 @@ import { Message, ChatResponse } from '@/types/chat';
 import { v4 as uuidv4 } from 'uuid';
 import { SYSTEM_MESSAGE } from './prompts';
 import { MOCK_LLM_RESPONSE_MARKDOWN_WITH_DIAGRAM } from './api-mocks';
+import { formatCompleteContext } from './context';
+import { buildConversationContext } from './context';
 
 const assetService = new AssetService();
 
@@ -52,13 +54,22 @@ class LangChainClient {
 
   async processMessage(
     message: string,
-    context: string = '',
     type: 'design' | 'review' | 'selection' | 'asset' = 'design',
     projectId: string,
     conversationId: string,
     assetTypes?: AssetType[]
   ): Promise<ChatResponse> {
     const prompt = getPromptTemplate(type);
+
+    // Build conversation context
+    console.log('Building conversation context...');
+    const conversationContext = await buildConversationContext(
+      projectId,
+      conversationId
+    );
+    
+    // Format the context for the AI
+    const context = formatCompleteContext(conversationContext);
     
     // Format the prompt based on the type
     let formattedPrompt: string;
