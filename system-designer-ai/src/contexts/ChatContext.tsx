@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import { Message, ChatContextType, Conversation as ChatConversation } from '@/types/chat';
 import { Conversation as ApiConversation } from '@/types/api';
 import * as api from '@/lib/api-client';
@@ -48,6 +48,14 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
   const [currentPage, setCurrentPage] = useState(1);
   const MESSAGES_PER_PAGE = 20;
 
+  // Use ref to store the current conversation ID
+  const conversationIdRef = useRef<string | null>(null);
+
+  // Update ref when conversation changes
+  useEffect(() => {
+    conversationIdRef.current = conversation?.id ?? null;
+  }, [conversation?.id]);
+
   /**
    * Initialize or load an existing conversation when the component mounts
    * or when projectId/initialConversationId changes
@@ -91,20 +99,21 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
 
   // Subscribe to project events
   useEffect(() => {
-    const unsubscribe = subscribe('message:asset-referenced', (event) => {
-      // Handle asset references from other parts of the application
+    const handleAssetReferenceEvent = (event: { type: string; payload: any }) => {
       if (event.type === 'message:asset-referenced') {
         const payload = event.payload as { message: Message; assetId: string };
-        if (payload.message.conversation_id === conversation?.id) {
+        if (payload.message.conversation_id === conversationIdRef.current) {
           handleAssetReference(payload.message, payload.assetId);
         }
       }
-    });
+    };
+
+    const unsubscribe = subscribe('message:asset-referenced', handleAssetReferenceEvent);
 
     return () => {
       unsubscribe();
     };
-  }, [subscribe, handleAssetReference, conversation?.id]);
+  }, [subscribe]); // Only depend on subscribe, not on handleAssetReference or conversation
 
   /**
    * Load messages for a conversation with pagination support
