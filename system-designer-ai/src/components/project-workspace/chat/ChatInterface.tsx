@@ -5,6 +5,7 @@ import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
 import { useChat } from '@/contexts/ChatContext';
 import { useConversation } from '@/contexts/ConversationContext';
+import { useProject } from '@/contexts/ProjectContext';
 
 interface ChatInterfaceProps {
   projectId: string;
@@ -13,7 +14,34 @@ interface ChatInterfaceProps {
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId, initialConversationId }) => {
   const { messages, isLoading, isWaitingForAI, error, sendMessage } = useChat();
-  const { conversations, currentConversation, selectConversation } = useConversation();
+  const { conversations, currentConversation, selectConversation, createConversation, deleteConversation } = useConversation();
+  const { project } = useProject();
+
+  const handleCreateConversation = async () => {
+    if (!project) return;
+    try {
+      const newConversation = await createConversation(project.id);
+      selectConversation(newConversation.id);
+    } catch (error) {
+      console.error('Failed to create conversation:', error);
+    }
+  };
+
+  const handleDeleteConversation = async () => {
+    if (!currentConversation) return;
+    try {
+      await deleteConversation(currentConversation.id);
+      // Select the first available conversation or create a new one
+      if (conversations.length > 0) {
+        selectConversation(conversations[0].id);
+      } else if (project) {
+        const newConversation = await createConversation(project.id);
+        selectConversation(newConversation.id);
+      }
+    } catch (error) {
+      console.error('Failed to delete conversation:', error);
+    }
+  };
 
   return (
     <div className="h-full flex flex-col bg-white">
@@ -26,29 +54,54 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId, initial
             </div>
             <div className="flex flex-col">
               <h3 className="text-lg font-semibold">AI System Designer Assistant</h3>
-              {currentConversation && (
-                <div className="flex items-center space-x-2">
-                  <select
-                    value={currentConversation.id}
-                    onChange={(e) => selectConversation(e.target.value)}
-                    className="text-sm border rounded px-2 py-1"
-                  >
-                    {conversations.map((conv) => (
-                      <option key={conv.id} value={conv.id}>
-                        {conv.title}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
+              <div className="flex items-center space-x-2 mt-1">
+                {currentConversation ? (
+                  <>
+                    <select
+                      value={currentConversation.id}
+                      onChange={(e) => selectConversation(e.target.value)}
+                      className="text-sm border rounded px-2 py-1"
+                    >
+                      {conversations.map((conv) => (
+                        <option key={conv.id} value={conv.id}>
+                          {conv.title}
+                        </option>
+                      ))}
+                    </select>
+                    <button
+                      onClick={handleDeleteConversation}
+                      className="text-sm text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50"
+                      title="Delete conversation"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </>
+                ) : (
+                  <span className="text-sm text-gray-500">No conversation selected</span>
+                )}
+              </div>
             </div>
           </div>
-          {isLoading && (
-            <div className="text-sm text-gray-500 flex items-center">
-              <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin mr-2" />
-              Thinking...
-            </div>
-          )}
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={handleCreateConversation}
+              className="text-sm text-blue-600 hover:text-blue-800 px-3 py-1 rounded hover:bg-blue-50 flex items-center"
+              title="New conversation"
+            >
+              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              New
+            </button>
+            {isLoading && (
+              <div className="text-sm text-gray-500 flex items-center">
+                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin mr-2" />
+                Thinking...
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
