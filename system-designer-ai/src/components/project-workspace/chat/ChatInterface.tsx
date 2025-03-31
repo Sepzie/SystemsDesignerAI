@@ -4,6 +4,7 @@ import React from 'react';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
 import { useChat } from '@/contexts/ChatContext';
+import { useConversation } from '@/contexts/ConversationContext';
 
 interface ChatInterfaceProps {
   projectId: string;
@@ -12,6 +13,7 @@ interface ChatInterfaceProps {
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId, initialConversationId }) => {
   const { messages, isLoading, isWaitingForAI, error, sendMessage } = useChat();
+  const { conversations, currentConversation, selectConversation } = useConversation();
 
   return (
     <div className="h-full flex flex-col bg-white">
@@ -22,7 +24,24 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId, initial
             <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm mr-2">
               AI
             </div>
-            <h3 className="text-lg font-semibold">AI System Designer Assistant</h3>
+            <div className="flex flex-col">
+              <h3 className="text-lg font-semibold">AI System Designer Assistant</h3>
+              {currentConversation && (
+                <div className="flex items-center space-x-2">
+                  <select
+                    value={currentConversation.id}
+                    onChange={(e) => selectConversation(e.target.value)}
+                    className="text-sm border rounded px-2 py-1"
+                  >
+                    {conversations.map((conv) => (
+                      <option key={conv.id} value={conv.id}>
+                        {conv.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
           </div>
           {isLoading && (
             <div className="text-sm text-gray-500 flex items-center">

@@ -3,13 +3,23 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 interface MessageInputProps {
-  onSendMessage: (content: string) => Promise<void>;
+  onSendMessage: (content: string) => Promise<(() => void) | undefined>;
   isLoading: boolean;
 }
 
 export const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoading }) => {
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const cleanupRef = useRef<(() => void) | undefined>();
+
+  // Cleanup function on unmount
+  useEffect(() => {
+    return () => {
+      if (cleanupRef.current) {
+        cleanupRef.current();
+      }
+    };
+  }, []);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -25,7 +35,12 @@ export const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoa
     if (!message.trim() || isLoading) return;
 
     try {
-      await onSendMessage(message.trim());
+      // Clean up previous stream if it exists
+      if (cleanupRef.current) {
+        cleanupRef.current();
+      }
+      // Store new cleanup function
+      cleanupRef.current = await onSendMessage(message.trim());
       setMessage('');
     } catch (error) {
       console.error('Failed to send message:', error);

@@ -6,6 +6,7 @@ import { ChatInterface } from './chat/ChatInterface';
 import { ChatProvider } from '@/contexts/ChatContext';
 import { ProjectProvider } from '@/contexts/ProjectContext';
 import { AssetProvider } from '@/contexts/AssetContext';
+import { ConversationProvider } from '@/contexts/ConversationContext';
 import { AssetViewer } from './asset/AssetViewer';
 import { AssetList } from './asset/AssetList';
 import { useAsset } from '@/contexts/AssetContext';
@@ -72,11 +73,13 @@ function ProjectContent() {
 export function ProjectLayout({ projectId }: ProjectLayoutProps) {
   return (
     <ProjectProvider projectId={projectId}>
-      <AssetProvider projectId={projectId}>
-        <ChatProvider >
-          <ProjectContent />
+      <ConversationProvider>
+        <ChatProvider>
+          <AssetProvider projectId={projectId}>
+            <ProjectContent />
+          </AssetProvider>
         </ChatProvider>
-      </AssetProvider>
+      </ConversationProvider>
     </ProjectProvider>
   );
 } 
