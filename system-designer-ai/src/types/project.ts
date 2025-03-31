@@ -1,5 +1,6 @@
 import { Message } from './chat';
 import { Asset } from './asset';
+import { Conversation } from './conversation';
 
 export interface ProjectRequirements {
   functional: string[];
@@ -29,7 +30,11 @@ export type ProjectEventType =
   | 'asset:created'
   | 'asset:updated'
   | 'asset:deleted'
-  | 'message:asset-referenced';
+  | 'message:asset-referenced'
+  | 'conversation:created'
+  | 'conversation:selected'
+  | 'conversation:deleted'
+  | 'conversation:updated';
 
 export interface ProjectEvent {
   type: ProjectEventType;
@@ -39,6 +44,10 @@ export interface ProjectEvent {
     'asset:updated': Asset;
     'asset:deleted': { assetId: string };
     'message:asset-referenced': { message: Message; assetId: string };
+    'conversation:created': { conversation: Conversation };
+    'conversation:selected': { conversation: Conversation };
+    'conversation:deleted': { conversationId: string };
+    'conversation:updated': { conversationId: string; title: string };
   }[ProjectEventType];
   timestamp: string;
 }
@@ -49,6 +58,7 @@ export interface ProjectContextType {
   assets: Asset[];
   openConversation?: {
     id: string;
+    project_id: string;
     title: string;
     started_at: string;
     updated_at: string;

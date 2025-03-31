@@ -6,6 +6,7 @@ import {
   CreateMessageResponse,
   ConversationMessage,
   ProjectResponse,
+  ListConversationsResponse,
 } from '@/types/api';
 import { Message } from '@/types/chat';
 import { Project } from '@/types/project';
@@ -194,4 +195,36 @@ export async function validateMermaidDiagram(content: string): Promise<MermaidVa
     body: JSON.stringify({ content }),
   });
   return handleResponse<MermaidValidationResult>(response);
+}
+
+export async function getConversations(projectId: string): Promise<ListConversationsResponse> {
+  const response = await fetch(`/api/projects/${projectId}/conversations`);
+  return handleResponse<ListConversationsResponse>(response);
+}
+
+export async function deleteConversation(conversationId: string): Promise<void> {
+  const response = await fetch(`/api/conversations/${conversationId}`, {
+    method: 'DELETE',
+  });
+  return handleResponse<void>(response);
+}
+
+/**
+ * FAKE
+ * @param conversationId 
+ * @param title 
+ * @returns 
+ */
+export async function updateConversationTitle(
+  conversationId: string,
+  title: string
+): Promise<void> {
+  const response = await fetch(`/api/conversations/${conversationId}/title`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ title }),
+  });
+  return handleResponse<void>(response);
 } 

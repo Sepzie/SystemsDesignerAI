@@ -1,4 +1,5 @@
 import { AssetReference } from './asset';
+import { Conversation } from './conversation';
 
 export type MessageRole = 'user' | 'assistant';
 
@@ -20,16 +21,6 @@ export interface Message {
   created_at: string;
 }
 
-export interface Conversation {
-  id: string;
-  project_id: string;
-  title: string;
-  created_at: string;
-  updated_at: string;
-  last_message_at: string;
-  message_count: number;
-}
-
 export interface ChatResponse {
   message: Message;
   assets?: {
@@ -46,7 +37,7 @@ export interface ChatContextType {
   isWaitingForAI: boolean;
   error: string | null;
   sendMessage: (content: string) => Promise<(() => void) | undefined>;
-  conversation: Conversation | null;
+  currentConversation: Conversation | null;
   loadMoreMessages: () => Promise<void>;
   hasMoreMessages: boolean;
 }

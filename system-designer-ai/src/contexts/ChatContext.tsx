@@ -1,47 +1,26 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
-import { Message, ChatContextType, Conversation as ChatConversation, MessageRole } from '@/types/chat';
-import { Conversation as ApiConversation } from '@/types/api';
+import { Message, ChatContextType, MessageRole } from '@/types/chat';
 import * as api from '@/lib/api-client';
 import { useProject } from './ProjectContext';
+import { useConversation } from './ConversationContext';
 
-// Helper function to map API conversation to Chat conversation
-function mapApiConversationToChat(apiConv: ApiConversation | { id: string; projectId: string; startedAt: string | Date; updatedAt: string | Date }): ChatConversation {
-  return {
-    id: apiConv.id,
-    project_id: apiConv.projectId,
-    title: `Conversation ${apiConv.id.slice(0, 8)}`, // Generate a title from the ID
-    created_at: typeof apiConv.startedAt === 'string' ? apiConv.startedAt : apiConv.startedAt.toISOString(),
-    updated_at: typeof apiConv.updatedAt === 'string' ? apiConv.updatedAt : apiConv.updatedAt.toISOString(),
-    last_message_at: typeof apiConv.updatedAt === 'string' ? apiConv.updatedAt : apiConv.updatedAt.toISOString(),
-    message_count: 0, // This will be updated when messages are loaded
-  };
-}
-
-/**
- * Props for the ChatProvider component
- */
 interface ChatProviderProps {
   children: React.ReactNode;
 }
 
-// Create the chat context with undefined as initial value
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
-/**
- * ChatProvider component that manages the chat state and provides chat functionality
- * to its children through the ChatContext.
- */
 export function ChatProvider({ children }: ChatProviderProps) {
-  const { handleAssetReference, subscribe, openConversation: projectOpenConversation, project, isLoading: isProjectLoading } = useProject();
+  const { handleAssetReference, subscribe } = useProject();
+  const { currentConversation } = useConversation();
   
   // State for managing messages, loading state, errors, and pagination
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isWaitingForAI, setIsWaitingForAI] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [conversation, setConversation] = useState<ChatConversation | null>(null);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const MESSAGES_PER_PAGE = 20;
@@ -51,72 +30,15 @@ export function ChatProvider({ children }: ChatProviderProps) {
 
   // Update ref when conversation changes
   useEffect(() => {
-    conversationIdRef.current = conversation?.id ?? null;
-  }, [conversation?.id]);
+    conversationIdRef.current = currentConversation?.id ?? null;
+  }, [currentConversation?.id]);
 
-  /**
-   * Initialize or load an existing conversation when the component mounts
-   * or when projectOpenConversation changes
-   */
+  // Load messages when conversation changes
   useEffect(() => {
-    async function initializeConversation() {
-      // Don't initialize if project is still loading or not available
-      if (isProjectLoading || !project) {
-        return;
-      }
-
-      const projectId = project.id; // Store projectId after null check
-
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        let apiConversation: ApiConversation;
-        if (projectOpenConversation) {
-          // Use the open conversation from project context
-          apiConversation = {
-            id: projectOpenConversation.id,
-            projectId,
-            startedAt: new Date(projectOpenConversation.started_at),
-            updatedAt: new Date(projectOpenConversation.updated_at),
-          };
-          // Set initial messages from project context
-          setMessages(projectOpenConversation.messages.map((msg: { id: string; role: string; content: string; metadata?: Record<string, any>; created_at: string }) => ({
-            ...msg,
-            conversation_id: projectOpenConversation.id,
-            role: msg.role as MessageRole,
-          })));
-        } else {
-          // Create a new conversation if no open conversation exists
-          const { conversation: createdConversation } = await api.createConversation(projectId);
-          apiConversation = createdConversation;
-        }
-        
-        // Map API conversation to Chat conversation
-        const chatConversation = mapApiConversationToChat(apiConversation);
-        
-        if (projectOpenConversation && projectOpenConversation.id === chatConversation.id) {
-          // If we have messages from project context, use them and update conversation
-          setConversation({
-            ...chatConversation,
-            message_count: projectOpenConversation.messages.length
-          });
-        } else {
-          // Only load messages from API if we don't have them from project context
-          setConversation(chatConversation);
-          await loadMessages(chatConversation.id, 1);
-        }
-
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to initialize conversation');
-        console.error('Failed to initialize conversation:', err);
-      } finally {
-        setIsLoading(false);
-      }
+    if (currentConversation) {
+      loadMessages(currentConversation.id, 1);
     }
-
-    initializeConversation();
-  }, [project, projectOpenConversation, isProjectLoading]);
+  }, [currentConversation]);
 
   // Subscribe to project events
   useEffect(() => {
@@ -134,17 +56,17 @@ export function ChatProvider({ children }: ChatProviderProps) {
     return () => {
       unsubscribe();
     };
-  }, [subscribe]); // Only depend on subscribe, not on handleAssetReference or conversation
+  }, [subscribe]);
 
   /**
    * Load messages for a conversation with pagination support
    */
   const loadMessages = useCallback(async (conversationId: string, page: number) => {
-    if (!project) return; // Early return if project is not available
+    if (!currentConversation) return;
 
     try {
       const { messages: newMessages } = await api.getMessages(
-        project.id,
+        currentConversation.project_id,
         conversationId,
         page,
         MESSAGES_PER_PAGE
@@ -163,29 +85,29 @@ export function ChatProvider({ children }: ChatProviderProps) {
       setError(err instanceof Error ? err.message : 'Failed to load messages');
       console.error('Failed to load messages:', err);
     }
-  }, [project]);
+  }, [currentConversation]);
 
   /**
    * Load more messages when scrolling up (pagination)
    */
   const loadMoreMessages = useCallback(async () => {
-    if (!conversation || isLoading || !hasMoreMessages || !project) return;
+    if (!currentConversation || isLoading || !hasMoreMessages) return;
     
     setIsLoading(true);
     try {
-      await loadMessages(conversation.id, currentPage + 1);
+      await loadMessages(currentConversation.id, currentPage + 1);
     } finally {
       setIsLoading(false);
     }
-  }, [conversation, isLoading, hasMoreMessages, currentPage, loadMessages, project]);
+  }, [currentConversation, isLoading, hasMoreMessages, currentPage, loadMessages]);
 
   /**
    * Send a new message and handle the AI response stream
    * This function implements optimistic updates and retry logic
    */
   const sendMessage = useCallback(async (content: string) => {
-    if (!conversation || !project) {
-      setError('No active conversation or project');
+    if (!currentConversation) {
+      setError('No active conversation');
       return;
     }
 
@@ -200,7 +122,7 @@ export function ChatProvider({ children }: ChatProviderProps) {
     // Create an optimistic update for the user's message
     const optimisticMessage: Message = {
       id: `temp-${Date.now()}`,
-      conversation_id: conversation.id,
+      conversation_id: currentConversation.id,
       role: 'user',
       content,
       created_at: new Date().toISOString(),
@@ -218,8 +140,8 @@ export function ChatProvider({ children }: ChatProviderProps) {
       while (retryCount < maxRetries) {
         try {
           const response = await api.sendMessage(
-            project.id,
-            conversation.id,
+            currentConversation.project_id,
+            currentConversation.id,
             {
               role: 'user',
               content,
@@ -252,7 +174,7 @@ export function ChatProvider({ children }: ChatProviderProps) {
         // Add a placeholder AI message that will be updated via SSE
         const placeholderAiMessage: Message = {
           id: aiMessageId,
-          conversation_id: conversation.id,
+          conversation_id: currentConversation.id,
           role: 'assistant',
           content: 'Thinking...', // Initial loading state
           created_at: new Date().toISOString(),
@@ -262,8 +184,8 @@ export function ChatProvider({ children }: ChatProviderProps) {
 
         // Connect to the SSE stream for AI response
         const cleanup = api.connectToMessageStream(
-          project.id,
-          conversation.id,
+          currentConversation.project_id,
+          currentConversation.id,
           aiMessageId,
           // Handle incoming message chunks
           (data: { content: string; assets?: { id: string }[] }) => {
@@ -329,23 +251,22 @@ export function ChatProvider({ children }: ChatProviderProps) {
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send message');
+      console.error('Failed to send message:', err);
       // Remove the optimistic message on error
-      setMessages(prev =>
-        prev.filter(msg => msg.id !== optimisticMessage.id)
-      );
+      setMessages(prev => prev.filter(msg => msg.id !== optimisticMessage.id));
     } finally {
       setIsLoading(false);
+      setIsWaitingForAI(false);
     }
-  }, [conversation, project, isWaitingForAI, handleAssetReference]);
+  }, [currentConversation, isWaitingForAI, handleAssetReference]);
 
-  // Provide the chat context value to children
-  const value = {
+  const value: ChatContextType = {
     messages,
-    isLoading: isLoading || isProjectLoading,
+    isLoading,
     isWaitingForAI,
     error,
     sendMessage,
-    conversation,
+    currentConversation,
     loadMoreMessages,
     hasMoreMessages,
   };
@@ -357,13 +278,9 @@ export function ChatProvider({ children }: ChatProviderProps) {
   );
 }
 
-/**
- * Custom hook to use the chat context
- * Throws an error if used outside of ChatProvider
- */
 export function useChat() {
   const context = useContext(ChatContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useChat must be used within a ChatProvider');
   }
   return context;
