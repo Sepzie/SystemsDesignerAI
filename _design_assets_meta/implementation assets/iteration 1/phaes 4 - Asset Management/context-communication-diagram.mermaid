@@ -1,0 +1,63 @@
+flowchart TD
+    subgraph "Cross-Context Events"
+        E1[Asset Selected in Chat]
+        E2[Asset Modified in Viewer]
+        E3[New Asset Created from Chat]
+        E4[Asset Deleted]
+    end
+    
+    subgraph "Project Context"
+        PC[Project Context]
+        PE[Project Event System]
+    end
+    
+    subgraph "Chat Context"
+        CC[Chat Context]
+        MP[Message Parser]
+        AE[Asset Extractor]
+    end
+    
+    subgraph "Asset Context"
+        AC[Asset Context]
+        AR[Asset Registry]
+        AO[Asset Operations]
+    end
+    
+    subgraph "Components"
+        MsgItem[Message Item]
+        AssetRef[Asset Reference]
+        AssetViewer[Asset Viewer]
+        AssetList[Asset List]
+    end
+    
+    %% Chat to Project Context
+    MsgItem --> AssetRef
+    AssetRef -- "Clicked" --> CC
+    CC -- "notifyAssetSelected" --> PC
+    
+    %% Project to Asset Context
+    PC -- "selectAsset" --> AC
+    AC -- "Updates selectedAssetId" --> AR
+    AR -- "Updates UI" --> AssetViewer
+    
+    %% Asset to Project Context
+    AssetViewer -- "Edit Asset" --> AC
+    AC -- "notifyAssetChanged" --> PC
+    
+    %% Project to Chat Context
+    PC -- "assetChanged event" --> CC
+    CC -- "Updates messages" --> MP
+    MP -- "Re-renders" --> MsgItem
+    
+    %% Asset Extraction Flow
+    CC -- "Extracts asset" --> AE
+    AE -- "createAsset" --> PC
+    PC -- "createAsset" --> AC
+    AC -- "Stores asset" --> AR
+    AC -- "assetCreated" --> PC
+    PC -- "assetCreated" --> CC
+    CC -- "Updates message" --> MP
+    
+    style PC fill:#d0e0ff,stroke:#3080ff
+    style CC fill:#ffe0d0,stroke:#ff8030
+    style AC fill:#d0ffe0,stroke:#30c080
