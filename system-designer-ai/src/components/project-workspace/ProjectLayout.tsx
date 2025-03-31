@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { VersionHistory } from './VersionHistory';
 import { ChatInterface } from './chat/ChatInterface';
 import { ChatProvider } from '@/contexts/ChatContext';
 import { ProjectProvider } from '@/contexts/ProjectContext';
+import { AssetProvider } from '@/contexts/AssetContext';
 import { AssetViewer } from './asset/AssetViewer';
 import { AssetList } from './asset/AssetList';
-import { Asset } from '@/types/asset';
+import { useAsset } from '@/contexts/AssetContext';
 import { useProject } from '@/contexts/ProjectContext';
 
 interface ProjectLayoutProps {
@@ -16,32 +17,9 @@ interface ProjectLayoutProps {
 
 function ProjectContent() {
   const { project, isLoading: projectLoading, error: projectError } = useProject();
-  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
-  const [assets, setAssets] = useState<Asset[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { assets, selectedAsset, selectAsset, updateAsset, isLoading: assetsLoading } = useAsset();
 
-  useEffect(() => {
-    const loadAssets = async () => {
-      try {
-        const response = await fetch(`/api/projects/${project?.id}/assets`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch assets');
-        }
-        const assets = await response.json() as Asset[];
-        setAssets(assets);
-      } catch (error) {
-        console.error('Failed to load assets:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (project?.id) {
-      loadAssets();
-    }
-  }, [project?.id]);
-
-  if (projectLoading) {
+  if (projectLoading || assetsLoading) {
     return <div>Loading project...</div>;
   }
 
@@ -72,8 +50,9 @@ function ProjectContent() {
             <AssetViewer
               asset={selectedAsset}
               onAssetUpdate={(asset) => {
-                // TODO: Implement asset update logic
-                console.log('Asset updated:', asset);
+                if (asset.id) {
+                  updateAsset(asset.id, asset);
+                }
               }}
             />
           </div>
@@ -81,7 +60,7 @@ function ProjectContent() {
             <AssetList
               assets={assets}
               selectedAssetId={selectedAsset?.id || null}
-              onAssetSelect={setSelectedAsset}
+              onAssetSelect={selectAsset}
             />
           </div>
         </div>
@@ -93,9 +72,11 @@ function ProjectContent() {
 export function ProjectLayout({ projectId }: ProjectLayoutProps) {
   return (
     <ProjectProvider projectId={projectId}>
-      <ChatProvider projectId={projectId}>
-        <ProjectContent />
-      </ChatProvider>
+      <AssetProvider projectId={projectId}>
+        <ChatProvider projectId={projectId}>
+          <ProjectContent />
+        </ChatProvider>
+      </AssetProvider>
     </ProjectProvider>
   );
 } 

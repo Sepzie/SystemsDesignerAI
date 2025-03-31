@@ -64,3 +64,25 @@ export interface MermaidValidationResult {
   errors?: string[];
   warnings?: string[];
 }
+
+export interface AssetContextType {
+  // Asset state
+  assets: Asset[];
+  selectedAsset: Asset | null;
+  isLoading: boolean;
+  error: string | null;
+
+  // Asset operations
+  selectAsset: (assetOrId: Asset | string | null) => void;
+  createAsset: (assetData: Omit<Asset, 'id' | 'project_id' | 'current_version' | 'metadata' | 'created_at' | 'updated_at'>) => Promise<void>;
+  updateAsset: (assetId: string, assetData: Partial<Asset>) => Promise<void>;
+  deleteAsset: (assetId: string) => Promise<void>;
+  loadAssets: () => Promise<void>;
+
+  // Asset versioning
+  getAssetVersion: (assetId: string, versionNumber: number) => Promise<AssetVersion | null>;
+  getAssetVersions: (assetId: string) => Promise<AssetVersion[]>;
+
+  // Asset validation
+  validateMermaidDiagram: (content: string) => Promise<MermaidValidationResult>;
+}

@@ -1,4 +1,5 @@
 import { Message } from './chat';
+import { Asset } from './asset';
 
 export interface ProjectRequirements {
   functional: string[];
@@ -32,7 +33,13 @@ export type ProjectEventType =
 
 export interface ProjectEvent {
   type: ProjectEventType;
-  payload: any;
+  payload: {
+    'asset:selected': { assetId: string };
+    'asset:created': Asset;
+    'asset:updated': Asset;
+    'asset:deleted': { assetId: string };
+    'message:asset-referenced': { message: Message; assetId: string };
+  }[ProjectEventType];
   timestamp: string;
 }
 
@@ -44,13 +51,7 @@ export interface ProjectContextType {
 
   // Event system
   subscribe: (eventType: ProjectEventType, callback: (event: ProjectEvent) => void) => () => void;
-  notify: (eventType: ProjectEventType, payload: any) => void;
-
-  // Asset-related methods
-  selectAsset: (assetId: string) => void;
-  createAsset: (assetData: any) => Promise<void>;
-  updateAsset: (assetId: string, assetData: any) => Promise<void>;
-  deleteAsset: (assetId: string) => Promise<void>;
+  notify: (eventType: ProjectEventType, payload: ProjectEvent['payload']) => void;
 
   // Message-related methods
   handleAssetReference: (message: Message, assetId: string) => void;

@@ -7,6 +7,7 @@ import {
   ConversationMessage,
 } from '@/types/api';
 import { Message } from '@/types/chat';
+import { Project } from '@/types/project';
 
 class ApiError extends Error {
   constructor(
@@ -132,4 +133,9 @@ export function connectToMessageStream(
   return () => {
     eventSource.close();
   };
+}
+
+export async function getProject(projectId: string): Promise<Project> {
+  const response = await fetch(`/api/projects/${projectId}`);
+  return handleResponse<Project>(response);
 } 
