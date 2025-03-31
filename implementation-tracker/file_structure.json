@@ -61,13 +61,43 @@
                 "[projectId]": {
                   "type": "directory",
                   "contents": {
+                    "assets": {
+                      "type": "directory",
+                      "contents": {
+                        "route.ts": {
+                          "type": "file",
+                          "extension": ".ts",
+                          "size": 1487
+                        },
+                        "[assetId]": {
+                          "type": "directory",
+                          "contents": {
+                            "route.ts": {
+                              "type": "file",
+                              "extension": ".ts",
+                              "size": 2617
+                            },
+                            "versions": {
+                              "type": "directory",
+                              "contents": {
+                                "route.ts": {
+                                  "type": "file",
+                                  "extension": ".ts",
+                                  "size": 1050
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
                     "conversations": {
                       "type": "directory",
                       "contents": {
                         "route.ts": {
                           "type": "file",
                           "extension": ".ts",
-                          "size": 2886
+                          "size": 2895
                         },
                         "[conversationId]": {
                           "type": "directory",
@@ -78,14 +108,14 @@
                                 "route.ts": {
                                   "type": "file",
                                   "extension": ".ts",
-                                  "size": 4361
+                                  "size": 3186
                                 }
                               }
                             },
                             "route.ts": {
                               "type": "file",
                               "extension": ".ts",
-                              "size": 2167
+                              "size": 2243
                             },
                             "stream": {
                               "type": "directory",
@@ -93,7 +123,7 @@
                                 "route.ts": {
                                   "type": "file",
                                   "extension": ".ts",
-                                  "size": 3337
+                                  "size": 5234
                                 }
                               }
                             }
@@ -104,7 +134,7 @@
                     "route.ts": {
                       "type": "file",
                       "extension": ".ts",
-                      "size": 3392
+                      "size": 3336
                     }
                   }
                 }
@@ -118,7 +148,7 @@
             "page.tsx": {
               "type": "file",
               "extension": ".tsx",
-              "size": 1051
+              "size": 1084
             }
           }
         },
@@ -135,7 +165,7 @@
         "globals.css": {
           "type": "file",
           "extension": ".css",
-          "size": 488
+          "size": 514
         },
         "layout.tsx": {
           "type": "file",
@@ -148,7 +178,7 @@
             "page.tsx": {
               "type": "file",
               "extension": ".tsx",
-              "size": 3528
+              "size": 3647
             }
           }
         },
@@ -181,7 +211,7 @@
                 "page.tsx": {
                   "type": "file",
                   "extension": ".tsx",
-                  "size": 815
+                  "size": 386
                 },
                 "settings": {
                   "type": "directory",
@@ -212,35 +242,6 @@
     "components": {
       "type": "directory",
       "contents": {
-        "chat": {
-          "type": "directory",
-          "contents": {
-            "ChatInterface.tsx": {
-              "type": "file",
-              "extension": ".tsx",
-              "size": 3032
-            },
-            "MessageInput.tsx": {
-              "type": "file",
-              "extension": ".tsx",
-              "size": 2409
-            },
-            "MessageItem.tsx": {
-              "type": "file",
-              "extension": ".tsx",
-              "size": 1354
-            },
-            "MessageList.tsx": {
-              "type": "file",
-              "extension": ".tsx",
-              "size": 2815
-            }
-          }
-        },
-        "diagrams": {
-          "type": "directory",
-          "contents": {}
-        },
         "layout": {
           "type": "directory",
           "contents": {
@@ -264,11 +265,6 @@
         "project": {
           "type": "directory",
           "contents": {
-            "ChatInterface.tsx": {
-              "type": "file",
-              "extension": ".tsx",
-              "size": 967
-            },
             "ProjectCard.tsx": {
               "type": "file",
               "extension": ".tsx",
@@ -279,20 +275,65 @@
               "extension": ".tsx",
               "size": 4269
             },
-            "ProjectLayout.tsx": {
-              "type": "file",
-              "extension": ".tsx",
-              "size": 1369
-            },
             "ProjectList.tsx": {
               "type": "file",
               "extension": ".tsx",
               "size": 2198
+            }
+          }
+        },
+        "project-workspace": {
+          "type": "directory",
+          "contents": {
+            "asset": {
+              "type": "directory",
+              "contents": {
+                "AssetList.tsx": {
+                  "type": "file",
+                  "extension": ".tsx",
+                  "size": 3794
+                },
+                "AssetReference.tsx": {
+                  "type": "file",
+                  "extension": ".tsx",
+                  "size": 1077
+                },
+                "AssetViewer.tsx": {
+                  "type": "file",
+                  "extension": ".tsx",
+                  "size": 2394
+                }
+              }
             },
-            "ProjectSidebar.tsx": {
+            "chat": {
+              "type": "directory",
+              "contents": {
+                "ChatInterface.tsx": {
+                  "type": "file",
+                  "extension": ".tsx",
+                  "size": 3118
+                },
+                "MessageInput.tsx": {
+                  "type": "file",
+                  "extension": ".tsx",
+                  "size": 2479
+                },
+                "MessageItem.tsx": {
+                  "type": "file",
+                  "extension": ".tsx",
+                  "size": 1876
+                },
+                "MessageList.tsx": {
+                  "type": "file",
+                  "extension": ".tsx",
+                  "size": 2941
+                }
+              }
+            },
+            "ProjectLayout.tsx": {
               "type": "file",
               "extension": ".tsx",
-              "size": 1714
+              "size": 2616
             },
             "VersionHistory.tsx": {
               "type": "file",
@@ -333,22 +374,28 @@
         }
       }
     },
-    "diagrams": {
-      "type": "directory",
-      "contents": {}
-    },
     "lib": {
       "type": "directory",
       "contents": {
         "api-client.ts": {
           "type": "file",
           "extension": ".ts",
-          "size": 3285
+          "size": 3520
         },
         "api-utils.ts": {
           "type": "file",
           "extension": ".ts",
-          "size": 1883
+          "size": 1962
+        },
+        "asset": {
+          "type": "directory",
+          "contents": {
+            "asset-service.ts": {
+              "type": "file",
+              "extension": ".ts",
+              "size": 7402
+            }
+          }
         },
         "error-handler.ts": {
           "type": "file",
@@ -357,7 +404,38 @@
         },
         "langchain": {
           "type": "directory",
-          "contents": {}
+          "contents": {
+            "api-mocks.ts": {
+              "type": "file",
+              "extension": ".ts",
+              "size": 5081
+            },
+            "asset-extraction.ts": {
+              "type": "file",
+              "extension": ".ts",
+              "size": 6252
+            },
+            "client.ts": {
+              "type": "file",
+              "extension": ".ts",
+              "size": 5007
+            },
+            "config.ts": {
+              "type": "file",
+              "extension": ".ts",
+              "size": 625
+            },
+            "context.ts": {
+              "type": "file",
+              "extension": ".ts",
+              "size": 2673
+            },
+            "prompts.ts": {
+              "type": "file",
+              "extension": ".ts",
+              "size": 5396
+            }
+          }
         },
         "supabase": {
           "type": "directory",
@@ -386,14 +464,20 @@
         },
         "validators": {
           "type": "directory",
-          "contents": {}
+          "contents": {
+            "mermaid-validator.ts": {
+              "type": "file",
+              "extension": ".ts",
+              "size": 4063
+            }
+          }
         }
       }
     },
     "middleware.ts": {
       "type": "file",
       "extension": ".ts",
-      "size": 2849
+      "size": 2946
     },
     "styles": {
       "type": "directory",
@@ -405,12 +489,22 @@
         "api.ts": {
           "type": "file",
           "extension": ".ts",
-          "size": 1443
+          "size": 1512
+        },
+        "asset.ts": {
+          "type": "file",
+          "extension": ".ts",
+          "size": 1320
         },
         "chat.ts": {
           "type": "file",
           "extension": ".ts",
-          "size": 1146
+          "size": 1715
+        },
+        "langchain.ts": {
+          "type": "file",
+          "extension": ".ts",
+          "size": 542
         },
         "project.ts": {
           "type": "file",

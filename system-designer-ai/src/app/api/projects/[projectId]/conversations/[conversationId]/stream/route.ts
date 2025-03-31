@@ -5,6 +5,8 @@ import {
   ApiError,
 } from '@/lib/api-utils';
 import { createClient } from '@/lib/supabase/server';
+import { langChainClient } from '@/lib/langchain/client';
+import { buildConversationContext, formatCompleteContext } from '@/lib/langchain/context';
 
 export async function GET(
   request: Request,
@@ -45,28 +47,68 @@ export async function GET(
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          // For now, we'll simulate an AI response
-          // In the future, this will connect to your actual AI service
-          const response = `This is a simulated AI response to the message with ID: ${messageId}`;
+          console.log('\n=== Starting AI Response Generation ===');
+          console.log('Message ID:', messageId);
+          console.log('Conversation ID:', conversationId);
+          console.log('Project ID:', projectId);
 
-          //delay for 2 seconds
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          // Update message status to generating
+          await supabase
+            .from('messages')
+            .update({
+              metadata: {
+                status: 'generating',
+                started_at: new Date().toISOString(),
+              },
+            })
+            .eq('id', messageId);
+
+          // Build conversation context
+          console.log('Building conversation context...');
+          const conversationContext = await buildConversationContext(
+            projectId,
+            conversationId
+          );
           
+          // Format the context for the AI
+          const formattedContext = formatCompleteContext(conversationContext);
+
+          // Generate response using LangChain
+          console.log('Generating AI response...');
+          const response = await langChainClient.processMessage(
+            message.content,
+            formattedContext,
+            'design', // Default to design type
+            projectId,
+            conversationId
+          );
+
           // Send the response as a single event
           controller.enqueue(
-            encoder.encode(`event: message\ndata: ${JSON.stringify({ content: response })}\n\n`)
+            encoder.encode(`event: message\ndata: ${JSON.stringify({ content: response.message.content })}\n\n`)
           );
           
           // Update the message in the database with the complete response
           const { error: updateError } = await supabase
             .from('messages')
-            .update({ content: response })
+            .update({
+              content: response.message.content,
+              metadata: {
+                status: 'completed',
+                model: 'gpt-4-turbo-preview',
+                tokens: response.message.metadata?.tokens,
+                completed_at: new Date().toISOString(),
+              },
+            })
             .eq('id', messageId);
 
           if (updateError) {
             console.error('Failed to update message in database:', updateError);
             throw new Error('Failed to save AI response');
           }
+          
+          console.log('AI response generation completed successfully');
+          console.log('========================\n');
           
           // Send a complete event
           controller.enqueue(
@@ -77,6 +119,20 @@ export async function GET(
           controller.close();
         } catch (error) {
           console.error('Error in stream:', error);
+          
+          // Update message with error status
+          await supabase
+            .from('messages')
+            .update({
+              content: 'Sorry, I encountered an error while generating the response. Please try again.',
+              metadata: {
+                status: 'error',
+                error: error instanceof Error ? error.message : 'Unknown error occurred',
+                completed_at: new Date().toISOString(),
+              },
+            })
+            .eq('id', messageId);
+
           // Send an error event
           controller.enqueue(
             encoder.encode(`event: error\ndata: ${JSON.stringify({ error: 'Failed to generate response' })}\n\n`)

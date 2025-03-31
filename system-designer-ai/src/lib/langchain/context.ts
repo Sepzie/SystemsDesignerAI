@@ -1,0 +1,102 @@
+import { createClient } from '@/lib/supabase/server';
+import { Message } from '@/types/chat';
+import { ConversationContext } from '@/types/langchain';
+
+/**
+ * Fetches conversation history from the database
+ */
+export async function getConversationHistory(
+  conversationId: string,
+  limit: number = 10
+): Promise<Message[]> {
+  const supabase = await createClient();
+  
+  const { data: messages, error } = await supabase
+    .from('messages')
+    .select('*')
+    .eq('conversation_id', conversationId)
+    .order('created_at', { ascending: true })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching conversation history:', error);
+    return [];
+  }
+
+  return messages || [];
+}
+
+/**
+ * Fetches project details for context
+ */
+export async function getProjectDetails(projectId: string) {
+  const supabase = await createClient();
+  
+  const { data: project, error } = await supabase
+    .from('projects')
+    .select('name, description, tech_stack')
+    .eq('id', projectId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching project details:', error);
+    return undefined;
+  }
+
+  return project;
+}
+
+/**
+ * Formats messages into a context string for the AI
+ */
+export function formatMessageContext(messages: Message[]): string {
+  return messages
+    .map(msg => `${msg.role}: ${msg.content}`)
+    .join('\n');
+}
+
+/**
+ * Builds complete conversation context including project details
+ */
+export async function buildConversationContext(
+  projectId: string,
+  conversationId: string,
+  limit: number = 10
+): Promise<ConversationContext> {
+  const [messages, projectDetails] = await Promise.all([
+    getConversationHistory(conversationId, limit),
+    getProjectDetails(projectId),
+  ]);
+
+  return {
+    messages,
+    projectDetails,
+  };
+}
+
+/**
+ * Formats the complete context for use in AI prompts
+ */
+export function formatCompleteContext(context: ConversationContext): string {
+  const parts: string[] = [];
+
+  // Add project details if available
+  if (context.projectDetails) {
+    parts.push(`Project: ${context.projectDetails.name}`);
+    if (context.projectDetails.description) {
+      parts.push(`Description: ${context.projectDetails.description}`);
+    }
+    if (context.projectDetails.tech_stack) {
+      parts.push(`Technologies: ${context.projectDetails.tech_stack}`);
+    }
+    parts.push(''); // Empty line for separation
+  }
+
+  // Add conversation history
+  if (context.messages.length > 0) {
+    parts.push('Conversation History:');
+    parts.push(formatMessageContext(context.messages));
+  }
+
+  return parts.join('\n');
+} 

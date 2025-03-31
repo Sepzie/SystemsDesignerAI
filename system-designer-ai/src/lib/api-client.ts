@@ -4,7 +4,9 @@ import {
   ListMessagesResponse,
   CreateMessageRequest,
   CreateMessageResponse,
+  ConversationMessage,
 } from '@/types/api';
+import { Message } from '@/types/chat';
 
 class ApiError extends Error {
   constructor(
@@ -68,7 +70,12 @@ export async function getMessages(
     `/api/projects/${projectId}/conversations/${conversationId}/messages?${params}`
   );
 
-  return handleResponse<ListMessagesResponse>(response);
+  const messages = await handleResponse<Message[]>(response);
+  const conversationMessages: ConversationMessage[] = messages.map(msg => ({
+    ...msg,
+    conversationId
+  }));
+  return { messages: conversationMessages };
 }
 
 export async function sendMessage(

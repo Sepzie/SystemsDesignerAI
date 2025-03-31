@@ -11,138 +11,115 @@ import {
   ListMessagesResponse,
 } from '@/types/api';
 import { createClient } from '@/lib/supabase/server';
+import { Message } from '@/types/chat';
+import { v4 as uuidv4 } from 'uuid';
 
 export async function GET(
-  request: Request,
-  context: { params: Promise<{ projectId: string; conversationId: string }> }
+  request: NextRequest,
+  { params }: { params: Promise<{ projectId: string; conversationId: string }> }
 ) {
   try {
     const supabase = await createClient();
-    const { projectId, conversationId } = await context.params;
-
-    // Get URL parameters for pagination
-    const url = new URL(request.url);
-    const page = parseInt(url.searchParams.get('page') || '1');
-    const limit = parseInt(url.searchParams.get('limit') || '20');
-    const offset = (page - 1) * limit;
-
-    // Get messages for conversation
+    const { conversationId } = await params;
     const { data: messages, error } = await supabase
       .from('messages')
       .select('*')
       .eq('conversation_id', conversationId)
-      .order('created_at', { ascending: true })
-      .range(offset, offset + limit - 1);
+      .order('created_at', { ascending: true });
 
-    if (error) {
-      console.error('Failed to fetch messages:', error);
-      return NextResponse.json(
-        { error: { message: 'Failed to fetch messages' } },
-        { status: 500 }
-      );
-    }
+    if (error) throw error;
 
-    return NextResponse.json({ messages });
+    return NextResponse.json(messages);
   } catch (error) {
-    console.error('Error in get messages:', error);
     return NextResponse.json(
-      { error: { message: 'Internal server error' } },
+      { error: 'Failed to fetch messages' },
       { status: 500 }
     );
   }
 }
 
 export async function POST(
-  request: Request,
-  context: { params: Promise<{ projectId: string; conversationId: string }> }
+  request: NextRequest,
+  { params }: { params: Promise<{ projectId: string; conversationId: string }> }
 ) {
   try {
     const supabase = await createClient();
-    const { projectId, conversationId } = await context.params;
-    const messageData = await request.json() as CreateMessageRequest;
+    const { conversationId } = await params;
+    const body = await request.json();
+    const { content, type = 'design' } = body;
 
-    // Only allow user messages to be posted directly
-    if (messageData.role !== 'user') {
+    if (!content) {
       return NextResponse.json(
-        { error: { message: 'Only user messages can be posted directly' } },
+        { error: 'Message content is required' },
         { status: 400 }
       );
     }
 
-    // Validate conversation exists and belongs to project
-    const { data: conversation, error: conversationError } = await supabase
-      .from('conversations')
-      .select('id')
-      .eq('id', conversationId)
-      .eq('project_id', projectId)
-      .single();
+    // Create a placeholder message for the user's input
+    const userMessageId = uuidv4();
+    
+    const userMessageData = {
+      id: userMessageId,
+      conversation_id: conversationId,
+      role: 'user',
+      content,
+      metadata: {
+        type,
+        status: 'pending',
+        created_at: new Date().toISOString()
+      },
+      created_at: new Date().toISOString()
+    };
 
-    if (conversationError || !conversation) {
-      return NextResponse.json(
-        { error: { message: 'Conversation not found' } },
-        { status: 404 }
-      );
-    }
-
-    // Create new message
-    const { data: message, error: messageError } = await supabase
+    const { data: userMessage, error: userMessageError } = await supabase
       .from('messages')
-      .insert([
-        {
-          conversation_id: conversationId,
-          role: messageData.role,
-          content: messageData.content,
-          created_at: new Date().toISOString(),
-          metadata: messageData.metadata,
-        },
-      ])
+      .insert([userMessageData])
       .select()
       .single();
 
-    if (messageError) {
-      console.error('Failed to create message:', messageError);
-      return NextResponse.json(
-        { error: { message: 'Failed to create message' } },
-        { status: 500 }
-      );
-    }
+    if (userMessageError) throw userMessageError;
 
-    // Update conversation's updated_at timestamp
-    const { error: updateError } = await supabase
-      .from('conversations')
-      .update({ updated_at: new Date().toISOString() })
-      .eq('id', conversationId);
+    // Create a placeholder AI message for streaming
+    const aiMessageId = uuidv4();
+    
+    const aiMessageData = {
+      id: aiMessageId,
+      conversation_id: conversationId,
+      role: 'assistant',
+      content: 'Thinking...',
+      metadata: {
+        type,
+        status: 'pending',
+        created_at: new Date().toISOString()
+      },
+      created_at: new Date().toISOString()
+    };
 
-    if (updateError) {
-      console.error('Failed to update conversation timestamp:', updateError);
-    }
-
-    // Create a placeholder AI message that will be updated via SSE
     const { data: aiMessage, error: aiMessageError } = await supabase
       .from('messages')
-      .insert([
-        {
-          conversation_id: conversationId,
-          role: 'assistant',
-          content: '', // Empty content that will be updated via SSE
-          created_at: new Date().toISOString(),
-        },
-      ])
+      .insert([aiMessageData])
       .select()
       .single();
 
-    if (aiMessageError) {
-      console.error('Failed to create AI message placeholder:', aiMessageError);
-    }
+    if (aiMessageError) throw aiMessageError;
 
-    return NextResponse.json({ 
-      message,
-      aiMessageId: aiMessage?.id // Return the AI message ID for SSE connection
-    });
+    const response = {
+      messageId: userMessageId,
+      aiMessageId: aiMessageId,
+      message: {
+        id: userMessageId,
+        conversation_id: conversationId,
+        role: 'user',
+        content,
+        metadata: userMessage.metadata,
+        created_at: userMessage.created_at
+      }
+    };
+    
+    return NextResponse.json(response);
   } catch (error) {
-    console.error('Error in create message:', error);
     return NextResponse.json(
-      { error: { message: 'Internal server error' } },
+      { error: 'Failed to store message' },
       { status: 500 }
     );
   }

@@ -13,11 +13,11 @@ import { createClient } from '@/lib/supabase/server';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {
+    const { projectId } = await params;
     const supabase = await createClient();
-    const projectId = params.projectId;
 
     // Get conversations for the project
     const { data: conversations, error } = await supabase

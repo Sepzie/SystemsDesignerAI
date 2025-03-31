@@ -46,7 +46,9 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
         observerRef.current.disconnect();
       }
     };
-  }, [hasMoreMessages, isLoading, loadMoreMessages]);
+  }, [hasMoreMessages, isLoading, loadMoreMessages])
+
+  console.log("messages: ", messages);
 
   if (messages.length === 0) {
     return (

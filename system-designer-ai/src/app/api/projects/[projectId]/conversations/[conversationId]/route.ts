@@ -9,19 +9,20 @@ import { createClient } from '@/lib/supabase/server';
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { projectId: string; conversationId: string } }
+  { params }: { params: Promise<{ projectId: string; conversationId: string }> }
 ) {
   try {
+    const { projectId, conversationId } = await params;
     const supabase = await createClient();
     const user = await validateUser(supabase);
-    await validateProjectAccess(supabase, user.id, params.projectId);
+    await validateProjectAccess(supabase, user.id, projectId);
 
     // Get the conversation
     const { data: conversation, error: convError } = await supabase
       .from('conversations')
       .select('*')
-      .eq('id', params.conversationId)
-      .eq('project_id', params.projectId)
+      .eq('id', conversationId)
+      .eq('project_id', projectId)
       .single();
 
     if (convError || !conversation) {
@@ -32,7 +33,7 @@ export async function GET(
     const { data: messages, error: msgError } = await supabase
       .from('messages')
       .select('*')
-      .eq('conversation_id', params.conversationId)
+      .eq('conversation_id', conversationId)
       .order('created_at', { ascending: true });
 
     if (msgError) {
@@ -48,11 +49,12 @@ export async function GET(
       },
       messages: messages.map(msg => ({
         id: msg.id,
+        conversation_id: msg.conversation_id,
         conversationId: msg.conversation_id,
         role: msg.role,
         content: msg.content,
         metadata: msg.metadata,
-        timestamp: new Date(msg.created_at),
+        created_at: msg.created_at,
       })),
     };
 

@@ -9,12 +9,18 @@ src/
 │   │   │   └── signout
 │   │   │       └── route.ts
 │   │   ├── diagrams
-|   |   |
+
 │   │   ├── export
-|   |   |
+
 │   │   └── projects
 │   │       ├── route.ts
 │   │       └── [projectId]
+│   │           ├── assets
+│   │           │   ├── route.ts
+│   │           │   └── [assetId]
+│   │           │       ├── route.ts
+│   │           │       └── versions
+│   │           │           └── route.ts
 │   │           ├── conversations
 │   │           │   ├── route.ts
 │   │           │   └── [conversationId]
@@ -44,24 +50,25 @@ src/
 │   └── register
 │       └── page.tsx
 ├── components
-│   ├── chat
-│   │   ├── ChatInterface.tsx
-│   │   ├── MessageInput.tsx
-│   │   ├── MessageItem.tsx
-│   │   └── MessageList.tsx
-│   ├── diagrams
-|   |
 │   ├── layout
 │   │   ├── Footer.tsx
 │   │   ├── Header.tsx
 │   │   └── MainLayout.tsx
 │   ├── project
-│   │   ├── ChatInterface.tsx
 │   │   ├── ProjectCard.tsx
 │   │   ├── ProjectCreationForm.tsx
+│   │   └── ProjectList.tsx
+│   ├── project-workspace
+│   │   ├── asset
+│   │   │   ├── AssetList.tsx
+│   │   │   ├── AssetReference.tsx
+│   │   │   └── AssetViewer.tsx
+│   │   ├── chat
+│   │   │   ├── ChatInterface.tsx
+│   │   │   ├── MessageInput.tsx
+│   │   │   ├── MessageItem.tsx
+│   │   │   └── MessageList.tsx
 │   │   ├── ProjectLayout.tsx
-│   │   ├── ProjectList.tsx
-│   │   ├── ProjectSidebar.tsx
 │   │   └── VersionHistory.tsx
 │   └── ui
 │       ├── Button.tsx
@@ -69,27 +76,34 @@ src/
 │       └── Input.tsx
 ├── contexts
 │   └── ChatContext.tsx
-├── diagrams
-|
 ├── lib
 │   ├── api-client.ts
 │   ├── api-utils.ts
+│   ├── asset
+│   │   └── asset-service.ts
 │   ├── error-handler.ts
 │   ├── langchain
-|   |
+│   │   ├── api-mocks.ts
+│   │   ├── asset-extraction.ts
+│   │   ├── client.ts
+│   │   ├── config.ts
+│   │   ├── context.ts
+│   │   └── prompts.ts
 │   ├── supabase
 │   │   ├── client.ts
 │   │   └── server.ts
 │   ├── utils
 │   │   └── cn.ts
 │   └── validators
-|
+│       └── mermaid-validator.ts
 ├── middleware.ts
 ├── styles
-|
+
 ├── types
 │   ├── api.ts
+│   ├── asset.ts
 │   ├── chat.ts
+│   ├── langchain.ts
 │   ├── project.ts
 │   └── supabase.ts
 └── utils
