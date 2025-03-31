@@ -4,7 +4,7 @@ import { AssetExtractionResult, AssetReference, AssetMetadata } from '@/types/as
 import { validateMermaidDiagram } from '../validators/mermaid-validator';
 import { v4 as uuidv4 } from 'uuid';
 
-const ASSET_PATTERN = /{{asset_type:([^}]+)}}\n{{asset_name:([^}]+)}}\n```\n([\s\S]*?)\n```\n?([\s\S]*?)(?={{asset_type:|$)/g;
+const ASSET_PATTERN = /{asset_type:([^}]+)}\s*\n{asset_name:([^}]+)}\s*\n```([\w]*)\n([\s\S]*?)\n```(?:\s*\n([\s\S]*?))?/g;
 const ASSET_REFERENCE_PATTERN = /\[See asset: ([^\]]+)\]\(([^)]+)\)/g;
 
 /**
@@ -17,7 +17,8 @@ async function validateAsset(asset: ExtractedAsset): Promise<boolean> {
     const validationResult = await validateMermaidDiagram(asset.content);
     if (!validationResult.isValid) {
       console.warn(`Invalid Mermaid diagram: ${validationResult.errors?.join(', ')}`);
-      return false;
+      asset.content = `graph TD\n    A[Error] -->|Invalid Diagram| B[Please try again]`;
+      return true;
     }
   }
   return true;
@@ -91,7 +92,7 @@ function extractAssets(text: string): ExtractedAsset[] {
   let match;
 
   while ((match = ASSET_PATTERN.exec(text)) !== null) {
-    const [, type, name, content, description] = match;
+    const [, type, name, language, content] = match;
     
     // Validate asset type
     if (!isValidAssetType(type)) {
@@ -103,7 +104,6 @@ function extractAssets(text: string): ExtractedAsset[] {
       type: type as AssetType,
       name: name.trim(),
       content: content.trim(),
-      description: description ? description.trim() : undefined,
     });
   }
 
@@ -153,17 +153,34 @@ export async function processAIResponse(
   projectId: string,
   messageId: string
 ): Promise<AssetExtractionResult> {
+  // Handle empty response
+  if (!response || !response.trim()) {
+    console.warn('Empty response received from AI');
+    return {
+      assets: [],
+      references: [],
+      cleanedText: ''
+    };
+  }
+
   // Extract assets from the response
   const extractedAssets = extractAssets(response);
   
   // Create a map of asset names to their IDs for reference replacement
   const assetMap = new Map<string, string>();
+
+  console.log('Extracted assets:', extractedAssets);
   
   // Filter out invalid assets
   const validAssets = await Promise.all(
     extractedAssets.map(async (asset) => {
-      const isValid = await validateAsset(asset);
-      return isValid ? asset : null;
+      try {
+        const isValid = await validateAsset(asset);
+        return isValid ? asset : null;
+      } catch (error) {
+        console.warn(`Error validating asset ${asset.name}:`, error);
+        return null;
+      }
     })
   );
   
@@ -174,17 +191,21 @@ export async function processAIResponse(
   for (const asset of validAssets) {
     if (!asset) continue;
     
-    const createdAsset = createAsset(asset, projectId, messageId);
-    assets.push(createdAsset);
-    assetMap.set(asset.name, createdAsset.id);
-    
-    const reference = createAssetReference(
-      messageId,
-      createdAsset.id,
-      createdAsset.current_version,
-      'creation'
-    );
-    references.push(reference);
+    try {
+      const createdAsset = createAsset(asset, projectId, messageId);
+      assets.push(createdAsset);
+      assetMap.set(asset.name, createdAsset.id);
+      
+      const reference = createAssetReference(
+        messageId,
+        createdAsset.id,
+        createdAsset.current_version,
+        'creation'
+      );
+      references.push(reference);
+    } catch (error) {
+      console.warn(`Error creating asset ${asset.name}:`, error);
+    }
   }
   
   const cleanedText = replaceAssetBlocks(response, assetMap);

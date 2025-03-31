@@ -103,8 +103,8 @@ class LangChainClient {
     // Log the final prompt before sending to OpenAI
     console.log('\n=== AI Prompt Details ===');
     console.log('Type:', type);
-    console.log('System Message:', SYSTEM_MESSAGE);
-    console.log('Formatted Prompt:', formattedPrompt);
+    // console.log('System Message:', SYSTEM_MESSAGE);
+    // console.log('Formatted Prompt:', formattedPrompt);
     console.log('Context Length:', context.length);
     console.log('Message Length:', message.length);
     console.log('Total Prompt Length:', formattedPrompt.length);
@@ -121,8 +121,6 @@ class LangChainClient {
     //     content: formattedPrompt,
     //   },
     // ]);
-
-    console.log('LLM API Response:', response);
 
     // Get the last message's content and ensure it's a string
     const content = typeof response.content === 'string' 
