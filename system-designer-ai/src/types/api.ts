@@ -67,4 +67,36 @@ export interface ProjectRouteParams {
 
 export interface ConversationRouteParams extends ProjectRouteParams {
   conversationId: string;
+}
+
+export interface ProjectResponse {
+  id: string;
+  name: string;
+  description: string;
+  tech_stack: string[];
+  metadata: Record<string, any>;
+  created_at: string;
+  updated_at: string;
+  assets: {
+    id: string;
+    name: string;
+    type: string;
+    current_content: string;
+    current_version: number;
+    created_at: string;
+    updated_at: string;
+  }[];
+  latest_conversation?: {
+    id: string;
+    title: string;
+    started_at: string;
+    updated_at: string;
+    messages: {
+      id: string;
+      role: string;
+      content: string;
+      metadata?: Record<string, any>;
+      created_at: string;
+    }[];
+  };
 } 
