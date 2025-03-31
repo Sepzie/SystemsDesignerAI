@@ -94,12 +94,19 @@ export function ChatProvider({ children }: ChatProviderProps) {
         
         // Map API conversation to Chat conversation
         const chatConversation = mapApiConversationToChat(apiConversation);
-        setConversation(chatConversation);
-
-        // Load messages if we don't have them from project context
-        if (!projectOpenConversation || projectOpenConversation.id !== chatConversation.id) {
+        
+        if (projectOpenConversation && projectOpenConversation.id === chatConversation.id) {
+          // If we have messages from project context, use them and update conversation
+          setConversation({
+            ...chatConversation,
+            message_count: projectOpenConversation.messages.length
+          });
+        } else {
+          // Only load messages from API if we don't have them from project context
+          setConversation(chatConversation);
           await loadMessages(chatConversation.id, 1);
         }
+
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to initialize conversation');
         console.error('Failed to initialize conversation:', err);

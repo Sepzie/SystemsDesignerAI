@@ -31,7 +31,7 @@ export function ProjectProvider({ children, projectId }: { children: React.React
           name: projectData.name,
           description: projectData.description,
           requirements: { functional: [], nonFunctional: [] }, // Default empty requirements
-          tech_stack: projectData.tech_stack.join(','), // Convert array to string
+          tech_stack: Array.isArray(projectData.tech_stack) ? projectData.tech_stack.join(',') : projectData.tech_stack || '',
           created_at: projectData.created_at,
           updated_at: projectData.updated_at,
           progress: 0, // Default progress

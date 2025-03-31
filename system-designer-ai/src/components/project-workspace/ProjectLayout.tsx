@@ -73,7 +73,7 @@ export function ProjectLayout({ projectId }: ProjectLayoutProps) {
   return (
     <ProjectProvider projectId={projectId}>
       <AssetProvider projectId={projectId}>
-        <ChatProvider projectId={projectId}>
+        <ChatProvider >
           <ProjectContent />
         </ChatProvider>
       </AssetProvider>
