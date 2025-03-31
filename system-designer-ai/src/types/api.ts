@@ -86,6 +86,12 @@ export interface ProjectResponse {
     created_at: string;
     updated_at: string;
   }[];
+  conversations: {
+    id: string;
+    title: string;
+    started_at: string;
+    updated_at: string;
+  }[];
   latest_conversation?: {
     id: string;
     title: string;

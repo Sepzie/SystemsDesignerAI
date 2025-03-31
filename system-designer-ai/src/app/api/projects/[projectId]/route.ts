@@ -77,20 +77,35 @@ export async function GET(
       )
     }
 
+    // Fetch all conversations for the project
+    const { data: allConversations, error: allConversationsError } = await supabase
+      .from('conversations')
+      .select('*')
+      .eq('project_id', projectId)
+      .order('updated_at', { ascending: false });
+
+    if (allConversationsError) {
+      console.error('Error fetching all conversations:', allConversationsError);
+      return NextResponse.json(
+        { error: 'Failed to fetch project conversations' },
+        { status: 500 }
+      );
+    }
+
     // Fetch latest conversation and its messages
     const { data: conversations, error: conversationsError } = await supabase
       .from('conversations')
       .select('*')
       .eq('project_id', projectId)
       .order('updated_at', { ascending: false })
-      .limit(1)
+      .limit(1);
 
     if (conversationsError) {
       console.error('Error fetching conversations:', conversationsError);
       return NextResponse.json(
         { error: 'Failed to fetch project conversations' },
         { status: 500 }
-      )
+      );
     }
 
     let latestConversation: ProjectResponse['latest_conversation'] = undefined;
@@ -102,14 +117,14 @@ export async function GET(
         .from('messages')
         .select('*')
         .eq('conversation_id', latestConv.id)
-        .order('created_at', { ascending: true })
+        .order('created_at', { ascending: true });
 
       if (messagesError) {
         console.error('Error fetching messages:', messagesError);
         return NextResponse.json(
           { error: 'Failed to fetch conversation messages' },
           { status: 500 }
-        )
+        );
       }
 
       latestConversation = {
@@ -131,10 +146,16 @@ export async function GET(
       created_at: project.created_at,
       updated_at: project.updated_at,
       assets: assets || [],
+      conversations: allConversations?.map(conv => ({
+        id: conv.id,
+        title: conv.title,
+        started_at: conv.started_at,
+        updated_at: conv.updated_at,
+      })) || [],
       latest_conversation: latestConversation
-    }
+    };
 
-    return NextResponse.json(response)
+    return NextResponse.json(response);
   } catch (error) {
     console.error('Unexpected error:', error);
     return NextResponse.json(
