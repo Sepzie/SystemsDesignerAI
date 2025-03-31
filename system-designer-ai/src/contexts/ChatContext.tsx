@@ -1,9 +1,23 @@
 'use client';
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { Message, ChatContextType } from '@/types/chat';
-import { Conversation } from '@/types/api';
+import { Message, ChatContextType, Conversation as ChatConversation } from '@/types/chat';
+import { Conversation as ApiConversation } from '@/types/api';
 import * as api from '@/lib/api-client';
+import { useProject } from './ProjectContext';
+
+// Helper function to map API conversation to Chat conversation
+function mapApiConversationToChat(apiConv: ApiConversation): ChatConversation {
+  return {
+    id: apiConv.id,
+    project_id: apiConv.projectId,
+    title: `Conversation ${apiConv.id.slice(0, 8)}`, // Generate a title from the ID
+    created_at: apiConv.startedAt.toISOString(),
+    updated_at: apiConv.updatedAt.toISOString(),
+    last_message_at: apiConv.updatedAt.toISOString(),
+    message_count: 0, // This will be updated when messages are loaded
+  };
+}
 
 /**
  * Props for the ChatProvider component
@@ -22,12 +36,14 @@ const ChatContext = createContext<ChatContextType | undefined>(undefined);
  * to its children through the ChatContext.
  */
 export function ChatProvider({ children, projectId, initialConversationId }: ChatProviderProps) {
+  const { handleAssetReference } = useProject();
+  
   // State for managing messages, loading state, errors, and pagination
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isWaitingForAI, setIsWaitingForAI] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [conversation, setConversation] = useState<Conversation | null>(null);
+  const [conversation, setConversation] = useState<ChatConversation | null>(null);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const MESSAGES_PER_PAGE = 20;
@@ -42,23 +58,26 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
         setIsLoading(true);
         setError(null);
 
-        let newConversation: Conversation;
+        let apiConversation: ApiConversation;
         if (initialConversationId) {
           // Load an existing conversation
           const { conversation: existingConversation } = await api.getConversation(
             projectId,
             initialConversationId
           );
-          newConversation = existingConversation;
+          apiConversation = existingConversation;
         } else {
           // Create a new conversation
           const { conversation: createdConversation } = await api.createConversation(projectId);
-          newConversation = createdConversation;
+          apiConversation = createdConversation;
         }
-        setConversation(newConversation);
+        
+        // Map API conversation to Chat conversation
+        const chatConversation = mapApiConversationToChat(apiConversation);
+        setConversation(chatConversation);
 
         // Load initial messages for the conversation
-        await loadMessages(newConversation.id, 1);
+        await loadMessages(chatConversation.id, 1);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to initialize conversation');
         console.error('Failed to initialize conversation:', err);
@@ -133,9 +152,10 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
       // Create an optimistic update for the user's message
       const optimisticMessage: Message = {
         id: `temp-${Date.now()}`,
+        conversation_id: conversation.id,
         role: 'user',
         content,
-        created_at: new Date(),
+        created_at: new Date().toISOString(),
       };
       setMessages(prev => [...prev, optimisticMessage]);
 
@@ -183,9 +203,10 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
         // Add a placeholder AI message that will be updated via SSE
         const placeholderAiMessage: Message = {
           id: aiMessageId,
+          conversation_id: conversation.id,
           role: 'assistant',
           content: 'Thinking...', // Initial loading state
-          created_at: new Date(),
+          created_at: new Date().toISOString(),
           metadata: { isStreaming: true }, // Add metadata to indicate streaming state
         };
         setMessages(prev => [...prev, placeholderAiMessage]);
@@ -196,14 +217,26 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
           conversation.id,
           aiMessageId,
           // Handle incoming message chunks
-          (data) => {
-            setMessages(prev =>
-              prev.map(msg =>
-                msg.id === aiMessageId
-                  ? { ...msg, content: data.content }
-                  : msg
-              )
-            );
+          (data: { content: string; assets?: { id: string }[] }) => {
+            setMessages(prevMessages => {
+              const updatedMessages = prevMessages.map(message =>
+                message.id === aiMessageId
+                  ? { ...message, content: data.content }
+                  : message
+              );
+
+              // Handle asset references in the message
+              if (data.assets) {
+                data.assets.forEach(asset => {
+                  const message = updatedMessages.find(msg => msg.id === aiMessageId);
+                  if (message) {
+                    handleAssetReference(message, asset.id);
+                  }
+                });
+              }
+
+              return updatedMessages;
+            });
           },
           // Handle stream errors
           (err) => {
@@ -245,7 +278,7 @@ export function ChatProvider({ children, projectId, initialConversationId }: Cha
     } finally {
       setIsLoading(false);
     }
-  }, [conversation, projectId, isWaitingForAI]);
+  }, [conversation, projectId, isWaitingForAI, handleAssetReference]);
 
   // Provide the chat context value to children
   const value = {
