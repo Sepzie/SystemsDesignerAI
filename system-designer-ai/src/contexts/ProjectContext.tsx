@@ -5,13 +5,14 @@ import { Project, ProjectContextType, ProjectEvent, ProjectEventType } from '@/t
 import { Message } from '@/types/chat';
 import { getProject } from '@/lib/api-client';
 import { Asset, AssetType } from '@/types/asset';
+import { Conversation, ConversationWithMessages, mapApiConversationToChat } from '@/types/conversation';
 
 const ProjectContext = createContext<ProjectContextType | null>(null);
 
 export function ProjectProvider({ children, projectId }: { children: React.ReactNode; projectId: string }) {
   const [project, setProject] = useState<Project | null>(null);
   const [assets, setAssets] = useState<Asset[]>([]);
-  const [openConversation, setOpenConversation] = useState<ProjectContextType['openConversation']>(undefined);
+  const [activeConversation, setActiveConversation] = useState<ConversationWithMessages | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [subscribers, setSubscribers] = useState<Map<ProjectEventType, Set<(event: ProjectEvent) => void>>>(new Map());
@@ -30,7 +31,6 @@ export function ProjectProvider({ children, projectId }: { children: React.React
           user_id: '', // This will be set by the backend
           name: projectData.name,
           description: projectData.description,
-          requirements: { functional: [], nonFunctional: [] }, // Default empty requirements
           tech_stack: Array.isArray(projectData.tech_stack) ? projectData.tech_stack.join(',') : projectData.tech_stack || '',
           created_at: projectData.created_at,
           updated_at: projectData.updated_at,
@@ -57,7 +57,7 @@ export function ProjectProvider({ children, projectId }: { children: React.React
         })));
 
         // Set open conversation (initially using the latest conversation)
-        setOpenConversation(projectData.latest_conversation);
+        setActiveConversation(projectData.latest_conversation || null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load project');
       } finally {
@@ -104,7 +104,7 @@ export function ProjectProvider({ children, projectId }: { children: React.React
   const value: ProjectContextType = {
     project,
     assets,
-    openConversation,
+    activeConversation: activeConversation,
     isLoading,
     error,
     subscribe,

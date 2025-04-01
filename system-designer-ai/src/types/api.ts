@@ -1,4 +1,5 @@
 import { Message, MessageRole } from './chat';
+import { ConversationWithMessages } from './conversation';
 
 // Base interfaces for database entities
 export interface Conversation {
@@ -9,7 +10,6 @@ export interface Conversation {
 }
 
 export interface ConversationMessage extends Message {
-  conversationId: string;
   metadata?: Record<string, any>;
 }
 
@@ -92,17 +92,5 @@ export interface ProjectResponse {
     started_at: string;
     updated_at: string;
   }[];
-  latest_conversation?: {
-    id: string;
-    title: string;
-    started_at: string;
-    updated_at: string;
-    messages: {
-      id: string;
-      role: string;
-      content: string;
-      metadata?: Record<string, any>;
-      created_at: string;
-    }[];
+  latest_conversation?: ConversationWithMessages;
   };
-} 

@@ -1,11 +1,6 @@
 import { Message } from './chat';
 import { Asset } from './asset';
-import { Conversation } from './conversation';
-
-export interface ProjectRequirements {
-  functional: string[];
-  nonFunctional: string[];
-}
+import { Conversation, ConversationWithMessages } from './conversation';
 
 export interface ProjectFormData {
   name: string;
@@ -18,7 +13,6 @@ export interface Project {
   user_id: string;
   name: string;
   description: string;
-  requirements: ProjectRequirements;
   tech_stack: string;
   created_at: string;
   updated_at: string;
@@ -56,20 +50,8 @@ export interface ProjectContextType {
   // Project state
   project: Project | null;
   assets: Asset[];
-  openConversation?: {
-    id: string;
-    project_id: string;
-    title: string;
-    started_at: string;
-    updated_at: string;
-    messages: {
-      id: string;
-      role: string;
-      content: string;
-      metadata?: Record<string, any>;
-      created_at: string;
-    }[];
-  };
+  activeConversation: ConversationWithMessages | null;
+  
   isLoading: boolean;
   error: string | null;
 

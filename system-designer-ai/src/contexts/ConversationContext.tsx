@@ -12,7 +12,7 @@ interface ConversationProviderProps {
 }
 
 export function ConversationProvider({ children }: ConversationProviderProps) {
-  const { project, openConversation: projectOpenConversation, subscribe, notify } = useProject();
+  const { project, activeConversation, subscribe, notify } = useProject();
   
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversation, setCurrentConversation] = useState<Conversation | null>(null);
@@ -26,25 +26,17 @@ export function ConversationProvider({ children }: ConversationProviderProps) {
     }
   }, [project]);
 
-  // Handle initial conversation from project context
+  // Update conversations array when activeConversation changes
   useEffect(() => {
-    if (projectOpenConversation) {
-      const conversation = mapApiConversationToChat({
-        id: projectOpenConversation.id,
-        projectId: projectOpenConversation.project_id,
-        startedAt: projectOpenConversation.started_at,
-        updatedAt: projectOpenConversation.updated_at,
-        title: projectOpenConversation.title,
-      });
-      setCurrentConversation(conversation);
+    if (activeConversation) {
       setConversations(prev => {
-        if (!prev.find(c => c.id === conversation.id)) {
-          return [...prev, conversation];
+        if (!prev.find(c => c.id === activeConversation.id)) {
+          return [...prev, activeConversation];
         }
         return prev;
       });
     }
-  }, [projectOpenConversation]);
+  }, [activeConversation]);
 
   const loadConversations = useCallback(async (projectId: string) => {
     try {
@@ -88,7 +80,6 @@ export function ConversationProvider({ children }: ConversationProviderProps) {
       if (!conversation) {
         throw new Error('Conversation not found');
       }
-      setCurrentConversation(conversation);
       notify('conversation:selected', { conversation });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to select conversation');

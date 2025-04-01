@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { ProjectFormData, ProjectRequirements } from '@/types/project'
+import { ProjectFormData } from '@/types/project'
 import { createClient } from '@/lib/supabase/server'
 
 // Validation function

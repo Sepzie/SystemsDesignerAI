@@ -10,6 +10,10 @@ export interface Conversation {
   message_count: number;
 }
 
+export interface ConversationWithMessages extends Conversation {
+  messages: Message[];
+}
+
 export interface ConversationContextType {
   conversations: Conversation[];
   currentConversation: Conversation | null;

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { ProjectResponse } from '@/types/api'
+import { ConversationWithMessages } from '@/types/conversation';
 
 // Helper function to validate UUID
 function isValidUUID(uuid: string): boolean {
@@ -108,7 +109,7 @@ export async function GET(
       );
     }
 
-    let latestConversation: ProjectResponse['latest_conversation'] = undefined;
+    let latestConversation: ConversationWithMessages | undefined = undefined;
     if (conversations && conversations.length > 0) {
       const latestConv = conversations[0];
       
@@ -128,10 +129,7 @@ export async function GET(
       }
 
       latestConversation = {
-        id: latestConv.id,
-        title: latestConv.title,
-        started_at: latestConv.started_at,
-        updated_at: latestConv.updated_at,
+        ...latestConv,
         messages: messages || []
       };
     }
