@@ -1,12 +1,16 @@
 import { Message, MessageRole } from './chat';
 import { ConversationWithMessages } from './conversation';
+import { Project } from './project';
 
 // Base interfaces for database entities
 export interface Conversation {
   id: string;
-  projectId: string;
-  startedAt: Date;
-  updatedAt: Date;
+  project_id: string;
+  title: string;
+  created_at: string;
+  updated_at: string;
+  last_message_at: string;
+  message_count: number;
 }
 
 export interface ConversationMessage extends Message {
@@ -70,27 +74,5 @@ export interface ConversationRouteParams extends ProjectRouteParams {
 }
 
 export interface ProjectResponse {
-  id: string;
-  name: string;
-  description: string;
-  tech_stack: string[];
-  metadata: Record<string, any>;
-  created_at: string;
-  updated_at: string;
-  assets: {
-    id: string;
-    name: string;
-    type: string;
-    current_content: string;
-    current_version: number;
-    created_at: string;
-    updated_at: string;
-  }[];
-  conversations: {
-    id: string;
-    title: string;
-    started_at: string;
-    updated_at: string;
-  }[];
-  latest_conversation?: ConversationWithMessages;
-  };
+  project: Project;
+}

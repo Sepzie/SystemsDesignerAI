@@ -157,7 +157,6 @@ export async function processAIResponse(
   if (!response || !response.trim()) {
     console.warn('Empty response received from AI');
     return {
-      assets: [],
       references: [],
       cleanedText: ''
     };
@@ -211,7 +210,6 @@ export async function processAIResponse(
   const cleanedText = replaceAssetBlocks(response, assetMap);
   
   return {
-    assets,
     references,
     cleanedText
   };

@@ -1,12 +1,11 @@
 import { AssetReference } from './asset';
 import { Conversation } from './conversation';
 
-export type MessageRole = 'user' | 'assistant';
 
 export interface Message {
   id: string;
   conversation_id: string;
-  role: MessageRole;
+  role: 'user' | 'assistant';
   content: string;
   metadata?: {
     assets?: AssetReference[];
@@ -29,17 +28,6 @@ export interface ChatResponse {
     name: string;
     content: string;
   }[];
-}
-
-export interface ChatContextType {
-  messages: Message[];
-  isLoading: boolean;
-  isWaitingForAI: boolean;
-  error: string | null;
-  sendMessage: (content: string) => Promise<(() => void) | undefined>;
-  currentConversation: Conversation | null;
-  loadMoreMessages: () => Promise<void>;
-  hasMoreMessages: boolean;
 }
 
 // Mock data for development

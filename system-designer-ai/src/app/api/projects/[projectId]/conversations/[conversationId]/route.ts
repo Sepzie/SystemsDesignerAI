@@ -43,9 +43,9 @@ export async function GET(
     const response: GetConversationResponse = {
       conversation: {
         id: conversation.id,
-        projectId: conversation.project_id,
-        startedAt: new Date(conversation.started_at),
-        updatedAt: new Date(conversation.updated_at),
+        project_id: conversation.project_id,
+        created_at: new Date(conversation.started_at),
+        updated_at: new Date(conversation.updated_at),
       },
       messages: messages.map(msg => ({
         id: msg.id,

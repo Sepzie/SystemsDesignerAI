@@ -9,7 +9,7 @@ import {
   AssetGenerationInput
 } from './prompts';
 import { AssetType } from '@/types/asset';
-import { processAIResponse } from './asset-extraction';
+import { processAIResponse as processAIResponseAssets } from './asset-extraction';
 import { AssetService } from '../asset/asset-service';
 import { Message, ChatResponse } from '@/types/chat';
 import { v4 as uuidv4 } from 'uuid';
@@ -58,7 +58,7 @@ class LangChainClient {
     projectId: string,
     conversationId: string,
     assetTypes?: AssetType[]
-  ): Promise<ChatResponse> {
+  ): Promise<Message> {
     const prompt = getPromptTemplate(type);
 
     // Build conversation context
@@ -139,7 +139,7 @@ class LangChainClient {
       : JSON.stringify(response.content);
     
     // Process the response to extract assets and clean text
-    const { cleanedText, assets, references } = await processAIResponse(
+    const { cleanedText,  references } = await processAIResponseAssets(
       content,
       projectId,
       conversationId
@@ -163,15 +163,7 @@ class LangChainClient {
       created_at: new Date().toISOString()
     };
 
-    return {
-      message: messageObj,
-      assets: assets.map(asset => ({
-        id: asset.id,
-        type: asset.type,
-        name: asset.name,
-        content: asset.content
-      }))
-    };
+    return messageObj
   }
 }
 
