@@ -2,7 +2,10 @@
 
 import { useCallback, useMemo } from 'react';
 import { useAppContext } from '../contexts/AppContext';
-import { Project, Conversation, Message, Asset } from '../types/app';
+import { Conversation } from '@/types/conversation';
+import { Project } from '@/types/project';
+import { Message } from '@/types/chat';
+import { Asset } from '@/types/asset';
 
 // Selector functions
 export function useAppState() {
@@ -38,7 +41,7 @@ export function useAppState() {
   const getProjectAssets = useCallback(
     (projectId: string): Asset[] => {
       return Array.from(state.assets.values()).filter(
-        (asset) => asset.projectId === projectId
+        (asset) => asset.project_id === projectId
       );
     },
     [state.assets]
@@ -64,7 +67,7 @@ export function useAppState() {
   const getProjectConversations = useCallback(
     (projectId: string): Conversation[] => {
       return Array.from(state.conversations.values()).filter(
-        (conversation) => conversation.projectId === projectId
+        (conversation) => conversation.project_id === projectId
       );
     },
     [state.conversations]
@@ -72,10 +75,12 @@ export function useAppState() {
 
   // Get messages with asset references
   const getMessagesWithAssetReferences = useCallback(
-    (assetId: string): Message[] => {
+    (asset_id: string): Message[] => {
       return Array.from(state.messages.values())
         .flat()
-        .filter((message) => message.asset_references?.includes(assetId));
+        .filter((message) => 
+          message.metadata?.asset_references?.some(ref => ref.asset_id === asset_id)
+        );
     },
     [state.messages]
   );
@@ -86,9 +91,9 @@ export function useAppState() {
       const message = Array.from(state.messages.values())
         .flat()
         .find((msg) => msg.id === messageId);
-      if (!message?.asset_references) return [];
-      return message.asset_references
-        .map((assetId) => state.assets.get(assetId))
+      if (!message?.metadata?.asset_references) return [];
+      return message.metadata.asset_references
+        .map((ref) => state.assets.get(ref.asset_id))
         .filter((asset): asset is Asset => asset !== undefined);
     },
     [state.messages, state.assets]
