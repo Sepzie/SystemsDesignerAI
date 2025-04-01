@@ -2,13 +2,15 @@ import { AssetReference } from './asset';
 import { Conversation } from './conversation';
 
 
+export type MessageRole = 'user' | 'assistant';
+
 export interface Message {
   id: string;
   conversation_id: string;
-  role: 'user' | 'assistant';
+  role: MessageRole;
   content: string;
   metadata?: {
-    assets?: AssetReference[];
+    asset_references?: AssetReference[];
     tokens?: {
       prompt: number;
       completion: number;

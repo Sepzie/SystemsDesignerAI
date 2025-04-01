@@ -153,7 +153,7 @@ class LangChainClient {
       role: 'assistant',
       content: cleanedText,
       metadata: {
-        assets: references,
+        asset_references: references,
         tokens: {
           prompt: 0, // These would come from the actual API response
           completion: 0,

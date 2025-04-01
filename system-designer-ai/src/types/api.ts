@@ -1,5 +1,5 @@
 import { Message, MessageRole } from './chat';
-import { ConversationWithMessages } from './conversation';
+import {  } from './conversation';
 import { Project } from './project';
 
 // Base interfaces for database entities

@@ -20,7 +20,6 @@ export interface AssetMetadata {
   updated_at: Date;
   created_by_message_id: string;
   version_number: number;
-  reference_type: 'creation' | 'modification' | 'mention';
 }
 
 export interface AssetVersion {

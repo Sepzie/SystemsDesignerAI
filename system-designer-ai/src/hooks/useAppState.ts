@@ -75,7 +75,7 @@ export function useAppState() {
     (assetId: string): Message[] => {
       return Array.from(state.messages.values())
         .flat()
-        .filter((message) => message.assetReferences?.includes(assetId));
+        .filter((message) => message.asset_references?.includes(assetId));
     },
     [state.messages]
   );
@@ -86,8 +86,8 @@ export function useAppState() {
       const message = Array.from(state.messages.values())
         .flat()
         .find((msg) => msg.id === messageId);
-      if (!message?.assetReferences) return [];
-      return message.assetReferences
+      if (!message?.asset_references) return [];
+      return message.asset_references
         .map((assetId) => state.assets.get(assetId))
         .filter((asset): asset is Asset => asset !== undefined);
     },

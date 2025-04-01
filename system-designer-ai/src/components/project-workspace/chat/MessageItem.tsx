@@ -31,9 +31,9 @@ export function MessageItem({ message, onAssetClick, assets }: MessageItemProps)
             </p>
           ))}
         </div>
-        {message.metadata?.assets && message.metadata.assets.length > 0 && (
+        {message.metadata?.asset_references && message.metadata.asset_references.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-2">
-            {message.metadata.assets.map((reference) => {
+            {message.metadata.asset_references.map((reference) => {
               const asset = assets[reference.asset_id];
               if (!asset) return null;
               return (
