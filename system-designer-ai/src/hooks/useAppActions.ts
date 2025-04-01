@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo } from 'react';
 import { useAppContext } from '../contexts/AppContext';
-import { Asset } from '../types/app';
+import { Asset } from '@/types/asset';
 
 // Action creators
 export function useAppActions() {
@@ -24,6 +24,8 @@ export function useAppActions() {
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
             user_id: 'mock-user-id',
+            tech_stack: 'TypeScript, React, Node.js',
+            progress: 0
           },
         },
       });
@@ -49,10 +51,12 @@ export function useAppActions() {
         payload: {
           conversation: {
             id: `conv-${Date.now()}`,
-            projectId,
+            project_id: projectId,
             title: 'New Conversation',
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
+            last_message_at: new Date().toISOString(),
+            message_count: 0
           },
         },
       });
@@ -73,10 +77,12 @@ export function useAppActions() {
         payload: {
           conversation: {
             id: conversationId,
-            projectId: 'mock-project-id',
+            project_id: 'mock-project-id',
             title,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
+            last_message_at: new Date().toISOString(),
+            message_count: 0
           },
         },
       });
@@ -111,10 +117,19 @@ export function useAppActions() {
         payload: {
           message: {
             id: `msg-${Date.now()}`,
-            conversationId,
+            conversation_id: conversationId,
             content,
-            role: 'user',
-            createdAt: new Date().toISOString(),
+            role: 'user', 
+            created_at: new Date().toISOString(),
+            metadata: {
+              asset_references: [],
+              tokens: {
+                prompt: 0,
+                completion: 0,
+                total: 0
+              },
+              isStreaming: false
+            }
           },
         },
       });
@@ -140,10 +155,11 @@ export function useAppActions() {
         payload: {
           asset: {
             id: `asset-${Date.now()}`,
-            projectId,
             ...data,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
+            project_id: projectId,
+            created_at: new Date(),
+            updated_at: new Date(),
+            current_version: 1
           },
         },
       });
@@ -164,13 +180,19 @@ export function useAppActions() {
         payload: {
           asset: {
             id: assetId,
-            projectId,
+            project_id: projectId,
             name: 'Updated Asset',
-            type: 'diagram',
+            type: 'mermaid_diagram',
             content: 'Updated content',
-            metadata: {},
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
+            current_version: 1,
+            metadata: {
+              created_at: new Date(),
+              updated_at: new Date(),
+              created_by_message_id: 'mock-message-id',
+              version_number: 1
+            },
+            created_at: new Date(),
+            updated_at: new Date(),
             ...updates,
           },
         },
