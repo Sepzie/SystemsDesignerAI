@@ -3,6 +3,16 @@
 import { useCallback, useMemo } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import { Asset } from '@/types/asset';
+import {
+  createConversation,
+  deleteConversation,
+  updateConversationTitle,
+  sendMessage,
+  createAsset,
+  updateAsset,
+  deleteAsset,
+  getProject,
+} from '@/lib/api-client';
 
 // Action creators
 export function useAppActions() {
@@ -10,25 +20,20 @@ export function useAppActions() {
 
   // Project actions
   const loadProject = useCallback(
-    (projectId: string) => {
-      dispatch({ type: 'LOAD_PROJECT_START', payload: { projectId } });
-      // TODO: Implement API call to load project
-      // For now, we'll just dispatch the success action with mock data
-      dispatch({
-        type: 'LOAD_PROJECT_SUCCESS',
-        payload: {
-          project: {
-            id: projectId,
-            name: 'Mock Project',
-            description: 'A mock project for testing',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            user_id: 'mock-user-id',
-            tech_stack: 'TypeScript, React, Node.js',
-            progress: 0
-          },
-        },
-      });
+    async (projectId: string) => {
+      try {
+        dispatch({ type: 'LOAD_PROJECT_START', payload: { projectId } });
+        const response = await getProject(projectId);
+        dispatch({
+          type: 'LOAD_PROJECT_SUCCESS',
+          payload: { project: response.project },
+        });
+      } catch (error) {
+        dispatch({
+          type: 'LOAD_PROJECT_ERROR',
+          payload: { projectId, error: error instanceof Error ? error.message : 'Failed to load project' },
+        });
+      }
     },
     [dispatch]
   );
@@ -41,98 +46,95 @@ export function useAppActions() {
     [dispatch]
   );
 
-  const createConversation = useCallback(
-    (projectId: string) => {
-      dispatch({ type: 'CREATE_CONVERSATION_START', payload: { projectId } });
-      // TODO: Implement API call to create conversation
-      // For now, we'll just dispatch the success action with mock data
-      dispatch({
-        type: 'CREATE_CONVERSATION_SUCCESS',
-        payload: {
-          conversation: {
-            id: `conv-${Date.now()}`,
-            project_id: projectId,
-            title: 'New Conversation',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            last_message_at: new Date().toISOString(),
-            message_count: 0
-          },
-        },
-      });
+  const createConversationAction = useCallback(
+    async (projectId: string) => {
+      try {
+        dispatch({ type: 'CREATE_CONVERSATION_START', payload: { projectId } });
+        const response = await createConversation(projectId);
+        dispatch({
+          type: 'CREATE_CONVERSATION_SUCCESS',
+          payload: { conversation: response.conversation },
+        });
+      } catch (error) {
+        dispatch({
+          type: 'CREATE_CONVERSATION_ERROR',
+          payload: { projectId, error: error instanceof Error ? error.message : 'Failed to create conversation' },
+        });
+      }
     },
     [dispatch]
   );
 
-  const updateConversationTitle = useCallback(
-    (conversationId: string, title: string) => {
-      dispatch({
-        type: 'UPDATE_CONVERSATION_TITLE_START',
-        payload: { conversationId, title },
-      });
-      // TODO: Implement API call to update conversation title
-      // For now, we'll just dispatch the success action with mock data
-      dispatch({
-        type: 'UPDATE_CONVERSATION_TITLE_SUCCESS',
-        payload: {
-          conversation: {
-            id: conversationId,
-            project_id: 'mock-project-id',
-            title,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            last_message_at: new Date().toISOString(),
-            message_count: 0
+  const updateConversationTitleAction = useCallback(
+    async (conversationId: string, title: string) => {
+      try {
+        dispatch({
+          type: 'UPDATE_CONVERSATION_TITLE_START',
+          payload: { conversationId, title },
+        });
+        await updateConversationTitle(conversationId, title);
+        dispatch({
+          type: 'UPDATE_CONVERSATION_TITLE_SUCCESS',
+          payload: { 
+            conversation: { 
+              id: conversationId,
+              project_id: '', // This will be updated by the reducer
+              title,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              last_message_at: new Date().toISOString(),
+              message_count: 0
+            } 
           },
-        },
-      });
+        });
+      } catch (error) {
+        dispatch({
+          type: 'UPDATE_CONVERSATION_TITLE_ERROR',
+          payload: { conversationId, error: error instanceof Error ? error.message : 'Failed to update conversation title' },
+        });
+      }
     },
     [dispatch]
   );
 
-  const deleteConversation = useCallback(
-    (conversationId: string) => {
-      dispatch({ type: 'DELETE_CONVERSATION_START', payload: { conversationId } });
-      // TODO: Implement API call to delete conversation
-      // For now, we'll just dispatch the success action
-      dispatch({
-        type: 'DELETE_CONVERSATION_SUCCESS',
-        payload: { conversationId },
-      });
+  const deleteConversationAction = useCallback(
+    async (conversationId: string) => {
+      try {
+        dispatch({ type: 'DELETE_CONVERSATION_START', payload: { conversationId } });
+        await deleteConversation(conversationId);
+        dispatch({
+          type: 'DELETE_CONVERSATION_SUCCESS',
+          payload: { conversationId },
+        });
+      } catch (error) {
+        dispatch({
+          type: 'DELETE_CONVERSATION_ERROR',
+          payload: { conversationId, error: error instanceof Error ? error.message : 'Failed to delete conversation' },
+        });
+      }
     },
     [dispatch]
   );
 
   // Message actions
-  const sendMessage = useCallback(
-    (conversationId: string, content: string) => {
-      dispatch({
-        type: 'SEND_MESSAGE_START',
-        payload: { conversationId, content },
-      });
-      // TODO: Implement API call to send message
-      // For now, we'll just dispatch the success action with mock data
-      dispatch({
-        type: 'SEND_MESSAGE_SUCCESS',
-        payload: {
-          message: {
-            id: `msg-${Date.now()}`,
-            conversation_id: conversationId,
-            content,
-            role: 'user', 
-            created_at: new Date().toISOString(),
-            metadata: {
-              asset_references: [],
-              tokens: {
-                prompt: 0,
-                completion: 0,
-                total: 0
-              },
-              isStreaming: false
-            }
-          },
-        },
-      });
+  const sendMessageAction = useCallback(
+    async (conversationId: string, content: string) => {
+      try {
+        dispatch({
+          type: 'SEND_MESSAGE_START',
+          payload: { conversationId, content },
+        });
+        const response = await sendMessage(conversationId, conversationId, { content, role: 'user' });
+        dispatch({
+          type: 'SEND_MESSAGE_SUCCESS',
+          payload: { message: response.message },
+        });
+      } catch (error) {
+        dispatch({
+          type: 'SEND_MESSAGE_ERROR',
+          payload: { conversationId, error: error instanceof Error ? error.message : 'Failed to send message' },
+        });
+      }
     },
     [dispatch]
   );
@@ -145,71 +147,62 @@ export function useAppActions() {
     [dispatch]
   );
 
-  const createAsset = useCallback(
-    (projectId: string, data: Omit<Asset, 'id' | 'createdAt' | 'updatedAt'>) => {
-      dispatch({ type: 'CREATE_ASSET_START', payload: { projectId, data } });
-      // TODO: Implement API call to create asset
-      // For now, we'll just dispatch the success action with mock data
-      dispatch({
-        type: 'CREATE_ASSET_SUCCESS',
-        payload: {
-          asset: {
-            id: `asset-${Date.now()}`,
-            ...data,
-            project_id: projectId,
-            created_at: new Date(),
-            updated_at: new Date(),
-            current_version: 1
-          },
-        },
-      });
+  const createAssetAction = useCallback(
+    async (projectId: string, data: Omit<Asset, 'id' | 'createdAt' | 'updatedAt'>) => {
+      try {
+        dispatch({ type: 'CREATE_ASSET_START', payload: { projectId, data } });
+        const asset = await createAsset(projectId, data);
+        dispatch({
+          type: 'CREATE_ASSET_SUCCESS',
+          payload: { asset },
+        });
+      } catch (error) {
+        dispatch({
+          type: 'CREATE_ASSET_ERROR',
+          payload: { projectId, error: error instanceof Error ? error.message : 'Failed to create asset' },
+        });
+      }
     },
     [dispatch]
   );
 
-  const updateAsset = useCallback(
-    (projectId: string, assetId: string, updates: Partial<Asset>) => {
-      dispatch({
-        type: 'UPDATE_ASSET_START',
-        payload: { projectId, assetId, updates },
-      });
-      // TODO: Implement API call to update asset
-      // For now, we'll just dispatch the success action with mock data
-      dispatch({
-        type: 'UPDATE_ASSET_SUCCESS',
-        payload: {
-          asset: {
-            id: assetId,
-            project_id: projectId,
-            name: 'Updated Asset',
-            type: 'mermaid_diagram',
-            content: 'Updated content',
-            current_version: 1,
-            metadata: {
-              created_at: new Date(),
-              updated_at: new Date(),
-              created_by_message_id: 'mock-message-id',
-              version_number: 1
-            },
-            created_at: new Date(),
-            updated_at: new Date(),
-            ...updates,
-          },
-        },
-      });
+  const updateAssetAction = useCallback(
+    async (projectId: string, assetId: string, updates: Partial<Asset>) => {
+      try {
+        dispatch({
+          type: 'UPDATE_ASSET_START',
+          payload: { projectId, assetId, updates },
+        });
+        const asset = await updateAsset(projectId, assetId, updates);
+        dispatch({
+          type: 'UPDATE_ASSET_SUCCESS',
+          payload: { asset },
+        });
+      } catch (error) {
+        dispatch({
+          type: 'UPDATE_ASSET_ERROR',
+          payload: { projectId, assetId, error: error instanceof Error ? error.message : 'Failed to update asset' },
+        });
+      }
     },
     [dispatch]
   );
 
-  const deleteAsset = useCallback(
-    (projectId: string, assetId: string) => {
-      dispatch({ type: 'DELETE_ASSET_START', payload: { projectId, assetId } });
-      // TODO: Implement API call to delete asset
-      // For now, we'll just dispatch the success action
-      dispatch({
-        type: 'DELETE_ASSET_SUCCESS',
-        payload: { assetId },
-      });
+  const deleteAssetAction = useCallback(
+    async (projectId: string, assetId: string) => {
+      try {
+        dispatch({ type: 'DELETE_ASSET_START', payload: { projectId, assetId } });
+        await deleteAsset(projectId, assetId);
+        dispatch({
+          type: 'DELETE_ASSET_SUCCESS',
+          payload: { assetId },
+        });
+      } catch (error) {
+        dispatch({
+          type: 'DELETE_ASSET_ERROR',
+          payload: { projectId, assetId, error: error instanceof Error ? error.message : 'Failed to delete asset' },
+        });
+      }
     },
     [dispatch]
   );
@@ -219,26 +212,26 @@ export function useAppActions() {
     () => ({
       loadProject,
       setActiveConversation,
-      createConversation,
-      updateConversationTitle,
-      deleteConversation,
-      sendMessage,
+      createConversation: createConversationAction,
+      updateConversationTitle: updateConversationTitleAction,
+      deleteConversation: deleteConversationAction,
+      sendMessage: sendMessageAction,
       selectAsset,
-      createAsset,
-      updateAsset,
-      deleteAsset,
+      createAsset: createAssetAction,
+      updateAsset: updateAssetAction,
+      deleteAsset: deleteAssetAction,
     }),
     [
       loadProject,
       setActiveConversation,
-      createConversation,
-      updateConversationTitle,
-      deleteConversation,
-      sendMessage,
+      createConversationAction,
+      updateConversationTitleAction,
+      deleteConversationAction,
+      sendMessageAction,
       selectAsset,
-      createAsset,
-      updateAsset,
-      deleteAsset,
+      createAssetAction,
+      updateAssetAction,
+      deleteAssetAction,
     ]
   );
 } 
