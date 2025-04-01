@@ -3,7 +3,8 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import { Message } from '@/types/chat';
 import { MessageItem } from './MessageItem';
-import { useChat } from '@/contexts/ChatContext';
+import { useAppContext } from '@/contexts/AppContext';
+import { Asset } from '@/types/asset';
 
 interface MessageListProps {
   messages: Message[];
@@ -12,7 +13,18 @@ interface MessageListProps {
 export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
-  const { loadMoreMessages, isLoading, hasMoreMessages } = useChat();
+  const { state, dispatch } = useAppContext();
+  
+  const currentConversationId = state.activeConversationId;
+  const isLoading = currentConversationId ? state.loadingStates.get(`message:${currentConversationId}`) || false : false;
+  const hasMoreMessages = false; // TODO: Implement pagination in the unified state
+
+  // Convert assets Map to Record for MessageItem
+  const assets = Object.fromEntries(state.assets);
+
+  const handleAssetClick = (asset: Asset) => {
+    dispatch({ type: 'SELECT_ASSET', payload: { assetId: asset.id } });
+  };
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -32,7 +44,8 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
     observerRef.current = new IntersectionObserver((entries) => {
       const [entry] = entries;
       if (entry.isIntersecting && hasMoreMessages && !isLoading) {
-        loadMoreMessages();
+        // TODO: Implement load more messages in the unified state
+        // dispatch({ type: 'LOAD_MORE_MESSAGES_START', payload: { conversationId: currentConversationId } });
       }
     }, options);
 
@@ -46,7 +59,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
         observerRef.current.disconnect();
       }
     };
-  }, [hasMoreMessages, isLoading, loadMoreMessages])
+  }, [hasMoreMessages, isLoading, currentConversationId]);
 
   console.log("messages: ", messages);
 
@@ -68,7 +81,12 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
   return (
     <div className="flex-1 overflow-y-auto px-4 py-4" role="list">
       {messages.map((message) => (
-        <MessageItem key={message.id} message={message} />
+        <MessageItem 
+          key={message.id} 
+          message={message} 
+          onAssetClick={handleAssetClick}
+          assets={assets}
+        />
       ))}
       <div ref={messagesEndRef} />
       

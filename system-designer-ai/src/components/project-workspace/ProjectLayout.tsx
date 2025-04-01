@@ -3,29 +3,30 @@
 import React from 'react';
 import { VersionHistory } from './VersionHistory';
 import { ChatInterface } from './chat/ChatInterface';
-import { ChatProvider } from '@/contexts/ChatContext';
-import { ProjectProvider } from '@/contexts/ProjectContext';
-import { AssetProvider } from '@/contexts/AssetContext';
-import { ConversationProvider } from '@/contexts/ConversationContext';
+import { AppProvider } from '@/contexts/AppContext';
 import { AssetViewer } from './asset/AssetViewer';
 import { AssetList } from './asset/AssetList';
-import { useAsset } from '@/contexts/AssetContext';
-import { useProject } from '@/contexts/ProjectContext';
+import { useAppContext } from '@/contexts/AppContext';
+import { Asset } from '@/types/asset';
 
 interface ProjectLayoutProps {
   projectId: string;
 }
 
 function ProjectContent() {
-  const { project, isLoading: projectLoading, error: projectError } = useProject();
-  const { assets, selectedAsset, selectAsset, updateAsset, isLoading: assetsLoading } = useAsset();
+  const { state, dispatch } = useAppContext();
+  const project = state.projects.get(state.currentProjectId || '');
+  const selectedAsset = state.selectedAssetId ? state.assets.get(state.selectedAssetId) || null : null;
+  const assets = Array.from(state.assets.values());
+  const isLoading = state.loadingStates.get(`project:${state.currentProjectId}`) || false;
+  const error = state.errors.get(`project:${state.currentProjectId}`);
 
-  if (projectLoading || assetsLoading) {
+  if (isLoading) {
     return <div>Loading project...</div>;
   }
 
-  if (projectError) {
-    return <div>Error loading project: {projectError}</div>;
+  if (error) {
+    return <div>Error loading project: {error}</div>;
   }
 
   return (
@@ -50,9 +51,16 @@ function ProjectContent() {
           <div className="flex-1 overflow-hidden">
             <AssetViewer
               asset={selectedAsset}
-              onAssetUpdate={(asset) => {
+              onAssetUpdate={(asset: Asset) => {
                 if (asset.id) {
-                  updateAsset(asset.id, asset);
+                  dispatch({
+                    type: 'UPDATE_ASSET_START',
+                    payload: {
+                      projectId: project?.id || '',
+                      assetId: asset.id,
+                      updates: asset
+                    }
+                  });
                 }
               }}
             />
@@ -61,7 +69,7 @@ function ProjectContent() {
             <AssetList
               assets={assets}
               selectedAssetId={selectedAsset?.id || null}
-              onAssetSelect={selectAsset}
+              onAssetSelect={(asset: Asset) => dispatch({ type: 'SELECT_ASSET', payload: { assetId: asset.id } })}
             />
           </div>
         </div>
@@ -72,14 +80,8 @@ function ProjectContent() {
 
 export function ProjectLayout({ projectId }: ProjectLayoutProps) {
   return (
-    <ProjectProvider projectId={projectId}>
-      <ConversationProvider>
-        <ChatProvider>
-          <AssetProvider projectId={projectId}>
-            <ProjectContent />
-          </AssetProvider>
-        </ChatProvider>
-      </ConversationProvider>
-    </ProjectProvider>
+    <AppProvider>
+      <ProjectContent />
+    </AppProvider>
   );
 } 

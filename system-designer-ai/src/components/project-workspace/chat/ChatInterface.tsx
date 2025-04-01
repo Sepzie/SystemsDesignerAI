@@ -3,9 +3,8 @@
 import React from 'react';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
-import { useChat } from '@/contexts/ChatContext';
-import { useConversation } from '@/contexts/ConversationContext';
-import { useProject } from '@/contexts/ProjectContext';
+import { useAppContext } from '@/contexts/AppContext';
+import { Conversation } from '@/types/conversation';
 
 interface ChatInterfaceProps {
   projectId: string;
@@ -13,15 +12,19 @@ interface ChatInterfaceProps {
 }
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId, initialConversationId }) => {
-  const { messages, isLoading, isWaitingForAI, error, sendMessage } = useChat();
-  const { conversations, currentConversation, selectConversation, createConversation, deleteConversation } = useConversation();
-  const { project } = useProject();
+  const { state, dispatch } = useAppContext();
+  
+  const currentConversation = state.activeConversationId ? state.conversations.get(state.activeConversationId) : null;
+  const conversations = Array.from(state.conversations.values());
+  const messages = state.activeConversationId ? state.messages.get(state.activeConversationId) || [] : [];
+  const isLoading = state.loadingStates.get(`conversation:${state.activeConversationId}`) || false;
+  const isWaitingForAI = state.loadingStates.get(`message:${state.activeConversationId}`) || false;
+  const error = state.errors.get(`conversation:${state.activeConversationId}`) || state.errors.get(`message:${state.activeConversationId}`);
 
   const handleCreateConversation = async () => {
-    if (!project) return;
     try {
-      const newConversation = await createConversation(project.id);
-      selectConversation(newConversation.id);
+      dispatch({ type: 'CREATE_CONVERSATION_START', payload: { projectId } });
+      // The actual API call and success/error handling will be done in the reducer
     } catch (error) {
       console.error('Failed to create conversation:', error);
     }
@@ -30,16 +33,35 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId, initial
   const handleDeleteConversation = async () => {
     if (!currentConversation) return;
     try {
-      await deleteConversation(currentConversation.id);
-      // Select the first available conversation or create a new one
+      dispatch({ type: 'DELETE_CONVERSATION_START', payload: { conversationId: currentConversation.id } });
+      // After deletion, select the first available conversation or create a new one
       if (conversations.length > 0) {
-        selectConversation(conversations[0].id);
-      } else if (project) {
-        const newConversation = await createConversation(project.id);
-        selectConversation(newConversation.id);
+        dispatch({ type: 'SET_ACTIVE_CONVERSATION', payload: { conversationId: conversations[0].id } });
+      } else {
+        handleCreateConversation();
       }
     } catch (error) {
       console.error('Failed to delete conversation:', error);
+    }
+  };
+
+  const handleSendMessage = async (content: string): Promise<(() => void) | undefined> => {
+    if (!currentConversation) return undefined;
+    try {
+      dispatch({ 
+        type: 'SEND_MESSAGE_START', 
+        payload: { 
+          conversationId: currentConversation.id, 
+          content 
+        } 
+      });
+      // Return a cleanup function that can be used to cancel the message stream if needed
+      return () => {
+        // Add cleanup logic here if needed
+      };
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      return undefined;
     }
   };
 
@@ -59,7 +81,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId, initial
                   <>
                     <select
                       value={currentConversation.id}
-                      onChange={(e) => selectConversation(e.target.value)}
+                      onChange={(e) => dispatch({ 
+                        type: 'SET_ACTIVE_CONVERSATION', 
+                        payload: { conversationId: e.target.value } 
+                      })}
                       className="text-sm border rounded px-2 py-1"
                     >
                       {conversations.map((conv) => (
@@ -144,7 +169,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId, initial
       {/* Input */}
       <div className="p-4 border-t bg-white">
         <MessageInput 
-          onSendMessage={sendMessage} 
+          onSendMessage={handleSendMessage}
           isLoading={isLoading || isWaitingForAI} 
         />
       </div>
