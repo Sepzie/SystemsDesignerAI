@@ -3,23 +3,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 interface MessageInputProps {
-  onSendMessage: (content: string) => Promise<(() => void) | undefined>;
+  onSend: (content: string) => Promise<void>;
   isLoading: boolean;
+  disabled?: boolean;
 }
 
-export const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoading }) => {
+export const MessageInput: React.FC<MessageInputProps> = ({ onSend, isLoading, disabled }) => {
   const [message, setMessage] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const cleanupRef = useRef<(() => void) | undefined>();
-
-  // Cleanup function on unmount
-  useEffect(() => {
-    return () => {
-      if (cleanupRef.current) {
-        cleanupRef.current();
-      }
-    };
-  }, []);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -32,15 +23,10 @@ export const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoa
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim() || isLoading) return;
+    if (!message.trim() || isLoading || disabled) return;
 
     try {
-      // Clean up previous stream if it exists
-      if (cleanupRef.current) {
-        cleanupRef.current();
-      }
-      // Store new cleanup function
-      cleanupRef.current = await onSendMessage(message.trim());
+      await onSend(message.trim());
       setMessage('');
     } catch (error) {
       console.error('Failed to send message:', error);
@@ -64,16 +50,16 @@ export const MessageInput: React.FC<MessageInputProps> = ({ onSendMessage, isLoa
           onKeyDown={handleKeyDown}
           placeholder="Type your message here..."
           className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none min-h-[48px] max-h-[150px] text-gray-800 placeholder-gray-400 bg-white shadow-sm"
-          disabled={isLoading}
+          disabled={isLoading || disabled}
           rows={1}
         />
       </div>
       <button
         type="submit"
-        disabled={!message.trim() || isLoading}
+        disabled={!message.trim() || isLoading || disabled}
         className={`
           px-6 py-3 rounded-xl text-white font-medium
-          ${message.trim() && !isLoading
+          ${message.trim() && !isLoading && !disabled
             ? 'bg-blue-600 hover:bg-blue-700 shadow-sm'
             : 'bg-gray-200 cursor-not-allowed'}
           min-h-[48px]

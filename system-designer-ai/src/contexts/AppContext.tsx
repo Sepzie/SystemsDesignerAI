@@ -85,7 +85,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
       };
 
     case 'SEND_MESSAGE_SUCCESS': {
-      const conversationId = action.payload.message.conversationId;
+      const conversationId = action.payload.message.conversation_id;
       const existingMessages = state.messages.get(conversationId) || [];
       return {
         ...state,

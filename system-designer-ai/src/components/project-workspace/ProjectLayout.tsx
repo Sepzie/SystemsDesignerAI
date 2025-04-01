@@ -6,7 +6,8 @@ import { ChatInterface } from './chat/ChatInterface';
 import { AppProvider } from '@/contexts/AppContext';
 import { AssetViewer } from './asset/AssetViewer';
 import { AssetList } from './asset/AssetList';
-import { useAppContext } from '@/contexts/AppContext';
+import { useAppState } from '@/hooks/useAppState';
+import { useAppActions } from '@/hooks/useAppActions';
 import { Asset } from '@/types/asset';
 
 interface ProjectLayoutProps {
@@ -14,14 +15,26 @@ interface ProjectLayoutProps {
 }
 
 function ProjectContent() {
-  const { state, dispatch } = useAppContext();
-  const project = state.projects.get(state.currentProjectId || '');
-  const selectedAsset = state.selectedAssetId ? state.assets.get(state.selectedAssetId) || null : null;
-  const assets = Array.from(state.assets.values());
-  const isLoading = state.loadingStates.get(`project:${state.currentProjectId}`) || false;
-  const error = state.errors.get(`project:${state.currentProjectId}`);
+  const { 
+    getCurrentProject, 
+    getSelectedAsset, 
+    getProjectAssets,
+    isLoading,
+    getError 
+  } = useAppState();
+  
+  const { 
+    updateAsset,
+    selectAsset 
+  } = useAppActions();
 
-  if (isLoading) {
+  const project = getCurrentProject();
+  const selectedAsset = getSelectedAsset();
+  const assets = getProjectAssets(project?.id || '');
+  const isLoadingProject = isLoading(`project:${project?.id}`);
+  const error = getError(`project:${project?.id}`);
+
+  if (isLoadingProject) {
     return <div>Loading project...</div>;
   }
 
@@ -52,15 +65,8 @@ function ProjectContent() {
             <AssetViewer
               asset={selectedAsset}
               onAssetUpdate={(asset: Asset) => {
-                if (asset.id) {
-                  dispatch({
-                    type: 'UPDATE_ASSET_START',
-                    payload: {
-                      projectId: project?.id || '',
-                      assetId: asset.id,
-                      updates: asset
-                    }
-                  });
+                if (asset.id && project?.id) {
+                  updateAsset(project.id, asset.id, asset);
                 }
               }}
             />
@@ -69,7 +75,7 @@ function ProjectContent() {
             <AssetList
               assets={assets}
               selectedAssetId={selectedAsset?.id || null}
-              onAssetSelect={(asset: Asset) => dispatch({ type: 'SELECT_ASSET', payload: { assetId: asset.id } })}
+              onAssetSelect={(asset: Asset) => selectAsset(asset.id)}
             />
           </div>
         </div>

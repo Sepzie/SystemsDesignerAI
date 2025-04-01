@@ -3,8 +3,8 @@
 import React from 'react';
 import { MessageList } from './MessageList';
 import { MessageInput } from './MessageInput';
-import { useAppContext } from '@/contexts/AppContext';
-import { Conversation } from '@/types/conversation';
+import { useAppState } from '@/hooks/useAppState';
+import { useAppActions } from '@/hooks/useAppActions';
 
 interface ChatInterfaceProps {
   projectId: string;
@@ -12,19 +12,31 @@ interface ChatInterfaceProps {
 }
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId, initialConversationId }) => {
-  const { state, dispatch } = useAppContext();
-  
-  const currentConversation = state.activeConversationId ? state.conversations.get(state.activeConversationId) : null;
-  const conversations = Array.from(state.conversations.values());
-  const messages = state.activeConversationId ? state.messages.get(state.activeConversationId) || [] : [];
-  const isLoading = state.loadingStates.get(`conversation:${state.activeConversationId}`) || false;
-  const isWaitingForAI = state.loadingStates.get(`message:${state.activeConversationId}`) || false;
-  const error = state.errors.get(`conversation:${state.activeConversationId}`) || state.errors.get(`message:${state.activeConversationId}`);
+  const {
+    getActiveConversation,
+    getProjectConversations,
+    getConversationMessages,
+    isLoading,
+    getError
+  } = useAppState();
+
+  const {
+    setActiveConversation,
+    createConversation,
+    deleteConversation,
+    sendMessage
+  } = useAppActions();
+
+  const currentConversation = getActiveConversation();
+  const conversations = getProjectConversations(projectId);
+  const messages = currentConversation ? getConversationMessages(currentConversation.id) : [];
+  const isLoadingConversation = isLoading(`conversation:${currentConversation?.id}`);
+  const isWaitingForAI = isLoading(`message:${currentConversation?.id}`);
+  const error = getError(`conversation:${currentConversation?.id}`) || getError(`message:${currentConversation?.id}`);
 
   const handleCreateConversation = async () => {
     try {
-      dispatch({ type: 'CREATE_CONVERSATION_START', payload: { projectId } });
-      // The actual API call and success/error handling will be done in the reducer
+      await createConversation(projectId);
     } catch (error) {
       console.error('Failed to create conversation:', error);
     }
@@ -33,10 +45,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId, initial
   const handleDeleteConversation = async () => {
     if (!currentConversation) return;
     try {
-      dispatch({ type: 'DELETE_CONVERSATION_START', payload: { conversationId: currentConversation.id } });
+      await deleteConversation(currentConversation.id);
       // After deletion, select the first available conversation or create a new one
       if (conversations.length > 0) {
-        dispatch({ type: 'SET_ACTIVE_CONVERSATION', payload: { conversationId: conversations[0].id } });
+        setActiveConversation(conversations[0].id);
       } else {
         handleCreateConversation();
       }
@@ -45,23 +57,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId, initial
     }
   };
 
-  const handleSendMessage = async (content: string): Promise<(() => void) | undefined> => {
-    if (!currentConversation) return undefined;
+  const handleSendMessage = async (content: string) => {
+    if (!currentConversation) return;
     try {
-      dispatch({ 
-        type: 'SEND_MESSAGE_START', 
-        payload: { 
-          conversationId: currentConversation.id, 
-          content 
-        } 
-      });
-      // Return a cleanup function that can be used to cancel the message stream if needed
-      return () => {
-        // Add cleanup logic here if needed
-      };
+      await sendMessage(currentConversation.id, content);
     } catch (error) {
       console.error('Failed to send message:', error);
-      return undefined;
     }
   };
 
@@ -81,10 +82,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId, initial
                   <>
                     <select
                       value={currentConversation.id}
-                      onChange={(e) => dispatch({ 
-                        type: 'SET_ACTIVE_CONVERSATION', 
-                        payload: { conversationId: e.target.value } 
-                      })}
+                      onChange={(e) => setActiveConversation(e.target.value)}
                       className="text-sm border rounded px-2 py-1"
                     >
                       {conversations.map((conv) => (
@@ -120,7 +118,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId, initial
               </svg>
               New
             </button>
-            {isLoading && (
+            {isLoadingConversation && (
               <div className="text-sm text-gray-500 flex items-center">
                 <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin mr-2" />
                 Thinking...
@@ -154,7 +152,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId, initial
 
       {/* Messages */}
       <div className="flex-1 overflow-hidden flex flex-col bg-gray-50">
-        {isLoading && messages.length === 0 ? (
+        {isLoadingConversation && messages.length === 0 ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4" />
@@ -169,8 +167,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId, initial
       {/* Input */}
       <div className="p-4 border-t bg-white">
         <MessageInput 
-          onSendMessage={handleSendMessage}
-          isLoading={isLoading || isWaitingForAI} 
+          onSend={handleSendMessage}
+          disabled={isWaitingForAI}
+          isLoading={isWaitingForAI} 
         />
       </div>
     </div>

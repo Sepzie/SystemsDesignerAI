@@ -5,14 +5,15 @@ import { Message } from '@/types/chat';
 import { formatDistanceToNow } from 'date-fns';
 import { AssetReference } from '../asset/AssetReference';
 import { Asset } from '@/types/asset';
+import { useAppActions } from '@/hooks/useAppActions';
 
 interface MessageItemProps {
   message: Message;
-  onAssetClick: (asset: Asset) => void;
-  assets: Record<string, Asset>; // Map of asset_id to Asset
+  referencedAssets: Asset[];
 }
 
-export function MessageItem({ message, onAssetClick, assets }: MessageItemProps) {
+export function MessageItem({ message, referencedAssets }: MessageItemProps) {
+  const { selectAsset } = useAppActions();
   const isUser = message.role === 'user';
 
   return (
@@ -34,14 +35,14 @@ export function MessageItem({ message, onAssetClick, assets }: MessageItemProps)
         {message.metadata?.asset_references && message.metadata.asset_references.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-2">
             {message.metadata.asset_references.map((reference) => {
-              const asset = assets[reference.asset_id];
+              const asset = referencedAssets.find(a => a.id === reference.asset_id);
               if (!asset) return null;
               return (
                 <AssetReference
                   key={reference.id}
                   reference={reference}
                   asset={asset}
-                  onClick={() => onAssetClick(asset)}
+                  onClick={() => selectAsset(asset.id)}
                 />
               );
             })}
