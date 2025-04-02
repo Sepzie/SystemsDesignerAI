@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { AssetService } from '@/lib/asset/asset-service';
+import { AssetService } from '@/lib/asset/asset-service.server';
 import { AssetType } from '@/types/asset';
 
 const assetService =  new AssetService();

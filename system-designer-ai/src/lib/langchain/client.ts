@@ -10,7 +10,7 @@ import {
 } from './prompts';
 import { AssetReference, AssetType } from '@/types/asset';
 import { processAIResponse as processAIResponseAssets } from './asset-extraction';
-import { AssetService } from '../asset/asset-service';
+import { AssetService } from '../asset/asset-service.server';
 import { Message } from '@/types/chat';
 import { v4 as uuidv4 } from 'uuid';
 import { SYSTEM_MESSAGE } from './prompts';
@@ -151,6 +151,8 @@ class LangChainClient {
         // Continue processing other assets even if one fails
       }
     }
+
+
 
     // Create the message object
     const messageId = uuidv4();
