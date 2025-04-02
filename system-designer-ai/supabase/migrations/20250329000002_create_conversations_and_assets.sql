@@ -97,6 +97,17 @@ CREATE POLICY "Users can create messages in their conversations"
         )
     );
 
+CREATE POLICY "Users can update messages in their conversations"
+    ON messages FOR UPDATE
+    USING (
+        EXISTS (
+            SELECT 1 FROM conversations
+            JOIN projects ON projects.id = conversations.project_id
+            WHERE conversations.id = messages.conversation_id
+            AND projects.user_id = auth.uid()
+        )
+    );
+
 -- Add RLS policies for design_assets
 ALTER TABLE design_assets ENABLE ROW LEVEL SECURITY;
 
