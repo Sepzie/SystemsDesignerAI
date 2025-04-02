@@ -8,29 +8,28 @@ import {
   SelectionPromptInput,
   AssetGenerationInput
 } from './prompts';
-import { AssetType } from '@/types/asset';
+import { AssetReference, AssetType } from '@/types/asset';
 import { processAIResponse as processAIResponseAssets } from './asset-extraction';
 import { AssetService } from '../asset/asset-service';
-import { Message, ChatResponse } from '@/types/chat';
+import { Message } from '@/types/chat';
 import { v4 as uuidv4 } from 'uuid';
 import { SYSTEM_MESSAGE } from './prompts';
 import { MOCK_LLM_RESPONSE_MARKDOWN_WITH_DIAGRAM } from './api-mocks';
 import { formatCompleteContext } from './context';
 import { buildConversationContext } from './context';
+import App from 'next/app';
 
 const assetService = new AssetService();
 
 // Mock implementation for development/testing
 class MockLangChainClient {
-  async processMessage(message: string, context: string = ''): Promise<ChatResponse> {
+  async processMessage(message: string, context: string = ''): Promise<Message> {
     return {
-      message: {
-        id: uuidv4(),
-        conversation_id: 'mock-conv',
-        role: 'assistant',
-        content: `Mock response for: ${message}\nContext: ${context}`,
-        created_at: new Date().toISOString()
-      }
+      id: uuidv4(),
+      conversation_id: 'mock-conv',
+      role: 'assistant',
+      content: `Mock response for: ${message}\nContext: ${context}`,
+      created_at: new Date().toISOString()
     };
   }
 }
@@ -114,8 +113,6 @@ class LangChainClient {
     // Log the final prompt before sending to OpenAI
     console.log('\n=== AI Prompt Details ===');
     console.log('Type:', type);
-    // console.log('System Message:', SYSTEM_MESSAGE);
-    // console.log('Formatted Prompt:', formattedPrompt);
     console.log('Context Length:', context.length);
     console.log('Message Length:', message.length);
     console.log('Total Prompt Length:', formattedPrompt.length);
@@ -139,11 +136,14 @@ class LangChainClient {
       : JSON.stringify(response.content);
     
     // Process the response to extract assets and clean text
-    const { cleanedText,  references } = await processAIResponseAssets(
-      content,
-      projectId,
-      conversationId
-    );
+    // const { cleanedText,  references } = await processAIResponseAssets(
+    //   content,
+    //   projectId,
+    //   conversationId
+    // );
+
+    const cleanedText = content;
+    const references: AssetReference[] = [];
 
     // Create the message object
     const messageId = uuidv4();
@@ -163,7 +163,7 @@ class LangChainClient {
       created_at: new Date().toISOString()
     };
 
-    return messageObj
+    return messageObj;
   }
 }
 

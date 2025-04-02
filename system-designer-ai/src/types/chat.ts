@@ -22,16 +22,6 @@ export interface Message {
   created_at: string;
 }
 
-export interface ChatResponse {
-  message: Message;
-  assets?: {
-    id: string;
-    type: string;
-    name: string;
-    content: string;
-  }[];
-}
-
 // Mock data for development
 export const mockMessages: Message[] = [
   {

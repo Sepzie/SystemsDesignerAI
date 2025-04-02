@@ -154,7 +154,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
             id: messageId,
             conversation_id: conversationId,
             role: 'assistant',
-            content: '',
+            content: 'Thinking...',
             metadata: { isStreaming: true },
             created_at: new Date().toISOString(),
           },
@@ -174,7 +174,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
           const updatedMessageList = [...messages];
           updatedMessageList[messageIndex] = {
             ...updatedMessageList[messageIndex],
-            content: content,
+            content,
           };
           updatedMessages.set(conversationId, updatedMessageList);
           break;
@@ -198,7 +198,11 @@ function appReducer(state: AppState, action: AppAction): AppState {
           const updatedMessageList = [...messages];
           updatedMessageList[messageIndex] = {
             ...updatedMessageList[messageIndex],
-            metadata: { ...updatedMessageList[messageIndex].metadata, isStreaming: false },
+            metadata: { 
+              ...updatedMessageList[messageIndex].metadata,
+              isStreaming: false,
+              status: 'completed'
+            },
           };
           updatedMessages.set(conversationId, updatedMessageList);
           break;
