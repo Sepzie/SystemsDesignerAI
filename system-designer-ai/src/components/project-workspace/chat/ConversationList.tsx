@@ -17,14 +17,14 @@ export const ConversationList: React.FC<ConversationListProps> = ({
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
-  const { createConversationAction, deleteConversationAction, updateConversationTitleAction } = useAppActions();
+  const { createConversation, deleteConversation, updateConversationTitle } = useAppActions();
 
   const handleCreateConversation = async () => {
-    await createConversationAction(projectId);
+    await createConversation(projectId);
   };
 
   const handleDeleteConversation = async (conversationId: string) => {
-    await deleteConversationAction(conversationId);
+    await deleteConversation(conversationId);
   };
 
   const handleStartEdit = (conversation: Conversation) => {
@@ -33,7 +33,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   };
 
   const handleSaveEdit = async (conversationId: string) => {
-    await updateConversationTitleAction(conversationId, editTitle);
+    await updateConversationTitle(conversationId, editTitle);
     setEditingId(null);
   };
 
@@ -42,11 +42,11 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col bg-gray-50">
-      <div className="p-4 border-b bg-white">
+    <div className="h-full flex flex-col bg-white border-r border-gray-200">
+      <div className="p-4 border-b border-gray-200 bg-white">
         <button
           onClick={handleCreateConversation}
-          className="w-full flex items-center justify-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
+          className="w-full flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm"
         >
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -61,8 +61,8 @@ export const ConversationList: React.FC<ConversationListProps> = ({
             key={conversation.id}
             className={`p-3 rounded-lg cursor-pointer transition-colors ${
               conversation.id === activeConversationId
-                ? 'bg-primary text-white'
-                : 'bg-white hover:bg-gray-100'
+                ? 'bg-blue-600 text-white shadow-md'
+                : 'bg-gray-50 hover:bg-gray-100 text-gray-700'
             }`}
           >
             {editingId === conversation.id ? (
@@ -71,12 +71,20 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                   type="text"
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
-                  className="flex-1 px-2 py-1 rounded border"
+                  className={`flex-1 px-2 py-1 rounded border ${
+                    conversation.id === activeConversationId
+                      ? 'bg-blue-700 border-blue-500 text-white placeholder-gray-300'
+                      : 'bg-white border-gray-300'
+                  }`}
                   autoFocus
                 />
                 <button
                   onClick={() => handleSaveEdit(conversation.id)}
-                  className="p-1 hover:bg-gray-200 rounded"
+                  className={`p-1 rounded ${
+                    conversation.id === activeConversationId
+                      ? 'hover:bg-blue-700'
+                      : 'hover:bg-gray-200'
+                  }`}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -84,7 +92,11 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                 </button>
                 <button
                   onClick={handleCancelEdit}
-                  className="p-1 hover:bg-gray-200 rounded"
+                  className={`p-1 rounded ${
+                    conversation.id === activeConversationId
+                      ? 'hover:bg-blue-700'
+                      : 'hover:bg-gray-200'
+                  }`}
                 >
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -102,7 +114,11 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                 <div className="flex items-center space-x-2 ml-2">
                   <button
                     onClick={() => handleStartEdit(conversation)}
-                    className="p-1 hover:bg-gray-200 rounded"
+                    className={`p-1 rounded ${
+                      conversation.id === activeConversationId
+                        ? 'hover:bg-blue-700'
+                        : 'hover:bg-gray-200'
+                    }`}
                     title="Edit title"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -111,7 +127,11 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                   </button>
                   <button
                     onClick={() => handleDeleteConversation(conversation.id)}
-                    className="p-1 hover:bg-gray-200 rounded"
+                    className={`p-1 rounded ${
+                      conversation.id === activeConversationId
+                        ? 'hover:bg-blue-700'
+                        : 'hover:bg-gray-200'
+                    }`}
                     title="Delete conversation"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
