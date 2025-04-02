@@ -117,10 +117,10 @@ export function useAppActions() {
   );
 
   const deleteConversationAction = useCallback(
-    async (conversationId: string) => {
+    async (projectId: string, conversationId: string) => {
       try {
         dispatch({ type: 'DELETE_CONVERSATION_START', payload: { conversationId } });
-        await deleteConversation(conversationId);
+        await deleteConversation(projectId, conversationId);
         dispatch({
           type: 'DELETE_CONVERSATION_SUCCESS',
           payload: { conversationId },

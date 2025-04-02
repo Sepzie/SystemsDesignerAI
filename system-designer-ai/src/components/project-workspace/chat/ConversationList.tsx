@@ -24,7 +24,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   };
 
   const handleDeleteConversation = async (conversationId: string) => {
-    await deleteConversation(conversationId);
+    await deleteConversation(projectId, conversationId);
   };
 
   const handleStartEdit = (conversation: Conversation) => {

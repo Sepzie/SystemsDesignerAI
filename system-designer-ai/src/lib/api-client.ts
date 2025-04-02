@@ -202,8 +202,8 @@ export async function getConversations(projectId: string): Promise<ListConversat
   return handleResponse<ListConversationsResponse>(response);
 }
 
-export async function deleteConversation(conversationId: string): Promise<void> {
-  const response = await fetch(`/api/conversations/${conversationId}`, {
+export async function deleteConversation(projectId: string, conversationId: string): Promise<void> {
+  const response = await fetch(`/api/projects/${projectId}/conversations/${conversationId}`, {
     method: 'DELETE',
   });
   return handleResponse<void>(response);
