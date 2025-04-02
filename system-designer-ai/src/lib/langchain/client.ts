@@ -136,14 +136,13 @@ class LangChainClient {
       : JSON.stringify(response.content);
     
     // Process the response to extract assets and clean text
-    // const { cleanedText,  references } = await processAIResponseAssets(
-    //   content,
-    //   projectId,
-    //   conversationId
-    // );
+    const { cleanedText,  references } = await processAIResponseAssets(
+      content,
+      projectId,
+      conversationId
+    );
 
-    const cleanedText = content;
-    const references: AssetReference[] = [];
+
 
     // Create the message object
     const messageId = uuidv4();
