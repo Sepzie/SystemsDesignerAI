@@ -52,7 +52,6 @@ function createAsset(
     type: asset.type,
     current_content: asset.content,
     current_version: 1,
-    description: asset.description,
     metadata,
     created_at: now,
     updated_at: now

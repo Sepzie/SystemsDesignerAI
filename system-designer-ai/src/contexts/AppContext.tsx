@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useReducer, useCallback } from 'react';
 import { AppState, AppAction, initialState } from '../types/app';
+import { extractAssetReferences, fetchReferencedAssets } from '@/lib/asset/asset-reference-processor.client';
 
 // Create the context
 const AppContext = createContext<{
@@ -184,16 +185,70 @@ function appReducer(state: AppState, action: AppAction): AppState {
       const { messageId, content } = action.payload;
       const updatedMessages = new Map(state.messages);
       
+      console.log(`[AppContext] Processing message chunk for message ${messageId}`);
+      
       // Find the conversation containing this message
       for (const [conversationId, messages] of updatedMessages.entries()) {
         const messageIndex = messages.findIndex(m => m.id === messageId);
         if (messageIndex !== -1) {
           const updatedMessageList = [...messages];
-          updatedMessageList[messageIndex] = {
-            ...updatedMessageList[messageIndex],
-            content,
-          };
-          updatedMessages.set(conversationId, updatedMessageList);
+          
+          // Extract asset references from the content
+          const assetReferences = extractAssetReferences(content, messageId);
+          
+          // If we found asset references, fetch them from the backend
+          if (assetReferences.length > 0 && state.currentProjectId) {
+            console.log(`[AppContext] Found ${assetReferences.length} asset references in message ${messageId}`);
+            
+            // Fetch assets using the helper function
+            fetchReferencedAssets(assetReferences, state.currentProjectId)
+              .then((results) => {
+                // Filter out any failed fetches
+                const validResults = results.filter(result => result !== null);
+                console.log(`[AppContext] Successfully processed ${validResults.length} asset references for message ${messageId}`);
+                
+                // Update the message with the fetched assets
+                const updatedMessage = {
+                  ...updatedMessageList[messageIndex],
+                  content,
+                  metadata: {
+                    ...updatedMessageList[messageIndex].metadata,
+                    asset_references: validResults.map(result => result.reference)
+                  }
+                };
+                
+                updatedMessageList[messageIndex] = updatedMessage;
+                updatedMessages.set(conversationId, updatedMessageList);
+                
+                // Update the state with the new messages
+                return {
+                  ...state,
+                  messages: updatedMessages
+                };
+              })
+              .catch(error => {
+                console.error(`[AppContext] Error processing asset references for message ${messageId}:`, error);
+                // Even if there's an error, still update the content
+                updatedMessageList[messageIndex] = {
+                  ...updatedMessageList[messageIndex],
+                  content,
+                };
+                updatedMessages.set(conversationId, updatedMessageList);
+                return {
+                  ...state,
+                  messages: updatedMessages
+                };
+              });
+          } else {
+            console.log(`[AppContext] No asset references found in message ${messageId}, updating content only`);
+            // No asset references or no current project, just update the content
+            updatedMessageList[messageIndex] = {
+              ...updatedMessageList[messageIndex],
+              content,
+            };
+            updatedMessages.set(conversationId, updatedMessageList);
+          }
+          
           break;
         }
       }

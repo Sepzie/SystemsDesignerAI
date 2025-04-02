@@ -152,7 +152,15 @@ class LangChainClient {
       }
     }
 
-
+    // Store the asset references in db
+    for (const reference of references) {
+      try {
+        await assetService.createAssetReference(reference);
+      } catch (error) {
+        console.error('Failed to store asset reference:', error);
+        // Continue processing other references even if one fails
+      }
+    }
 
     // Create the message object
     const messageId = uuidv4();

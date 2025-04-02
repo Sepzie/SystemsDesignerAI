@@ -222,4 +222,24 @@ export async function updateConversationTitle(
     body: JSON.stringify({ title }),
   });
   return handleResponse<void>(response);
+}
+
+export async function getAsset(projectId: string, assetId: string): Promise<Asset | null> {
+  try {
+    const response = await fetch(`/api/projects/${projectId}/assets/${assetId}`);
+    if (!response.ok) {
+      if (response.status === 404) {
+        return null;
+      }
+      throw new ApiError(
+        'Failed to fetch asset',
+        response.status,
+        await response.json()
+      );
+    }
+    return handleResponse<Asset>(response);
+  } catch (error) {
+    console.error(`Error fetching asset ${assetId}:`, error);
+    return null;
+  }
 } 
