@@ -3,6 +3,7 @@
 import React from 'react';
 import { VersionHistory } from './VersionHistory';
 import { ChatInterface } from './chat/ChatInterface';
+import { ConversationList } from './chat/ConversationList';
 import { AppProvider } from '@/contexts/AppContext';
 import { AssetViewer } from './asset/AssetViewer';
 import { AssetList } from './asset/AssetList';
@@ -19,18 +20,23 @@ function ProjectContent() {
     getCurrentProject, 
     getSelectedAsset, 
     getProjectAssets,
+    getProjectConversations,
+    getActiveConversation,
     isLoading,
     getError 
   } = useAppState();
   
   const { 
     updateAsset,
-    selectAsset 
+    selectAsset,
+    setActiveConversation
   } = useAppActions();
 
   const project = getCurrentProject();
   const selectedAsset = getSelectedAsset();
   const assets = getProjectAssets(project?.id || '');
+  const conversations = getProjectConversations(project?.id || '');
+  const activeConversation = getActiveConversation();
   const isLoadingProject = isLoading(`project:${project?.id}`);
   const error = getError(`project:${project?.id}`);
 
@@ -54,6 +60,16 @@ function ProjectContent() {
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
+        {/* Conversation List Side Panel */}
+        <div className="w-64 border-r flex-shrink-0">
+          <ConversationList
+            conversations={conversations}
+            activeConversationId={activeConversation?.id || null}
+            projectId={project?.id || ''}
+            onConversationSelect={(conversationId) => setActiveConversation(conversationId)}
+          />
+        </div>
+
         {/* Chat Interface */}
         <div className="w-1/2 border-r flex flex-col">
           <ChatInterface projectId={project?.id || ''} />
