@@ -12,11 +12,12 @@ import {
   updateAsset,
   deleteAsset,
   getProject,
+  getMessages,
 } from '@/lib/api-client';
 
 // Action creators
 export function useAppActions() {
-  const { dispatch } = useAppContext();
+  const { dispatch, state } = useAppContext();
 
   // Project actions
   const loadProject = useCallback(
@@ -40,10 +41,27 @@ export function useAppActions() {
 
   // Conversation actions
   const setActiveConversation = useCallback(
-    (conversationId: string | null) => {
+    async (conversationId: string | null) => {
       dispatch({ type: 'SET_ACTIVE_CONVERSATION', payload: { conversationId } });
+      if (conversationId) {
+        try {
+          dispatch({ type: 'LOAD_MESSAGES_START', payload: { conversationId } });
+          const conversation = state.conversations.get(conversationId);
+          if (!conversation) return;
+          const response = await getMessages(conversation.project_id, conversationId);
+          dispatch({
+            type: 'LOAD_MESSAGES_SUCCESS',
+            payload: { conversationId, messages: response.messages },
+          });
+        } catch (error) {
+          dispatch({
+            type: 'LOAD_MESSAGES_ERROR',
+            payload: { conversationId, error: error instanceof Error ? error.message : 'Failed to load messages' },
+          });
+        }
+      }
     },
-    [dispatch]
+    [dispatch, state.conversations]
   );
 
   const createConversationAction = useCallback(

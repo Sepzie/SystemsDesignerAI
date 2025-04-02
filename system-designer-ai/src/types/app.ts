@@ -19,6 +19,9 @@ export type AppAction =
   | { type: 'CREATE_CONVERSATION_SUCCESS'; payload: { conversation: Conversation } }
   | { type: 'CREATE_CONVERSATION_ERROR'; payload: { projectId: string; error: string } }
   // message actions
+  | { type: 'LOAD_MESSAGES_START'; payload: { conversationId: string } }
+  | { type: 'LOAD_MESSAGES_SUCCESS'; payload: { conversationId: string; messages: Message[] } }
+  | { type: 'LOAD_MESSAGES_ERROR'; payload: { conversationId: string; error: string } }
   | { type: 'SEND_MESSAGE_START'; payload: { conversationId: string; content: string } }
   | { type: 'SEND_MESSAGE_SUCCESS'; payload: { message: Message } }
   | { type: 'SEND_MESSAGE_ERROR'; payload: { conversationId: string; error: string } }

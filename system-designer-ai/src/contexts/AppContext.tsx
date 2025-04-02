@@ -40,6 +40,42 @@ function appReducer(state: AppState, action: AppAction): AppState {
         activeConversationId: action.payload.conversationId,
       };
 
+    case 'LOAD_MESSAGES_START':
+      return {
+        ...state,
+        loadingStates: new Map(state.loadingStates).set(
+          `conversation:${action.payload.conversationId}`,
+          true
+        ),
+        errors: new Map(state.errors).set(`conversation:${action.payload.conversationId}`, null),
+      };
+
+    case 'LOAD_MESSAGES_SUCCESS':
+      return {
+        ...state,
+        messages: new Map(state.messages).set(
+          action.payload.conversationId,
+          action.payload.messages
+        ),
+        loadingStates: new Map(state.loadingStates).set(
+          `conversation:${action.payload.conversationId}`,
+          false
+        ),
+      };
+
+    case 'LOAD_MESSAGES_ERROR':
+      return {
+        ...state,
+        loadingStates: new Map(state.loadingStates).set(
+          `conversation:${action.payload.conversationId}`,
+          false
+        ),
+        errors: new Map(state.errors).set(
+          `conversation:${action.payload.conversationId}`,
+          action.payload.error
+        ),
+      };
+
     case 'CREATE_CONVERSATION_START':
       return {
         ...state,
