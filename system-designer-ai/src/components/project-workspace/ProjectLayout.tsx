@@ -27,7 +27,7 @@ function ProjectContent() {
   } = useAppState();
   
   const { 
-    updateAsset,
+    updateAssetAction: updateAsset,
     selectAsset,
     setActiveConversation
   } = useAppActions();

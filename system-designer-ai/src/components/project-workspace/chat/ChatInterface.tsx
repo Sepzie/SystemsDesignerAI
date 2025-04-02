@@ -22,9 +22,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId, initial
 
   const {
     setActiveConversation,
-    createConversation,
-    deleteConversation,
-    sendMessage
+    createConversationAction: createConversation,
+    deleteConversationAction: deleteConversation,
+    sendMessageAction: sendMessage
   } = useAppActions();
 
   const currentConversation = getActiveConversation();

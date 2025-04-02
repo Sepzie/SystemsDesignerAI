@@ -118,13 +118,14 @@ export function useAppActions() {
 
   // Message actions
   const sendMessageAction = useCallback(
-    async (conversationId: string, content: string) => {
+    async (projectId: string, conversationId: string, content: string) => {
       try {
         dispatch({
           type: 'SEND_MESSAGE_START',
           payload: { conversationId, content },
         });
-        const response = await sendMessage(conversationId, conversationId, { content, role: 'user' });
+        console.log('APP ACTIONS: Sending message');
+        const response = await sendMessage(projectId, conversationId, { content, role: 'user' });
         dispatch({
           type: 'SEND_MESSAGE_SUCCESS',
           payload: { message: response.message },
@@ -212,14 +213,14 @@ export function useAppActions() {
     () => ({
       loadProject,
       setActiveConversation,
-      createConversation: createConversationAction,
-      updateConversationTitle: updateConversationTitleAction,
-      deleteConversation: deleteConversationAction,
-      sendMessage: sendMessageAction,
+      createConversationAction,
+      updateConversationTitleAction,
+      deleteConversationAction,
+      sendMessageAction,
       selectAsset,
-      createAsset: createAssetAction,
-      updateAsset: updateAssetAction,
-      deleteAsset: deleteAssetAction,
+      createAssetAction,
+      updateAssetAction,
+      deleteAssetAction,
     }),
     [
       loadProject,

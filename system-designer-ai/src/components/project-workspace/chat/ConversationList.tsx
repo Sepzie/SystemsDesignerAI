@@ -17,7 +17,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
-  const { createConversation, deleteConversation, updateConversationTitle } = useAppActions();
+  const { createConversationAction: createConversation, deleteConversationAction: deleteConversation, updateConversationTitleAction: updateConversationTitle } = useAppActions();
 
   const handleCreateConversation = async () => {
     await createConversation(projectId);
