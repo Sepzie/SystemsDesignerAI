@@ -44,9 +44,8 @@ export interface Asset {
   project_id: string;
   name: string;
   type: AssetType;
-  content: string;
+  current_content: string;
   current_version: number;
-  description?: string;
   metadata: AssetMetadata;
   created_at: Date;
   updated_at: Date;

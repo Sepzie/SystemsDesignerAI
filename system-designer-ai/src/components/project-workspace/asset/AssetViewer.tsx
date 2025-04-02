@@ -69,7 +69,7 @@ export function AssetViewer({ asset, onAssetUpdate }: AssetViewerProps) {
         </div>
       </div>
       <div className="flex-1 overflow-auto p-4">
-        <pre className="whitespace-pre-wrap">{asset.content}</pre>
+        <pre className="whitespace-pre-wrap">{asset.current_content}</pre>
       </div>
     </div>
   );

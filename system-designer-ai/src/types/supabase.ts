@@ -75,6 +75,8 @@ export interface Database {
           asset_type: string
           created_at: string
           updated_at: string
+          current_content: string
+          current_version: number
         }
         Insert: {
           id?: string

@@ -15,25 +15,35 @@ export class AssetService {
    */
   async storeAsset(asset: Omit<Asset, 'id'>): Promise<Asset> {
     const supabase = await createClient();
-    // Convert string dates to Date objects
-    const assetWithDates = {
-      ...asset,
-      created_at: new Date(asset.created_at),
-      updated_at: new Date(asset.updated_at),
+    
+    // Only include fields that are part of the Asset type
+    const assetForDb = {
+      project_id: asset.project_id,
+      name: asset.name,
+      asset_type: asset.type,
+      current_content: asset.current_content,
+      current_version: asset.current_version,
       metadata: {
         ...asset.metadata,
         created_at: new Date(asset.metadata.created_at),
         updated_at: new Date(asset.metadata.updated_at)
-      }
+      },
+      created_at: new Date(asset.created_at),
+      updated_at: new Date(asset.updated_at)
     };
+
+    console.log('Asset being sent to database:', assetForDb);
 
     const { data, error } = await supabase
       .from('assets')
-      .insert([assetWithDates])
+      .insert([assetForDb])
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error('Database error:', error);
+      throw error;
+    }
     return data;
   }
 
@@ -268,9 +278,22 @@ export class AssetService {
 
   async createAsset(asset: Omit<Asset, 'id'>): Promise<Asset> {
     const supabase = await createClient();
+    // Map content to current_content and handle dates
+    const assetWithDates = {
+      ...asset,
+      current_content: asset.current_content, // Map content to current_content
+      created_at: new Date(asset.created_at),
+      updated_at: new Date(asset.updated_at),
+      metadata: {
+        ...asset.metadata,
+        created_at: new Date(asset.metadata.created_at),
+        updated_at: new Date(asset.metadata.updated_at)
+      }
+    };
+
     const { data, error } = await supabase
       .from('assets')
-      .insert([asset])
+      .insert([assetWithDates])
       .select()
       .single();
 

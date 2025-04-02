@@ -50,7 +50,7 @@ function createAsset(
     project_id: projectId,
     name: asset.name,
     type: asset.type,
-    content: asset.content,
+    current_content: asset.content,
     current_version: 1,
     description: asset.description,
     metadata,
