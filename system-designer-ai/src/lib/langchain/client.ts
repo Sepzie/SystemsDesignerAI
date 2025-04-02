@@ -136,13 +136,21 @@ class LangChainClient {
       : JSON.stringify(response.content);
     
     // Process the response to extract assets and clean text
-    const { cleanedText,  references } = await processAIResponseAssets(
+    const { assets, cleanedText,  references } = await processAIResponseAssets(
       content,
       projectId,
       conversationId
     );
 
-
+    // Store the extracted assets in db
+    for (const asset of assets) {
+      try {
+        await assetService.storeAsset(asset);
+      } catch (error) {
+        console.error('Failed to store asset:', error);
+        // Continue processing other assets even if one fails
+      }
+    }
 
     // Create the message object
     const messageId = uuidv4();

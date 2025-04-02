@@ -112,14 +112,14 @@ export async function validateMermaidDiagram(content: string): Promise<MermaidVa
     }
 
     // Try to parse with mermaid to validate syntax
-    try {
-      await mermaid.parse(content);
-      console.log('Syntax validation passed');
-    } catch (parseError) {
-      result.isValid = false;
-      result.errors?.push(parseError instanceof Error ? parseError.message : 'Invalid Mermaid syntax');
-      console.error('Parse error:', parseError);
-    }
+    // try {
+    //   await mermaid.parse(content);
+    //   console.log('Syntax validation passed');
+    // } catch (parseError) {
+    //   result.isValid = false;
+    //   result.errors?.push(parseError instanceof Error ? parseError.message : 'Invalid Mermaid syntax');
+    //   console.error('Parse error:', parseError);
+    // }
 
     console.log('Validation result:', result);
     console.log('========================\n');

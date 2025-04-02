@@ -53,6 +53,7 @@ export interface Asset {
 }
 
 export interface AssetExtractionResult {
+  assets: Asset[];
   references: AssetReference[];
   cleanedText: string;
 }

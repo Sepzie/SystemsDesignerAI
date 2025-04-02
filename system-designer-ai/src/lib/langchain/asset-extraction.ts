@@ -38,11 +38,11 @@ function createAsset(
 ): Asset {
   const now = new Date();
   const metadata: AssetMetadata = {
+    language: '',
     created_at: now,
     updated_at: now,
     created_by_message_id: messageId,
     version_number: 1,
-    reference_type: 'creation'
   };
 
   return {
@@ -157,6 +157,7 @@ export async function processAIResponse(
   if (!response || !response.trim()) {
     console.warn('Empty response received from AI');
     return {
+      assets: [],
       references: [],
       cleanedText: ''
     };
@@ -210,6 +211,7 @@ export async function processAIResponse(
   const cleanedText = replaceAssetBlocks(response, assetMap);
   
   return {
+    assets,
     references,
     cleanedText
   };
