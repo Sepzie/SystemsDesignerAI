@@ -71,4 +71,72 @@ export async function GET(
       { status: 500 }
     );
   }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ projectId: string; conversationId: string }> }
+) {
+  try {
+    const { projectId, conversationId } = await params;
+    const supabase = await createClient();
+    
+    // Validate user is authenticated
+    const user = await validateUser(supabase);
+    await validateProjectAccess(supabase, user.id, projectId);
+
+    // First, verify the conversation exists
+    const { data: conversation, error: convError } = await supabase
+      .from('conversations')
+      .select('project_id')
+      .eq('id', conversationId)
+      .eq('project_id', projectId)
+      .single();
+
+    if (convError || !conversation) {
+      console.error('Conversation not found:', convError);
+      return NextResponse.json(
+        { error: 'Conversation not found' },
+        { status: 404 }
+      );
+    }
+
+    // Delete all messages in the conversation
+    // Note: Due to ON DELETE CASCADE in the database schema, this isn't strictly necessary
+    // but it's good practice to be explicit
+    const { error: messagesError } = await supabase
+      .from('messages')
+      .delete()
+      .eq('conversation_id', conversationId);
+
+    if (messagesError) {
+      console.error('Failed to delete messages:', messagesError);
+      return NextResponse.json(
+        { error: 'Failed to delete messages' },
+        { status: 500 }
+      );
+    }
+
+    // Delete the conversation
+    const { error: deleteError } = await supabase
+      .from('conversations')
+      .delete()
+      .eq('id', conversationId);
+
+    if (deleteError) {
+      console.error('Failed to delete conversation:', deleteError);
+      return NextResponse.json(
+        { error: 'Failed to delete conversation' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error in delete conversation:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
 } 
