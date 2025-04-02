@@ -67,7 +67,7 @@ export interface Database {
           progress?: number
         }
       }
-      design_assets: {
+      assets: {
         Row: {
           id: string
           project_id: string

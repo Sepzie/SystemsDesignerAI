@@ -56,9 +56,9 @@ ALTER TABLE assets
 DROP COLUMN current_content,
 DROP COLUMN current_version;
 
--- Rename assets table back to design_assets
+-- Rename assets table back to assets
 ALTER TABLE assets
-RENAME TO design_assets;
+RENAME TO assets;
 
 -- Revert projects table changes
 ALTER TABLE projects

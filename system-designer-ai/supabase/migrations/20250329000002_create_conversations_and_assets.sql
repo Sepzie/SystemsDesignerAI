@@ -18,8 +18,8 @@ CREATE TABLE messages (
     created_at timestamptz DEFAULT now()
 );
 
--- Create design_assets table
-CREATE TABLE design_assets (
+-- Create assets table
+CREATE TABLE assets (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     project_id uuid NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     name text NOT NULL,
@@ -31,7 +31,7 @@ CREATE TABLE design_assets (
 -- Create asset_versions table
 CREATE TABLE asset_versions (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    asset_id uuid REFERENCES design_assets(id) ON DELETE CASCADE,
+    asset_id uuid REFERENCES assets(id) ON DELETE CASCADE,
     version_number text NOT NULL,
     content text NOT NULL,
     metadata jsonb DEFAULT '{}'::jsonb,
@@ -108,25 +108,25 @@ CREATE POLICY "Users can update messages in their conversations"
         )
     );
 
--- Add RLS policies for design_assets
-ALTER TABLE design_assets ENABLE ROW LEVEL SECURITY;
+-- Add RLS policies for assets
+ALTER TABLE assets ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view design_assets in their projects"
-    ON design_assets FOR SELECT
+CREATE POLICY "Users can view assets in their projects"
+    ON assets FOR SELECT
     USING (
         EXISTS (
             SELECT 1 FROM projects
-            WHERE projects.id = design_assets.project_id
+            WHERE projects.id = assets.project_id
             AND projects.user_id = auth.uid()
         )
     );
 
-CREATE POLICY "Users can manage design_assets in their projects"
-    ON design_assets FOR ALL
+CREATE POLICY "Users can manage assets in their projects"
+    ON assets FOR ALL
     USING (
         EXISTS (
             SELECT 1 FROM projects
-            WHERE projects.id = design_assets.project_id
+            WHERE projects.id = assets.project_id
             AND projects.user_id = auth.uid()
         )
     );
@@ -138,9 +138,9 @@ CREATE POLICY "Users can view asset versions in their projects"
     ON asset_versions FOR SELECT
     USING (
         EXISTS (
-            SELECT 1 FROM design_assets
-            JOIN projects ON projects.id = design_assets.project_id
-            WHERE design_assets.id = asset_versions.asset_id
+            SELECT 1 FROM assets
+            JOIN projects ON projects.id = assets.project_id
+            WHERE assets.id = asset_versions.asset_id
             AND projects.user_id = auth.uid()
         )
     );
@@ -149,9 +149,9 @@ CREATE POLICY "Users can create asset versions in their projects"
     ON asset_versions FOR INSERT
     WITH CHECK (
         EXISTS (
-            SELECT 1 FROM design_assets
-            JOIN projects ON projects.id = design_assets.project_id
-            WHERE design_assets.id = asset_versions.asset_id
+            SELECT 1 FROM assets
+            JOIN projects ON projects.id = assets.project_id
+            WHERE assets.id = asset_versions.asset_id
             AND projects.user_id = auth.uid()
         )
     );
@@ -186,13 +186,13 @@ CREATE TRIGGER update_conversations_updated_at
     EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_design_assets_updated_at
-    BEFORE UPDATE ON design_assets
+    BEFORE UPDATE ON assets
     FOR EACH ROW
     EXECUTE FUNCTION update_updated_at_column();
 
 -- Add indexes
 CREATE INDEX idx_conversations_project_id ON conversations(project_id);
 CREATE INDEX idx_messages_conversation_id ON messages(conversation_id);
-CREATE INDEX idx_design_assets_project_id ON design_assets(project_id);
+CREATE INDEX idx_design_assets_project_id ON assets(project_id);
 CREATE INDEX idx_asset_versions_asset_id ON asset_versions(asset_id);
 CREATE INDEX idx_exported_prompts_project_id ON exported_prompts(project_id); 

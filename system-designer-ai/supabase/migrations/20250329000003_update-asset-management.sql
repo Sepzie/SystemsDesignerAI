@@ -3,8 +3,8 @@
 ALTER TABLE projects
 ADD COLUMN metadata jsonb DEFAULT '{}'::jsonb;
 
--- Update design_assets table to match Asset in diagram
-ALTER TABLE design_assets
+-- Update assets table to match Asset in diagram
+ALTER TABLE assets
 RENAME TO assets;
 
 ALTER TABLE assets
