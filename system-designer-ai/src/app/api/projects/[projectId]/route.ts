@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { ProjectResponse } from '@/types/api'
-import { ConversationWithMessages } from '@/types/conversation';
 
 // Helper function to validate UUID
 function isValidUUID(uuid: string): boolean {
@@ -78,79 +77,36 @@ export async function GET(
       )
     }
 
-    // Fetch all conversations for the project
-    const { data: allConversations, error: allConversationsError } = await supabase
-      .from('conversations')
-      .select('*')
-      .eq('project_id', projectId)
-      .order('updated_at', { ascending: false });
-
-    if (allConversationsError) {
-      console.error('Error fetching all conversations:', allConversationsError);
-      return NextResponse.json(
-        { error: 'Failed to fetch project conversations' },
-        { status: 500 }
-      );
-    }
-
-    // Fetch latest conversation and its messages
+    // Fetch project conversations
     const { data: conversations, error: conversationsError } = await supabase
       .from('conversations')
       .select('*')
       .eq('project_id', projectId)
       .order('updated_at', { ascending: false })
-      .limit(1);
 
     if (conversationsError) {
       console.error('Error fetching conversations:', conversationsError);
       return NextResponse.json(
         { error: 'Failed to fetch project conversations' },
         { status: 500 }
-      );
+      )
     }
 
-    let latestConversation: ConversationWithMessages | undefined = undefined;
-    if (conversations && conversations.length > 0) {
-      const latestConv = conversations[0];
-      
-      // Fetch messages for the latest conversation
-      const { data: messages, error: messagesError } = await supabase
-        .from('messages')
-        .select('*')
-        .eq('conversation_id', latestConv.id)
-        .order('created_at', { ascending: true });
+    // Get the latest conversation
+    const latestConversation = conversations && conversations.length > 0 ? conversations[0] : null;
 
-      if (messagesError) {
-        console.error('Error fetching messages:', messagesError);
-        return NextResponse.json(
-          { error: 'Failed to fetch conversation messages' },
-          { status: 500 }
-        );
-      }
-
-      latestConversation = {
-        ...latestConv,
-        messages: messages || []
-      };
-    }
-
-    // Construct the enhanced response
+    // Construct the response
     const response: ProjectResponse = {
-      id: project.id,
-      name: project.name,
-      description: project.description,
-      tech_stack: project.tech_stack || [],
-      metadata: project.metadata || {},
-      created_at: project.created_at,
-      updated_at: project.updated_at,
-      assets: assets || [],
-      conversations: allConversations?.map(conv => ({
-        id: conv.id,
-        title: conv.title,
-        started_at: conv.started_at,
-        updated_at: conv.updated_at,
-      })) || [],
-      latest_conversation: latestConversation
+      project: {
+        id: project.id,
+        user_id: project.user_id,
+        name: project.name,
+        description: project.description,
+        tech_stack: project.tech_stack || '',
+        created_at: project.created_at,
+        updated_at: project.updated_at,
+        progress: project.progress || 0
+      }
     };
 
     return NextResponse.json(response);

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { VersionHistory } from './VersionHistory';
 import { ChatInterface } from './chat/ChatInterface';
 import { ConversationList } from './chat/ConversationList';
@@ -15,7 +15,7 @@ interface ProjectLayoutProps {
   projectId: string;
 }
 
-function ProjectContent() {
+function ProjectContent({ projectId }: { projectId: string }) {
   const { 
     getCurrentProject, 
     getSelectedAsset, 
@@ -29,8 +29,14 @@ function ProjectContent() {
   const { 
     updateAssetAction: updateAsset,
     selectAsset,
-    setActiveConversation
+    setActiveConversation,
+    loadProject
   } = useAppActions();
+
+  // Load project when component mounts
+  useEffect(() => {
+    loadProject(projectId);
+  }, [projectId, loadProject]);
 
   const project = getCurrentProject();
   const selectedAsset = getSelectedAsset();
@@ -65,14 +71,14 @@ function ProjectContent() {
           <ConversationList
             conversations={conversations}
             activeConversationId={activeConversation?.id || null}
-            projectId={project?.id || ''}
+            projectId={projectId}
             onConversationSelect={(conversationId) => setActiveConversation(conversationId)}
           />
         </div>
 
         {/* Chat Interface */}
         <div className="w-1/2 border-r flex flex-col">
-          <ChatInterface projectId={project?.id || ''} />
+          <ChatInterface projectId={projectId} />
         </div>
 
         {/* Right Side - Asset Viewer and List */}
@@ -103,7 +109,7 @@ function ProjectContent() {
 export function ProjectLayout({ projectId }: ProjectLayoutProps) {
   return (
     <AppProvider>
-      <ProjectContent />
+      <ProjectContent projectId={projectId} />
     </AppProvider>
   );
 } 
