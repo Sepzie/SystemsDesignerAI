@@ -25,6 +25,10 @@ export type AppAction =
   | { type: 'SEND_MESSAGE_START'; payload: { conversationId: string; content: string } }
   | { type: 'SEND_MESSAGE_SUCCESS'; payload: { message: Message } }
   | { type: 'SEND_MESSAGE_ERROR'; payload: { conversationId: string; error: string } }
+  | { type: 'MESSAGE_STREAM_START'; payload: { messageId: string; conversationId: string } }
+  | { type: 'MESSAGE_STREAM_CHUNK'; payload: { messageId: string; content: string } }
+  | { type: 'MESSAGE_STREAM_COMPLETE'; payload: { messageId: string } }
+  | { type: 'MESSAGE_STREAM_ERROR'; payload: { messageId: string; error: string } }
   // asset actions
   | { type: 'SELECT_ASSET'; payload: { assetId: string | null } }
   | { type: 'CREATE_ASSET_START'; payload: { projectId: string; data: Omit<Asset, 'id' | 'createdAt' | 'updatedAt'> } }

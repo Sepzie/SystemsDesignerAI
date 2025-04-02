@@ -143,6 +143,84 @@ function appReducer(state: AppState, action: AppAction): AppState {
         ),
       };
 
+    case 'MESSAGE_STREAM_START': {
+      const { messageId, conversationId } = action.payload;
+      const existingMessages = state.messages.get(conversationId) || [];
+      return {
+        ...state,
+        messages: new Map(state.messages).set(conversationId, [
+          ...existingMessages,
+          {
+            id: messageId,
+            conversation_id: conversationId,
+            role: 'assistant',
+            content: '',
+            metadata: { isStreaming: true },
+            created_at: new Date().toISOString(),
+          },
+        ]),
+        loadingStates: new Map(state.loadingStates).set(`message:${messageId}`, true),
+      };
+    }
+
+    case 'MESSAGE_STREAM_CHUNK': {
+      const { messageId, content } = action.payload;
+      const updatedMessages = new Map(state.messages);
+      
+      // Find the conversation containing this message
+      for (const [conversationId, messages] of updatedMessages.entries()) {
+        const messageIndex = messages.findIndex(m => m.id === messageId);
+        if (messageIndex !== -1) {
+          const updatedMessageList = [...messages];
+          updatedMessageList[messageIndex] = {
+            ...updatedMessageList[messageIndex],
+            content: content,
+          };
+          updatedMessages.set(conversationId, updatedMessageList);
+          break;
+        }
+      }
+
+      return {
+        ...state,
+        messages: updatedMessages,
+      };
+    }
+
+    case 'MESSAGE_STREAM_COMPLETE': {
+      const { messageId } = action.payload;
+      const updatedMessages = new Map(state.messages);
+      
+      // Find the conversation containing this message
+      for (const [conversationId, messages] of updatedMessages.entries()) {
+        const messageIndex = messages.findIndex(m => m.id === messageId);
+        if (messageIndex !== -1) {
+          const updatedMessageList = [...messages];
+          updatedMessageList[messageIndex] = {
+            ...updatedMessageList[messageIndex],
+            metadata: { ...updatedMessageList[messageIndex].metadata, isStreaming: false },
+          };
+          updatedMessages.set(conversationId, updatedMessageList);
+          break;
+        }
+      }
+
+      return {
+        ...state,
+        messages: updatedMessages,
+        loadingStates: new Map(state.loadingStates).set(`message:${messageId}`, false),
+      };
+    }
+
+    case 'MESSAGE_STREAM_ERROR': {
+      const { messageId, error } = action.payload;
+      return {
+        ...state,
+        loadingStates: new Map(state.loadingStates).set(`message:${messageId}`, false),
+        errors: new Map(state.errors).set(`message:${messageId}`, error),
+      };
+    }
+
     case 'SELECT_ASSET':
       return {
         ...state,

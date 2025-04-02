@@ -13,6 +13,7 @@ import {
   deleteAsset,
   getProject,
   getMessages,
+  connectToMessageStream,
 } from '@/lib/api-client';
 
 // Action creators
@@ -142,12 +143,51 @@ export function useAppActions() {
           type: 'SEND_MESSAGE_START',
           payload: { conversationId, content },
         });
-        console.log('APP ACTIONS: Sending message');
+        
+        // Send the initial message and get the AI message ID
         const response = await sendMessage(projectId, conversationId, { content, role: 'user' });
+        
+        // Dispatch success for the user message
         dispatch({
           type: 'SEND_MESSAGE_SUCCESS',
           payload: { message: response.message },
         });
+
+        if (response.aiMessageId) {
+          const aiMessageId = response.aiMessageId;
+          // Start streaming the AI response
+          dispatch({
+            type: 'MESSAGE_STREAM_START',
+            payload: { messageId: aiMessageId, conversationId },
+          });
+
+          // Connect to the streaming endpoint
+          const cleanup = connectToMessageStream(
+            projectId,
+            conversationId,
+            aiMessageId,
+            (data: { content: string }) => {
+              dispatch({
+                type: 'MESSAGE_STREAM_CHUNK',
+                payload: { messageId: aiMessageId, content: data.content },
+              });
+            },
+            (error: Error) => {
+              dispatch({
+                type: 'MESSAGE_STREAM_ERROR',
+                payload: { messageId: aiMessageId, error: error.message },
+              });
+              cleanup();
+            },
+            () => {
+              dispatch({
+                type: 'MESSAGE_STREAM_COMPLETE',
+                payload: { messageId: aiMessageId },
+              });
+              cleanup();
+            }
+          );
+        }
       } catch (error) {
         dispatch({
           type: 'SEND_MESSAGE_ERROR',

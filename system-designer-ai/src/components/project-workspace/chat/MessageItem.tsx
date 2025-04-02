@@ -15,6 +15,7 @@ interface MessageItemProps {
 export function MessageItem({ message, referencedAssets }: MessageItemProps) {
   const { selectAsset } = useAppActions();
   const isUser = message.role === 'user';
+  const isStreaming = message.metadata?.isStreaming;
 
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
@@ -29,6 +30,9 @@ export function MessageItem({ message, referencedAssets }: MessageItemProps) {
           {message.content.split(/\n/).map((line, index) => (
             <p key={index} className={`${isUser ? 'text-white' : 'text-gray-800'} mb-2 last:mb-0`}>
               {line}
+              {isStreaming && index === message.content.split(/\n/).length - 1 && (
+                <span className="inline-block w-2 h-4 ml-1 bg-gray-400 animate-pulse" />
+              )}
             </p>
           ))}
         </div>
@@ -48,8 +52,14 @@ export function MessageItem({ message, referencedAssets }: MessageItemProps) {
             })}
           </div>
         )}
-        <div className={`mt-2 text-xs ${isUser ? 'text-blue-100' : 'text-gray-500'}`}>
-          {new Date(message.created_at).toLocaleTimeString()}
+        <div className={`mt-2 text-xs ${isUser ? 'text-blue-100' : 'text-gray-500'} flex items-center`}>
+          <span>{new Date(message.created_at).toLocaleTimeString()}</span>
+          {isStreaming && (
+            <span className="ml-2 flex items-center">
+              <span className="w-1 h-1 bg-gray-400 rounded-full animate-ping mr-1" />
+              Generating...
+            </span>
+          )}
         </div>
       </div>
     </div>
