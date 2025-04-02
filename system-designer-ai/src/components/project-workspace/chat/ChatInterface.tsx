@@ -8,59 +8,30 @@ import { useAppActions } from '@/hooks/useAppActions';
 
 interface ChatInterfaceProps {
   projectId: string;
-  initialConversationId?: string;
 }
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId, initialConversationId }) => {
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId }) => {
   const {
     getActiveConversation,
-    getProjectConversations,
     getConversationMessages,
     isLoading,
     getError
   } = useAppState();
 
   const {
-    setActiveConversation,
-    createConversationAction: createConversation,
-    deleteConversationAction: deleteConversation,
     sendMessageAction: sendMessage
   } = useAppActions();
 
   const currentConversation = getActiveConversation();
-  const conversations = getProjectConversations(projectId);
   const messages = currentConversation ? getConversationMessages(currentConversation.id) : [];
   const isLoadingConversation = isLoading(`conversation:${currentConversation?.id}`);
   const isWaitingForAI = isLoading(`message:${currentConversation?.id}`);
   const error = getError(`conversation:${currentConversation?.id}`) || getError(`message:${currentConversation?.id}`);
 
-  const handleCreateConversation = async () => {
-    try {
-      await createConversation(projectId);
-    } catch (error) {
-      console.error('Failed to create conversation:', error);
-    }
-  };
-
-  const handleDeleteConversation = async () => {
-    if (!currentConversation) return;
-    try {
-      await deleteConversation(currentConversation.id);
-      // After deletion, select the first available conversation or create a new one
-      if (conversations.length > 0) {
-        setActiveConversation(conversations[0].id);
-      } else {
-        handleCreateConversation();
-      }
-    } catch (error) {
-      console.error('Failed to delete conversation:', error);
-    }
-  };
-
   const handleSendMessage = async (content: string) => {
     if (!currentConversation) return;
     try {
-      await sendMessage(currentConversation.id, content);
+      await sendMessage(projectId, currentConversation.id, content);
     } catch (error) {
       console.error('Failed to send message:', error);
     }
@@ -70,60 +41,19 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId, initial
     <div className="h-full flex flex-col bg-white">
       {/* Header */}
       <div className="p-4 border-b bg-white">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm mr-2">
-              AI
-            </div>
-            <div className="flex flex-col">
-              <h3 className="text-lg font-semibold">AI System Designer Assistant</h3>
-              <div className="flex items-center space-x-2 mt-1">
-                {currentConversation ? (
-                  <>
-                    <select
-                      value={currentConversation.id}
-                      onChange={(e) => setActiveConversation(e.target.value)}
-                      className="text-sm border rounded px-2 py-1"
-                    >
-                      {conversations.map((conv) => (
-                        <option key={conv.id} value={conv.id}>
-                          {conv.title}
-                        </option>
-                      ))}
-                    </select>
-                    <button
-                      onClick={handleDeleteConversation}
-                      className="text-sm text-red-600 hover:text-red-800 px-2 py-1 rounded hover:bg-red-50"
-                      title="Delete conversation"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                  </>
-                ) : (
-                  <span className="text-sm text-gray-500">No conversation selected</span>
-                )}
-              </div>
-            </div>
+        <div className="flex items-center">
+          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm mr-2">
+            AI
           </div>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={handleCreateConversation}
-              className="text-sm text-blue-600 hover:text-blue-800 px-3 py-1 rounded hover:bg-blue-50 flex items-center"
-              title="New conversation"
-            >
-              <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              New
-            </button>
-            {isLoadingConversation && (
-              <div className="text-sm text-gray-500 flex items-center">
-                <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin mr-2" />
-                Thinking...
-              </div>
-            )}
+          <div className="flex flex-col">
+            <h3 className="text-lg font-semibold">AI System Designer Assistant</h3>
+            <div className="flex items-center space-x-2 mt-1">
+              {currentConversation ? (
+                <span className="text-sm text-gray-600">{currentConversation.title}</span>
+              ) : (
+                <span className="text-sm text-gray-500">No conversation selected</span>
+              )}
+            </div>
           </div>
         </div>
       </div>
