@@ -3,6 +3,7 @@
 import { useCallback, useMemo } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import { Asset } from '@/types/asset';
+import { Conversation } from '@/types/conversation';
 import {
   createConversation,
   deleteConversation,
@@ -87,22 +88,28 @@ export function useAppActions() {
   const updateConversationTitleAction = useCallback(
     async (conversationId: string, title: string) => {
       try {
+        // Get the project ID from the conversation
+        const conversation = Array.from(state.conversations.values()).find((c: Conversation) => c.id === conversationId);
+        if (!conversation) {
+          throw new Error('Conversation not found');
+        }
+
         dispatch({
           type: 'UPDATE_CONVERSATION_TITLE_START',
           payload: { conversationId, title },
         });
-        await updateConversationTitle(conversationId, title);
+        await updateConversationTitle(conversation.project_id, conversationId, title);
         dispatch({
           type: 'UPDATE_CONVERSATION_TITLE_SUCCESS',
           payload: { 
             conversation: { 
               id: conversationId,
-              project_id: '', // This will be updated by the reducer
+              project_id: conversation.project_id,
               title,
-              created_at: new Date().toISOString(),
+              created_at: conversation.created_at,
               updated_at: new Date().toISOString(),
-              last_message_at: new Date().toISOString(),
-              message_count: 0
+              last_message_at: conversation.last_message_at,
+              message_count: conversation.message_count
             } 
           },
         });
@@ -113,7 +120,7 @@ export function useAppActions() {
         });
       }
     },
-    [dispatch]
+    [dispatch, state.conversations]
   );
 
   const deleteConversationAction = useCallback(

@@ -17,6 +17,8 @@ export const ConversationList: React.FC<ConversationListProps> = ({
 }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { createConversationAction: createConversation, deleteConversationAction: deleteConversation, updateConversationTitleAction: updateConversationTitle } = useAppActions();
 
   const handleCreateConversation = async () => {
@@ -29,16 +31,42 @@ export const ConversationList: React.FC<ConversationListProps> = ({
 
   const handleStartEdit = (conversation: Conversation) => {
     setEditingId(conversation.id);
-    setEditTitle(conversation.title);
+    setEditTitle(conversation.title || '');
+    setError(null);
   };
 
   const handleSaveEdit = async (conversationId: string) => {
-    await updateConversationTitle(conversationId, editTitle);
-    setEditingId(null);
+    const trimmedTitle = editTitle.trim();
+    if (!trimmedTitle) {
+      setError('Title cannot be empty');
+      return;
+    }
+
+    setIsSaving(true);
+    setError(null);
+    try {
+      await updateConversationTitle(conversationId, trimmedTitle);
+      setEditingId(null);
+    } catch (err) {
+      setError('Failed to update title. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancelEdit = () => {
     setEditingId(null);
+    setError(null);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent, conversationId: string) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSaveEdit(conversationId);
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      handleCancelEdit();
+    }
   };
 
   return (
@@ -66,42 +94,63 @@ export const ConversationList: React.FC<ConversationListProps> = ({
             }`}
           >
             {editingId === conversation.id ? (
-              <div className="flex items-center space-x-2">
-                <input
-                  type="text"
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  className={`flex-1 px-2 py-1 rounded border ${
-                    conversation.id === activeConversationId
-                      ? 'bg-blue-700 border-blue-500 text-white placeholder-gray-300'
-                      : 'bg-white border-gray-300'
-                  }`}
-                  autoFocus
-                />
-                <button
-                  onClick={() => handleSaveEdit(conversation.id)}
-                  className={`p-1 rounded ${
-                    conversation.id === activeConversationId
-                      ? 'hover:bg-blue-700'
-                      : 'hover:bg-gray-200'
-                  }`}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </button>
-                <button
-                  onClick={handleCancelEdit}
-                  className={`p-1 rounded ${
-                    conversation.id === activeConversationId
-                      ? 'hover:bg-blue-700'
-                      : 'hover:bg-gray-200'
-                  }`}
-                >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+              <div className="flex flex-col space-y-2">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="text"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(e, conversation.id)}
+                    className={`flex-1 px-2 py-1 rounded border ${
+                      conversation.id === activeConversationId
+                        ? 'bg-blue-700 border-blue-500 text-white placeholder-gray-300'
+                        : 'bg-white border-gray-300'
+                    } ${error ? 'border-red-500' : ''}`}
+                    placeholder="Enter conversation title"
+                    autoFocus
+                    disabled={isSaving}
+                  />
+                  <button
+                    onClick={() => handleSaveEdit(conversation.id)}
+                    disabled={isSaving}
+                    className={`p-1 rounded ${
+                      conversation.id === activeConversationId
+                        ? 'hover:bg-blue-700'
+                        : 'hover:bg-gray-200'
+                    } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    title="Save (Enter)"
+                  >
+                    {isSaving ? (
+                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </button>
+                  <button
+                    onClick={handleCancelEdit}
+                    disabled={isSaving}
+                    className={`p-1 rounded ${
+                      conversation.id === activeConversationId
+                        ? 'hover:bg-blue-700'
+                        : 'hover:bg-gray-200'
+                    } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    title="Cancel (Esc)"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                {error && (
+                  <div className="text-sm text-red-500">
+                    {error}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="flex items-center justify-between">

@@ -209,17 +209,12 @@ export async function deleteConversation(projectId: string, conversationId: stri
   return handleResponse<void>(response);
 }
 
-/**
- * FAKE
- * @param conversationId 
- * @param title 
- * @returns 
- */
 export async function updateConversationTitle(
+  projectId: string,
   conversationId: string,
   title: string
 ): Promise<void> {
-  const response = await fetch(`/api/conversations/${conversationId}/title`, {
+  const response = await fetch(`/api/projects/${projectId}/conversations/${conversationId}/title`, {
     method: 'PATCH',
     headers: {
       'Content-Type': 'application/json',
