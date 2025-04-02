@@ -11,7 +11,7 @@ import { Asset } from "./asset";
 export type AppAction =
   // project actions
   | { type: 'LOAD_PROJECT_START'; payload: { projectId: string } }
-  | { type: 'LOAD_PROJECT_SUCCESS'; payload: { project: Project } }
+  | { type: 'LOAD_PROJECT_SUCCESS'; payload: { project: Project; conversations: Conversation[]; assets: Asset[] } }
   | { type: 'LOAD_PROJECT_ERROR'; payload: { projectId: string; error: string } }
   // conversation actions
   | { type: 'SET_ACTIVE_CONVERSATION'; payload: { conversationId: string | null } }

@@ -28,7 +28,7 @@ export function useAppActions() {
         const response = await getProject(projectId);
         dispatch({
           type: 'LOAD_PROJECT_SUCCESS',
-          payload: { project: response.project },
+          payload: { project: response.project, conversations: response.conversations, assets: response.assets },
         });
       } catch (error) {
         dispatch({

@@ -1,6 +1,7 @@
 import { Message, MessageRole } from './chat';
 import {  } from './conversation';
 import { Project } from './project';
+import { Asset } from './asset';
 
 // Base interfaces for database entities
 export interface Conversation {
@@ -75,4 +76,6 @@ export interface ConversationRouteParams extends ProjectRouteParams {
 
 export interface ProjectResponse {
   project: Project;
+  conversations: Conversation[];
+  assets: Asset[];
 }

@@ -19,13 +19,30 @@ function appReducer(state: AppState, action: AppAction): AppState {
         errors: new Map(state.errors).set(`project:${action.payload.projectId}`, null),
       };
 
-    case 'LOAD_PROJECT_SUCCESS':
+    case 'LOAD_PROJECT_SUCCESS': {
+      const conversationsMap = new Map();
+      if (action.payload.conversations) {
+        action.payload.conversations.forEach(conv => {
+          conversationsMap.set(conv.id, conv);
+        });
+      }
+      
+      const assetsMap = new Map();
+      if (action.payload.assets) {
+        action.payload.assets.forEach(asset => {
+          assetsMap.set(asset.id, asset);
+        });
+      }
+
       return {
         ...state,
         projects: new Map(state.projects).set(action.payload.project.id, action.payload.project),
         currentProjectId: action.payload.project.id,
+        conversations: new Map([...state.conversations, ...conversationsMap]),
+        assets: new Map([...state.assets, ...assetsMap]),
         loadingStates: new Map(state.loadingStates).set(`project:${action.payload.project.id}`, false),
       };
+    }
 
     case 'LOAD_PROJECT_ERROR':
       return {
