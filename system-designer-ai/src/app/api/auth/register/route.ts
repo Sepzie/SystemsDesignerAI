@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { ApiError, withErrorHandler } from '@/lib/error-handler'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient, createClient } from '@/lib/supabase/server'
 
 /**
  * This is the registration endpoint that handles new user signups.
@@ -35,7 +35,8 @@ export async function POST(request: Request) {
   }
 
   // Step 2: Create the user record in the User table
-  const { error: profileError } = await supabase
+  const supabaseAdmin = await createAdminClient()
+  const { error: profileError } = await supabaseAdmin
     .from('users')
     .insert([
       {
