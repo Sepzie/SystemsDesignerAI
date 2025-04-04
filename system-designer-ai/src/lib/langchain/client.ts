@@ -51,7 +51,7 @@ class LangChainClient {
     });
   }
 
-  async processMessage(
+  async respondToUserMessage(
     message: string,
     type: 'design' | 'review' | 'selection' | 'asset' = 'design',
     projectId: string,
@@ -117,6 +117,7 @@ class LangChainClient {
     console.log('Message Length:', message.length);
     console.log('Total Prompt Length:', formattedPrompt.length);
     console.log('========================\n');
+
 
     const response = MOCK_LLM_RESPONSE_MARKDOWN_WITH_DIAGRAM;
     // await this.model.invoke([

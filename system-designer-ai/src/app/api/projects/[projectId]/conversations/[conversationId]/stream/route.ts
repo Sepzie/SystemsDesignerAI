@@ -18,9 +18,9 @@ export async function GET(
     
     // Get messageId from query parameters
     const url = new URL(request.url);
-    const messageId = url.searchParams.get('messageId');
+    const userMessageId = url.searchParams.get('messageId');
 
-    if (!messageId) {
+    if (!userMessageId) {
       return NextResponse.json(
         { error: { message: 'Message ID is required' } },
         { status: 400 }
@@ -28,14 +28,14 @@ export async function GET(
     }
 
     // Validate message exists and belongs to conversation
-    const { data: message, error: messageError } = await supabase
+    const { data: userMessage, error: messageError } = await supabase
       .from('messages')
       .select('*')
-      .eq('id', messageId)
+      .eq('id', userMessageId)
       .eq('conversation_id', conversationId)
       .single();
 
-    if (messageError || !message) {
+    if (messageError || !userMessage) {
       return NextResponse.json(
         { error: { message: 'Message not found' } },
         { status: 404 }
@@ -48,7 +48,7 @@ export async function GET(
       async start(controller) {
         try {
           console.log('\n=== Starting AI Response Generation ===');
-          console.log('Message ID:', messageId);
+          console.log('Message ID:', userMessageId);
           console.log('Conversation ID:', conversationId);
           console.log('Project ID:', projectId);
 
@@ -61,12 +61,12 @@ export async function GET(
                 started_at: new Date().toISOString(),
               },
             })
-            .eq('id', messageId);
+            .eq('id', userMessageId);
 
           // Generate response using LangChain
           console.log('Generating AI response...');
-          const response = await langChainClient.processMessage(
-            message.content,
+          const response = await langChainClient.respondToUserMessage(
+            userMessage.content,
             'design', // Default to design type
             projectId,
             conversationId
@@ -89,7 +89,7 @@ export async function GET(
                 completed_at: new Date().toISOString(),
               },
             })
-            .eq('id', messageId);
+            .eq('id', userMessageId);
 
           if (updateError) {
             console.error('Failed to update message in database:', updateError);
@@ -120,7 +120,7 @@ export async function GET(
                 completed_at: new Date().toISOString(),
               },
             })
-            .eq('id', messageId);
+            .eq('id', userMessageId);
 
           // Send an error event
           controller.enqueue(
