@@ -29,6 +29,7 @@ export type AppAction =
   | { type: 'MESSAGE_STREAM_CHUNK'; payload: { messageId: string; content: string } }
   | { type: 'MESSAGE_STREAM_COMPLETE'; payload: { messageId: string } }
   | { type: 'MESSAGE_STREAM_ERROR'; payload: { messageId: string; error: string } }
+  | { type: 'UPDATE_MESSAGE_ASSETS'; payload: { messageId: string; assetIds: string[] } }
   // asset actions
   | { type: 'SELECT_ASSET'; payload: { assetId: string | null } }
   | { type: 'CREATE_ASSET_START'; payload: { projectId: string; data: Omit<Asset, 'id' | 'createdAt' | 'updatedAt'> } }

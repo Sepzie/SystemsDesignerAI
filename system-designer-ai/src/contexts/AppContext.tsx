@@ -5,6 +5,7 @@ import { AppState, AppAction, initialState } from '../types/app';
 import { extractAssetReferences, fetchReferencedAssets } from '@/lib/asset/asset-reference-processor.client';
 import { extractAssetIds, fetchAssetsByIds } from '@/lib/asset/asset-service.client';
 import { Asset } from '@/types/asset';
+import { useAssetFetcher } from '@/hooks/useAssetFetcher';
 
 // Create the context
 const AppContext = createContext<{
@@ -198,55 +199,29 @@ function appReducer(state: AppState, action: AppAction): AppState {
           // Extract asset IDs from the content
           const assetIds = extractAssetIds(content, messageId);
           
-          // If we found asset IDs, fetch them from the backend
+          // First, update the message content immediately
+          updatedMessageList[messageIndex] = {
+            ...updatedMessageList[messageIndex],
+            content,
+            metadata: {
+              ...updatedMessageList[messageIndex].metadata,
+              // Keep existing assetIds if any, they'll be updated later if needed
+              assetIds: updatedMessageList[messageIndex].metadata?.assetIds || []
+            }
+          };
+          
+          updatedMessages.set(conversationId, updatedMessageList);
+          
+          // If we found asset IDs, we'll handle them in a separate effect outside the reducer
           if (assetIds.length > 0 && state.currentProjectId) {
             console.log(`[AppContext] Found ${assetIds.length} asset IDs in message ${messageId}`);
-            
-            // Fetch assets using the helper function
-            fetchAssetsByIds(assetIds, state.currentProjectId)
-              .then((assets: Asset[]) => {
-                // Filter out any failed fetches
-                const validAssets = assets.filter((asset: Asset | null): asset is Asset => asset !== null);
-                console.log(`[AppContext] Successfully processed ${validAssets.length} assets for message ${messageId}`);
-                
-                // Update the message with the fetched assets
-                const updatedMessage = {
-                  ...updatedMessageList[messageIndex],
-                  content,
-                  metadata: {
-                    ...updatedMessageList[messageIndex].metadata,
-                    assetIds: validAssets.map((asset: Asset) => asset.id)
-                  }
-                };
-                
-                updatedMessageList[messageIndex] = updatedMessage;
-                updatedMessages.set(conversationId, updatedMessageList);
-                
-                // Update the state with the new messages
-                return {
-                  ...state,
-                  messages: updatedMessages
-                };
-              })
-              .catch((error: Error) => {
-                console.error(`[AppContext] Error processing assets for message ${messageId}:`, error);
-                // Even if there's an error, still update the content
-                updatedMessageList[messageIndex] = {
-                  ...updatedMessageList[messageIndex],
-                  content,
-                };
-                updatedMessages.set(conversationId, updatedMessageList);
-                return {
-                  ...state,
-                  messages: updatedMessages
-                };
-              });
-          } else {
-            console.log(`[AppContext] No asset IDs found in message ${messageId}, updating content only`);
-            // No asset IDs or no current project, just update the content
+            // We'll set a flag in the message metadata to indicate that assets need to be fetched
             updatedMessageList[messageIndex] = {
               ...updatedMessageList[messageIndex],
-              content,
+              metadata: {
+                ...updatedMessageList[messageIndex].metadata,
+                pendingAssetIds: assetIds
+              }
             };
             updatedMessages.set(conversationId, updatedMessageList);
           }
@@ -487,6 +462,33 @@ function appReducer(state: AppState, action: AppAction): AppState {
         ),
       };
 
+    case 'UPDATE_MESSAGE_ASSETS': {
+      const { messageId, assetIds } = action.payload;
+      const updatedMessages = new Map(state.messages);
+      
+      // Find the conversation containing this message
+      for (const [conversationId, messages] of updatedMessages.entries()) {
+        const messageIndex = messages.findIndex(m => m.id === messageId);
+        if (messageIndex !== -1) {
+          const updatedMessageList = [...messages];
+          updatedMessageList[messageIndex] = {
+            ...updatedMessageList[messageIndex],
+            metadata: {
+              ...updatedMessageList[messageIndex].metadata,
+              assetIds
+            }
+          };
+          updatedMessages.set(conversationId, updatedMessageList);
+          break;
+        }
+      }
+
+      return {
+        ...state,
+        messages: updatedMessages,
+      };
+    }
+
     default:
       return state;
   }
@@ -495,6 +497,9 @@ function appReducer(state: AppState, action: AppAction): AppState {
 // Provider component
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
+  
+  // Use the asset fetcher hook to handle pending assets
+  useAssetFetcher();
 
   return (
     <AppContext.Provider value={{ state, dispatch }}>
