@@ -21,18 +21,6 @@ import App from 'next/app';
 
 const assetService = new AssetService();
 
-// Mock implementation for development/testing
-class MockLangChainClient {
-  async processMessage(message: string, context: string = ''): Promise<Message> {
-    return {
-      id: uuidv4(),
-      conversation_id: 'mock-conv',
-      role: 'assistant',
-      content: `Mock response for: ${message}\nContext: ${context}`,
-      created_at: new Date().toISOString()
-    };
-  }
-}
 
 // Real LangChain implementation
 class LangChainClient {
@@ -176,6 +164,4 @@ class LangChainClient {
 }
 
 // Export the appropriate client based on configuration
-export const langChainClient = config.useMock
-  ? new MockLangChainClient()
-  : new LangChainClient(); 
+export const langChainClient = new LangChainClient(); 
