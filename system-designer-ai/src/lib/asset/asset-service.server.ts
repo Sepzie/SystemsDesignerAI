@@ -13,10 +13,11 @@ export class AssetService {
    * @param asset The asset to store
    * @returns The stored asset
    */
-  async storeAsset(asset: Omit<Asset, 'id'>): Promise<Asset> {
+  async storeAsset(asset: Asset): Promise<Asset> {
     const supabase = await createClient();
     
     const assetForDb = {
+      id: asset.id,
       project_id: asset.project_id,
       name: asset.name,
       type: asset.type,

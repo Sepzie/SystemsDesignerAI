@@ -144,7 +144,7 @@ export async function getProject(projectId: string): Promise<ProjectResponse> {
 }
 
 // Asset-related API functions
-export async function createAsset(projectId: string, assetData: Omit<Asset, 'id' | 'project_id' | 'metadata' | 'created_at' | 'updated_at'>): Promise<Asset> {
+export async function createAsset(projectId: string, assetData: Omit<Asset, 'project_id' | 'metadata' | 'created_at' | 'updated_at'>): Promise<Asset> {
   const response = await fetch(`/api/projects/${projectId}/assets`, {
     method: 'POST',
     headers: {

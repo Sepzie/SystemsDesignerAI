@@ -68,6 +68,7 @@ export interface Database {
           updated_at: string
         }
         Insert: {
+          id?: string
           project_id: string
           name: string
           asset_type: string
