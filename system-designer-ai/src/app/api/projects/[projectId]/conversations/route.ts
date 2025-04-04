@@ -38,7 +38,7 @@ export async function GET(
       conversations: conversations.map(conv => ({
         id: conv.id,
         projectId: conv.project_id,
-        startedAt: new Date(conv.started_at),
+        startedAt: new Date(conv.created_at),
         updatedAt: new Date(conv.updated_at),
       })),
     };
@@ -80,9 +80,8 @@ export async function POST(
       .from('conversations')
       .insert([
         {
+          title: 'New Conversation',
           project_id: projectId,
-          started_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
         },
       ])
       .select()

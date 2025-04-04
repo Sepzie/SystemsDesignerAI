@@ -44,8 +44,11 @@ export async function GET(
       conversation: {
         id: conversation.id,
         project_id: conversation.project_id,
-        created_at: new Date(conversation.started_at),
-        updated_at: new Date(conversation.updated_at),
+        title: conversation.title,
+        created_at: conversation.created_at,
+        updated_at: conversation.updated_at,
+        last_message_at: conversation.last_message_at,
+        message_count: conversation.message_count,
       },
       messages: messages.map(msg => ({
         id: msg.id,
