@@ -5,7 +5,6 @@ CREATE TABLE projects (
     user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     name text NOT NULL,
     description text,
-    requirements jsonb DEFAULT '{}'::jsonb,
     tech_stack text,
     progress int,
     created_at timestamptz DEFAULT now(),

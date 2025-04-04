@@ -6,7 +6,7 @@ CREATE TABLE assets (
     name text NOT NULL,
     type text NOT NULL CHECK (type IN ('mermaid_diagram', 'project_description', 'roadmap', 'tech_doc', 'prompt')),
     content text NOT NULL,
-    metadata jsonb DEFAULT '{}'::jsonb;
+    metadata jsonb DEFAULT '{}'::jsonb,
     created_at timestamptz DEFAULT now(),
     updated_at timestamptz DEFAULT now()
 );
@@ -17,11 +17,11 @@ CREATE INDEX idx_assets_project_id ON assets(project_id);
 -- Create asset_versions table
 CREATE TABLE asset_versions (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
-    asset_id uuid REFERENCES assets(id) ON DELETE CASCADE,
+    asset_id uuid REFERENCES assets(id) ON DELETE CASCADE NOT NULL,
     version_number integer NOT NULL,
     content text NOT NULL,
     metadata jsonb DEFAULT '{}'::jsonb,
-    created_at timestamptz DEFAULT now(),
+    created_at timestamptz DEFAULT now()
 ); 
 
 -- Create index on asset_id for faster joins and lookups

@@ -4,7 +4,7 @@ CREATE TABLE conversations (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     project_id uuid NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     title text,
-    started_at timestamptz DEFAULT now(),
+    created_at timestamptz DEFAULT now(),
     updated_at timestamptz DEFAULT now()
 );
 
