@@ -1,3 +1,5 @@
+import { Json } from './supabase';
+
 export type AssetType = 
   | 'mermaid_diagram'
   | 'system_context'
@@ -44,11 +46,10 @@ export interface Asset {
   project_id: string;
   name: string;
   type: AssetType;
-  current_content: string;
-  current_version: number;
-  metadata: AssetMetadata;
-  created_at: Date;
-  updated_at: Date;
+  content: string;
+  metadata: Json;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface AssetExtractionResult {

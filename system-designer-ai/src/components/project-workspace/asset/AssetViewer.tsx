@@ -64,12 +64,12 @@ export function AssetViewer({ asset, onAssetUpdate }: AssetViewerProps) {
         <div>
           <h2 className="text-lg font-semibold">{asset.name}</h2>
           <p className="text-sm text-gray-500">
-            {asset.type} • Created {asset.created_at.toLocaleDateString()}
+            {asset.type} • Created {new Date(asset.created_at).toLocaleDateString()}
           </p>
         </div>
       </div>
       <div className="flex-1 overflow-auto p-4">
-        <pre className="whitespace-pre-wrap">{asset.current_content}</pre>
+        <pre className="whitespace-pre-wrap">{asset.content}</pre>
       </div>
     </div>
   );

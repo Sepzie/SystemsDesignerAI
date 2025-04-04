@@ -112,7 +112,7 @@ export async function GET(
         id: conv.id,
         project_id: conv.project_id,
         title: conv.title || '',
-        created_at: conv.started_at,
+        created_at: conv.created_at,
         updated_at: conv.updated_at,
         last_message_at: conv.updated_at,
         message_count: 0 // We'll need to add this later
@@ -121,19 +121,11 @@ export async function GET(
         id: asset.id,
         project_id: asset.project_id,
         name: asset.name,
-        type: asset.asset_type as AssetType,
-        content: asset.current_content || '',
-        current_version: asset.current_version || 1,
-        description: asset.description || '',
-        metadata: {
-          created_at: new Date(asset.created_at),
-          updated_at: new Date(asset.updated_at),
-          created_by_message_id: asset.created_by_message_id || '',
-          version_number: asset.current_version || 1,
-          language: ''
-        },
-        created_at: new Date(asset.created_at),
-        updated_at: new Date(asset.updated_at)
+        type: asset.type as AssetType,
+        content: asset.content,
+        metadata: asset.metadata,
+        created_at: asset.created_at,
+        updated_at: asset.updated_at
       }))
     };
 

@@ -36,13 +36,10 @@ function createAsset(
   projectId: string,
   messageId: string
 ): Asset {
-  const now = new Date();
-  const metadata: AssetMetadata = {
-    language: '',
-    created_at: now,
-    updated_at: now,
-    created_by_message_id: messageId,
-    version_number: 1,
+  const now = new Date().toISOString();
+  const metadata = {
+    created_by: messageId,
+    version: 1
   };
 
   return {
@@ -50,8 +47,7 @@ function createAsset(
     project_id: projectId,
     name: asset.name,
     type: asset.type,
-    current_content: asset.content,
-    current_version: 1,
+    content: asset.content,
     metadata,
     created_at: now,
     updated_at: now

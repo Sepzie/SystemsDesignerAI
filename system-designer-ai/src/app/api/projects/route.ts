@@ -77,15 +77,9 @@ export async function POST(request: Request) {
     const projectData = {
       name: body.name.trim(),
       description: body.description.trim(),
-      requirements: {
-        functional: [],
-        nonFunctional: []
-      },
       tech_stack: body.techStack.trim(),
       user_id: user.id,
       progress: 0,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
     }
 
     console.log('Inserting project data:', projectData)

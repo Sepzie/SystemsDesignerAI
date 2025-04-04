@@ -16,20 +16,12 @@ export class AssetService {
   async storeAsset(asset: Omit<Asset, 'id'>): Promise<Asset> {
     const supabase = await createClient();
     
-    // Only include fields that are part of the Asset type
     const assetForDb = {
       project_id: asset.project_id,
       name: asset.name,
-      asset_type: asset.type,
-      current_content: asset.current_content,
-      current_version: asset.current_version,
-      metadata: {
-        ...asset.metadata,
-        created_at: new Date(asset.metadata.created_at),
-        updated_at: new Date(asset.metadata.updated_at)
-      },
-      created_at: new Date(asset.created_at),
-      updated_at: new Date(asset.updated_at)
+      type: asset.type,
+      content: asset.content,
+      metadata: asset.metadata
     };
 
     console.log('Asset being sent to database:', assetForDb);
@@ -60,38 +52,38 @@ export class AssetService {
     messageId: string
   ): Promise<AssetVersion> {
     const supabase = await createClient();
-    // Start a transaction
-    const { data: asset, error: assetError } = await supabase
-      .from('assets')
-      .select('current_version')
-      .eq('id', assetId)
-      .single();
+    
+    // Get the current version number
+    const { data: versions, error: versionError } = await supabase
+      .from('asset_versions')
+      .select('version_number')
+      .eq('asset_id', assetId)
+      .order('version_number', { ascending: false })
+      .limit(1);
 
-    if (assetError) throw assetError;
+    if (versionError) throw versionError;
 
-    const newVersion = asset.current_version + 1;
+    const newVersion = versions && versions.length > 0 ? versions[0].version_number + 1 : 1;
 
     // Create the new version
-    const { data: version, error: versionError } = await supabase
+    const { data: version, error: insertError } = await supabase
       .from('asset_versions')
       .insert([{
         asset_id: assetId,
         version_number: newVersion,
         content,
-        created_by_message_id: messageId,
-        created_at: new Date().toISOString()
+        metadata: { created_by: messageId }
       }])
       .select()
       .single();
 
-    if (versionError) throw versionError;
+    if (insertError) throw insertError;
 
-    // Update the asset's current version
+    // Update the asset's content
     const { error: updateError } = await supabase
       .from('assets')
       .update({
-        current_content: content,
-        current_version: newVersion,
+        content,
         updated_at: new Date().toISOString()
       })
       .eq('id', assetId);
@@ -278,22 +270,17 @@ export class AssetService {
 
   async createAsset(asset: Omit<Asset, 'id'>): Promise<Asset> {
     const supabase = await createClient();
-    // Map content to current_content and handle dates
-    const assetWithDates = {
-      ...asset,
-      current_content: asset.current_content, // Map content to current_content
-      created_at: new Date(asset.created_at),
-      updated_at: new Date(asset.updated_at),
-      metadata: {
-        ...asset.metadata,
-        created_at: new Date(asset.metadata.created_at),
-        updated_at: new Date(asset.metadata.updated_at)
-      }
+    const assetForDb = {
+      project_id: asset.project_id,
+      name: asset.name,
+      type: asset.type,
+      content: asset.content,
+      metadata: asset.metadata || {}
     };
 
     const { data, error } = await supabase
       .from('assets')
-      .insert([assetWithDates])
+      .insert([assetForDb])
       .select()
       .single();
 
@@ -303,9 +290,17 @@ export class AssetService {
 
   async updateAsset(id: string, asset: Partial<Asset>): Promise<Asset> {
     const supabase = await createClient();
+    const updateData = {
+      ...(asset.name && { name: asset.name }),
+      ...(asset.type && { type: asset.type }),
+      ...(asset.content && { content: asset.content }),
+      ...(asset.metadata && { metadata: asset.metadata }),
+      updated_at: new Date().toISOString()
+    };
+
     const { data, error } = await supabase
       .from('assets')
-      .update(asset)
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();
