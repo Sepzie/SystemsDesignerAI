@@ -116,6 +116,7 @@ export interface Database {
           content: string
           metadata: Json
           created_at: string
+          updated_at: string
         }
         Insert: {
           conversation_id: string

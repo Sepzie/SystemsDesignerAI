@@ -19,7 +19,8 @@ CREATE TABLE messages (
     content text NOT NULL,
     referenced_assets uuid[] DEFAULT '{}',
     metadata jsonb DEFAULT '{}'::jsonb,
-    created_at timestamptz DEFAULT now()
+    created_at timestamptz DEFAULT now(),
+    updated_at timestamptz DEFAULT now()
 );
 
 -- Create index on conversation_id for faster joins and lookups
