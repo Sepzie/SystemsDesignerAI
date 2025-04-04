@@ -1,6 +1,6 @@
 import { AssetType, ExtractedAsset } from '@/types/asset';
 import { Asset } from '@/types/asset';
-import { AssetExtractionResult, AssetReference, AssetMetadata } from '@/types/asset';
+import { AssetExtractionResult } from '@/types/asset';
 import { validateMermaidDiagram } from '../validators/mermaid-validator';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -51,29 +51,6 @@ function createAsset(
     metadata,
     created_at: now,
     updated_at: now
-  };
-}
-
-/**
- * Creates an asset reference
- * @param messageId The message ID
- * @param assetId The asset ID
- * @param version The version number
- * @param referenceType The type of reference
- * @returns An asset reference ready for database insertion
- */
-function createAssetReference(
-  messageId: string,
-  assetId: string,
-  version: number,
-  referenceType: 'creation' | 'modification' | 'mention'
-): AssetReference {
-  return {
-    id: uuidv4(),
-    message_id: messageId,
-    asset_id: assetId,
-    version_referenced: version,
-    reference_type: referenceType
   };
 }
 
@@ -141,7 +118,7 @@ function replaceAssetBlocks(text: string, assetMap: Map<string, string>): string
  * @param response The raw response from the AI
  * @param projectId The project ID
  * @param messageId The message ID that created the assets
- * @returns Object containing processed text, extracted assets, and references
+ * @returns Object containing processed text, extracted assets, and assetIds
  */
 export async function processAIResponse(
   response: string,
@@ -153,7 +130,7 @@ export async function processAIResponse(
     console.warn('Empty response received from AI');
     return {
       assets: [],
-      references: [],
+      assetIds: [],
       cleanedText: ''
     };
   }
@@ -179,9 +156,9 @@ export async function processAIResponse(
     })
   );
   
-  // Create assets and references
+  // Create assets
   const assets: Asset[] = [];
-  const references: AssetReference[] = [];
+  const assetIds: string[] = [];
   
   for (const asset of validAssets) {
     if (!asset) continue;
@@ -189,15 +166,8 @@ export async function processAIResponse(
     try {
       const createdAsset = createAsset(asset, projectId, messageId);
       assets.push(createdAsset);
+      assetIds.push(createdAsset.id);
       assetMap.set(asset.name, createdAsset.id);
-      
-      const reference = createAssetReference(
-        messageId,
-        createdAsset.id,
-        createdAsset.current_version,
-        'creation'
-      );
-      references.push(reference);
     } catch (error) {
       console.warn(`Error creating asset ${asset.name}:`, error);
     }
@@ -207,7 +177,7 @@ export async function processAIResponse(
   
   return {
     assets,
-    references,
+    assetIds,
     cleanedText
   };
 } 

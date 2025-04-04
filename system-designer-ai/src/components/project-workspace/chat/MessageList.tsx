@@ -12,7 +12,7 @@ interface MessageListProps {
 
 export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { getReferencedAssets } = useAppState();
+  const { getAssetsByIds } = useAppState();
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -25,7 +25,8 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
   return (
     <div className="flex-1 overflow-y-auto p-4 space-y-4">
       {messages.map((message) => {
-        const referencedAssets = getReferencedAssets(message.id);
+        const assetIds = message.metadata?.assetIds || [];
+        const referencedAssets = getAssetsByIds(assetIds);
         return (
           <MessageItem
             key={message.id}

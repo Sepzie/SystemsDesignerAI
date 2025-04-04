@@ -3,7 +3,6 @@
 import React from 'react';
 import { Message } from '@/types/chat';
 import { formatDistanceToNow } from 'date-fns';
-import { AssetReference } from '../asset/AssetReference';
 import { Asset } from '@/types/asset';
 import { useAppActions } from '@/hooks/useAppActions';
 
@@ -36,23 +35,24 @@ export function MessageItem({ message, referencedAssets }: MessageItemProps) {
             </p>
           ))}
         </div>
-        {message.metadata?.asset_references && message.metadata.asset_references.length > 0 && (
+        {message.metadata?.assetIds && message.metadata.assetIds.length > 0 && (
           <div className="mt-4 flex flex-wrap gap-2">
-            {message.metadata.asset_references.map((reference) => {
-              const asset = referencedAssets.find(a => a.id === reference.asset_id);
+            {message.metadata.assetIds.map((assetId) => {
+              const asset = referencedAssets.find(a => a.id === assetId);
               if (!asset) return null;
               return (
-                <AssetReference
-                  key={reference.id}
-                  reference={reference}
-                  asset={asset}
-                  onClick={() => selectAsset(asset.id)}
-                />
+                <div 
+                  key={assetId}
+                  className="inline-flex items-center px-2 py-1 rounded-md bg-blue-100 text-blue-800 text-sm cursor-pointer hover:bg-blue-200"
+                  onClick={() => selectAsset(assetId)}
+                >
+                  {asset.name}
+                </div>
               );
             })}
           </div>
         )}
-        <div className={`mt-2 text-xs ${isUser ? 'text-blue-100' : 'text-gray-500'} flex items-center`}>
+        <div className="mt-2 text-xs text-gray-500 flex items-center justify-end">
           <span>{new Date(message.created_at).toLocaleTimeString()}</span>
           {isStreaming && (
             <span className="ml-2 flex items-center">

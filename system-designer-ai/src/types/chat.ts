@@ -10,7 +10,7 @@ export interface Message {
   role: MessageRole;
   content: string;
   metadata?: {
-    asset_references?: AssetReference[];
+    assetIds?: string[];
     tokens?: {
       prompt: number;
       completion: number;

@@ -8,7 +8,7 @@ import {
   SelectionPromptInput,
   AssetGenerationInput
 } from './prompts';
-import { AssetReference, AssetType } from '@/types/asset';
+import { AssetType } from '@/types/asset';
 import { processAIResponse as processAIResponseAssets } from './asset-extraction';
 import { AssetService } from '../asset/asset-service.server';
 import { Message } from '@/types/chat';
@@ -137,7 +137,7 @@ class LangChainClient {
       : JSON.stringify(response.content);
     
     // Process the response to extract assets and clean text
-    const { assets, cleanedText,  references } = await processAIResponseAssets(
+    const { assets, cleanedText, assetIds } = await processAIResponseAssets(
       content,
       projectId,
       conversationId
@@ -153,16 +153,6 @@ class LangChainClient {
       }
     }
 
-    // Store the asset references in db
-    for (const reference of references) {
-      try {
-        await assetService.createAssetReference(reference);
-      } catch (error) {
-        console.error('Failed to store asset reference:', error);
-        // Continue processing other references even if one fails
-      }
-    }
-
     // Create the message object
     const messageId = uuidv4();
     const messageObj: Message = {
@@ -171,7 +161,7 @@ class LangChainClient {
       role: 'assistant',
       content: cleanedText,
       metadata: {
-        asset_references: references,
+        assetIds,
         tokens: {
           prompt: 0, // These would come from the actual API response
           completion: 0,

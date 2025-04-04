@@ -16,13 +16,7 @@ export interface ExtractedAsset {
   description?: string;
 }
 
-export interface AssetMetadata {
-  language?: string;
-  created_at: Date;
-  updated_at: Date;
-  created_by_message_id: string;
-  version_number: number;
-}
+
 
 export interface AssetVersion {
   id: string;
@@ -54,7 +48,7 @@ export interface Asset {
 
 export interface AssetExtractionResult {
   assets: Asset[];
-  references: AssetReference[];
+  assetIds: string[];
   cleanedText: string;
 }
 

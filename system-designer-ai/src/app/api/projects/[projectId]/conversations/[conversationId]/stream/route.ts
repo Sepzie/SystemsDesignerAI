@@ -86,6 +86,7 @@ export async function GET(
                 status: 'completed',
                 model: 'gpt-4-turbo-preview',
                 tokens: response.metadata?.tokens,
+                assetIds: response.metadata?.assetIds,
                 completed_at: new Date().toISOString(),
               },
             })

@@ -79,24 +79,20 @@ export function useAppState() {
       return Array.from(state.messages.values())
         .flat()
         .filter((message) => 
-          message.metadata?.asset_references?.some(ref => ref.asset_id === asset_id)
+          message.metadata?.assetIds?.includes(asset_id)
         );
     },
     [state.messages]
   );
 
-  // Get assets referenced in message
-  const getReferencedAssets = useCallback(
-    (messageId: string): Asset[] => {
-      const message = Array.from(state.messages.values())
-        .flat()
-        .find((msg) => msg.id === messageId);
-      if (!message?.metadata?.asset_references) return [];
-      return message.metadata.asset_references
-        .map((ref) => state.assets.get(ref.asset_id))
+  // Get assets by IDs
+  const getAssetsByIds = useCallback(
+    (assetIds: string[]): Asset[] => {
+      return assetIds
+        .map(id => state.assets.get(id))
         .filter((asset): asset is Asset => asset !== undefined);
     },
-    [state.messages, state.assets]
+    [state.assets]
   );
 
   // Memoize all selectors
@@ -111,7 +107,7 @@ export function useAppState() {
       getError,
       getProjectConversations,
       getMessagesWithAssetReferences,
-      getReferencedAssets,
+      getAssetsByIds,
     }),
     [
       getCurrentProject,
@@ -123,7 +119,7 @@ export function useAppState() {
       getError,
       getProjectConversations,
       getMessagesWithAssetReferences,
-      getReferencedAssets,
+      getAssetsByIds,
     ]
   );
 } 

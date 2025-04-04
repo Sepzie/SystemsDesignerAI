@@ -1,8 +1,10 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useCallback } from 'react';
+import React, { createContext, useContext, useReducer, useCallback, ReactNode } from 'react';
 import { AppState, AppAction, initialState } from '../types/app';
 import { extractAssetReferences, fetchReferencedAssets } from '@/lib/asset/asset-reference-processor.client';
+import { extractAssetIds, fetchAssetsByIds } from '@/lib/asset/asset-service.client';
+import { Asset } from '@/types/asset';
 
 // Create the context
 const AppContext = createContext<{
@@ -193,19 +195,19 @@ function appReducer(state: AppState, action: AppAction): AppState {
         if (messageIndex !== -1) {
           const updatedMessageList = [...messages];
           
-          // Extract asset references from the content
-          const assetReferences = extractAssetReferences(content, messageId);
+          // Extract asset IDs from the content
+          const assetIds = extractAssetIds(content, messageId);
           
-          // If we found asset references, fetch them from the backend
-          if (assetReferences.length > 0 && state.currentProjectId) {
-            console.log(`[AppContext] Found ${assetReferences.length} asset references in message ${messageId}`);
+          // If we found asset IDs, fetch them from the backend
+          if (assetIds.length > 0 && state.currentProjectId) {
+            console.log(`[AppContext] Found ${assetIds.length} asset IDs in message ${messageId}`);
             
             // Fetch assets using the helper function
-            fetchReferencedAssets(assetReferences, state.currentProjectId)
-              .then((results) => {
+            fetchAssetsByIds(assetIds, state.currentProjectId)
+              .then((assets: Asset[]) => {
                 // Filter out any failed fetches
-                const validResults = results.filter(result => result !== null);
-                console.log(`[AppContext] Successfully processed ${validResults.length} asset references for message ${messageId}`);
+                const validAssets = assets.filter((asset: Asset | null): asset is Asset => asset !== null);
+                console.log(`[AppContext] Successfully processed ${validAssets.length} assets for message ${messageId}`);
                 
                 // Update the message with the fetched assets
                 const updatedMessage = {
@@ -213,7 +215,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
                   content,
                   metadata: {
                     ...updatedMessageList[messageIndex].metadata,
-                    asset_references: validResults.map(result => result.reference)
+                    assetIds: validAssets.map((asset: Asset) => asset.id)
                   }
                 };
                 
@@ -226,8 +228,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
                   messages: updatedMessages
                 };
               })
-              .catch(error => {
-                console.error(`[AppContext] Error processing asset references for message ${messageId}:`, error);
+              .catch((error: Error) => {
+                console.error(`[AppContext] Error processing assets for message ${messageId}:`, error);
                 // Even if there's an error, still update the content
                 updatedMessageList[messageIndex] = {
                   ...updatedMessageList[messageIndex],
@@ -240,8 +242,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
                 };
               });
           } else {
-            console.log(`[AppContext] No asset references found in message ${messageId}, updating content only`);
-            // No asset references or no current project, just update the content
+            console.log(`[AppContext] No asset IDs found in message ${messageId}, updating content only`);
+            // No asset IDs or no current project, just update the content
             updatedMessageList[messageIndex] = {
               ...updatedMessageList[messageIndex],
               content,
