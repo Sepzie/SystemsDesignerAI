@@ -96,7 +96,8 @@ export async function GET(
             console.error('Failed to update message in database:', updateError);
             throw new Error('Failed to save AI response');
           }
-          
+
+          console.log('AI Response:', response);
           console.log('AI response generation completed successfully');
           console.log('========================\n');
           

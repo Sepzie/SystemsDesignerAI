@@ -1,6 +1,6 @@
 import { PromptTemplate } from '@langchain/core/prompts';
 import { config } from './config';
-import { AssetType } from '@/types/asset';
+import { AssetType } from "@/types/base-types";
 
 // Define types for each prompt's input variables
 export type DesignPromptInput = {

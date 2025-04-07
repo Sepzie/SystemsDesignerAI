@@ -1,6 +1,7 @@
-import { AssetType, ExtractedAsset } from '@/types/asset';
-import { Asset } from '@/types/asset';
-import { AssetExtractionResult } from '@/types/asset';
+import { AssetType } from "@/types/base-types";
+import { ExtractedAsset } from "@/types/langchain";
+import { Asset } from '@/types/base-types';
+import { AssetExtractionResult } from '@/types/langchain';
 import { validateMermaidDiagram } from '../validators/mermaid-validator';
 import { v4 as uuidv4 } from 'uuid';
 

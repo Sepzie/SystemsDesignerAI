@@ -2,8 +2,8 @@
 
 import { useCallback, useMemo } from 'react';
 import { useAppContext } from '../contexts/AppContext';
-import { Asset } from '@/types/asset';
-import { Conversation } from '@/types/conversation';
+import { Asset } from '@/types/base-types';
+import { Conversation } from '@/types/base-types';
 import {
   createConversation,
   deleteConversation,

@@ -1,10 +1,10 @@
-import { AssetType } from "./asset";
+import { AssetType } from "./base-types";
 
 // base types
-import { Message } from "./chat";
-import { Project } from "./project";
-import { Conversation } from "./conversation";
-import { Asset } from "./asset";
+import { Message } from './base-types';
+import { Project } from "./base-types";
+import { Conversation } from './base-types';
+import { Asset } from './base-types';
 
 
 // Action types

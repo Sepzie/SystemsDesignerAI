@@ -2,10 +2,10 @@
 
 import { useCallback, useMemo } from 'react';
 import { useAppContext } from '../contexts/AppContext';
-import { Conversation } from '@/types/conversation';
-import { Project } from '@/types/project';
-import { Message } from '@/types/chat';
-import { Asset } from '@/types/asset';
+import { Conversation } from '@/types/base-types';
+import { Project } from "@/types/base-types";
+import { Message } from '@/types/base-types';
+import { Asset } from '@/types/base-types';
 
 // Selector functions
 export function useAppState() {

@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
-import { Message } from '@/types/chat';
+import { Message } from '@/types/base-types';
 import { ConversationContext } from '@/types/langchain';
 
 /**

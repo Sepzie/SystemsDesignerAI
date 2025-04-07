@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { ProjectResponse } from '@/types/api'
-import { AssetType } from '@/types/asset'
+import { AssetType } from "@/types/base-types";
 
 // Helper function to validate UUID
 function isValidUUID(uuid: string): boolean {

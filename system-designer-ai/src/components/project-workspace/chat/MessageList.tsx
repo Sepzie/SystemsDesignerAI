@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useEffect, useRef, useCallback } from 'react';
-import { Message } from '@/types/chat';
+import { Message } from '@/types/base-types';
 import { MessageItem } from './MessageItem';
 import { useAppState } from '@/hooks/useAppState';
-import { Asset } from '@/types/asset';
+import { Asset } from '@/types/base-types';
 
 interface MessageListProps {
   messages: Message[];

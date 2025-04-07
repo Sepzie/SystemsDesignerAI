@@ -11,7 +11,7 @@ import {
   ListMessagesResponse,
 } from '@/types/api';
 import { createClient } from '@/lib/supabase/server';
-import { Message } from '@/types/chat';
+import { Message } from '@/types/base-types';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function GET(

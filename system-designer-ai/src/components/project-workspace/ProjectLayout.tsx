@@ -9,7 +9,8 @@ import { AssetViewer } from './asset/AssetViewer';
 import { AssetList } from './asset/AssetList';
 import { useAppState } from '@/hooks/useAppState';
 import { useAppActions } from '@/hooks/useAppActions';
-import { Asset } from '@/types/asset';
+import { Asset } from '@/types/base-types';
+import { useAssetFetcher } from '@/hooks/useAssetFetcher';
 
 interface ProjectLayoutProps {
   projectId: string;
@@ -32,6 +33,9 @@ function ProjectContent({ projectId }: { projectId: string }) {
     setActiveConversation,
     loadProject
   } = useAppActions();
+
+  // Use the asset fetcher hook to handle pending assets
+  useAssetFetcher();
 
   // Load project when component mounts
   useEffect(() => {

@@ -1,4 +1,5 @@
-import { AssetReference as AssetReferenceType, Asset } from '@/types/asset';
+import { AssetReference as AssetReferenceType } from "@/types/client-types";
+import { Asset } from '@/types/base-types';
 
 interface AssetReferenceProps {
   reference: AssetReferenceType;

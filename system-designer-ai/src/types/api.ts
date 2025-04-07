@@ -1,18 +1,8 @@
-import { Message, MessageRole } from './chat';
-import {  } from './conversation';
-import { Project } from './project';
-import { Asset } from './asset';
+import { Message, MessageRole } from './base-types';
+import { Conversation } from './base-types';
+import { Project } from "./base-types";
+import { Asset } from './base-types';
 
-// Base interfaces for database entities
-export interface Conversation {
-  id: string;
-  project_id: string;
-  title: string;
-  created_at: string;
-  updated_at: string;
-  last_message_at: string;
-  message_count: number;
-}
 
 export interface ConversationMessage extends Message {
   metadata?: Record<string, any>;

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Card } from '../ui/Card';
 import { Input } from '../ui/Input';
 import { Button } from '../ui/Button';
-import { ProjectFormData } from '@/types/project';
+import { ProjectFormData } from "@/types/client-types";
 
 const initialFormData: ProjectFormData = {
   name: '',

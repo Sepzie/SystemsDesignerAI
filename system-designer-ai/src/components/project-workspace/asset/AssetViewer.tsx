@@ -1,4 +1,4 @@
-import { Asset } from '@/types/asset';
+import { Asset } from '@/types/base-types';
 
 interface AssetViewerProps {
   asset: Asset | null;

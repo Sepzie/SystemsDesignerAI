@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Conversation } from '@/types/conversation';
+import { Conversation } from '@/types/base-types';
 import { useAppActions } from '@/hooks/useAppActions';
 
 interface ConversationListProps {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Project } from '@/types/project';
+import { Project } from "@/types/base-types";
 import { ProjectCard } from './ProjectCard';
 import { Button } from '../ui/Button';
 import Link from 'next/link';

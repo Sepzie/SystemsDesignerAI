@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Asset, AssetType } from '@/types/asset';
+import { AssetType } from "@/types/base-types";
+import { Asset } from '@/types/base-types';
 import { formatDistanceToNow } from 'date-fns';
 
 interface AssetListProps {

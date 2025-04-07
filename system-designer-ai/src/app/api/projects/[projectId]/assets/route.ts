@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AssetService } from '@/lib/asset/asset-service.server';
-import { AssetType } from '@/types/asset';
+import { AssetType } from "@/types/base-types";
 
 const assetService =  new AssetService();
 

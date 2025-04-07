@@ -4,7 +4,7 @@ import React, { createContext, useContext, useReducer, useCallback, ReactNode } 
 import { AppState, AppAction, initialState } from '../types/app';
 import { extractAssetReferences, fetchReferencedAssets } from '@/lib/asset/asset-reference-processor.client';
 import { extractAssetIds, fetchAssetsByIds } from '@/lib/asset/asset-service.client';
-import { Asset } from '@/types/asset';
+import { Asset } from '@/types/base-types';
 import { useAssetFetcher } from '@/hooks/useAssetFetcher';
 
 // Create the context
@@ -498,8 +498,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
   
-  // Use the asset fetcher hook to handle pending assets
-  useAssetFetcher();
+  // We can't use useAssetFetcher here as it creates a circular dependency
+  // The hook will be used by components that need it instead
 
   return (
     <AppContext.Provider value={{ state, dispatch }}>

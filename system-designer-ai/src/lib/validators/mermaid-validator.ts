@@ -1,4 +1,4 @@
-import { MermaidValidationResult } from '@/types/asset';
+import { MermaidValidationResult } from '@/types/langchain';
 import mermaid from 'mermaid';
 
 // Initialize mermaid with default config

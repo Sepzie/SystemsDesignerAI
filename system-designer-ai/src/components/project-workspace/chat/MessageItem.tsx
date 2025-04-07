@@ -1,9 +1,9 @@
 'use client';
 
 import React from 'react';
-import { Message } from '@/types/chat';
+import { Message } from '@/types/base-types';
 import { formatDistanceToNow } from 'date-fns';
-import { Asset } from '@/types/asset';
+import { Asset } from '@/types/base-types';
 import { useAppActions } from '@/hooks/useAppActions';
 
 interface MessageItemProps {

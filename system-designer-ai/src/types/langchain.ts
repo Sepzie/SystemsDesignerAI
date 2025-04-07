@@ -1,25 +1,28 @@
-import { Asset, AssetType} from './asset';
-import { Message } from './chat';
-import { Project } from './project';
+import { AssetType } from "./base-types";
+import { Asset } from './base-types';
+import { Message } from './base-types';
+import { Project } from "./base-types";
 
 
 export interface ConversationContext {
   messages: Message[];
   projectDetails?: Pick<Project, 'name' | 'description' | 'tech_stack'>;
 }
-
-export interface LangChainResponse {
-  text: string;
-  assets?: Asset[];
-  usage: {
-    prompt: number;
-    completion: number;
-    total: number;
-  };
+export interface AssetExtractionResult {
+  assets: Asset[];
+  assetIds: string[];
+  cleanedText: string;
 }
 
-export interface AssetGenerationInput {
-  context: string;
-  question: string;
-  assetTypes?: AssetType[];
-} 
+export interface MermaidValidationResult {
+  isValid: boolean;
+  errors?: string[];
+  warnings?: string[];
+}
+export interface ExtractedAsset {
+  type: AssetType;
+  name: string;
+  content: string;
+  description?: string;
+}
+

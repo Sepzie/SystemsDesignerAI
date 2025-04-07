@@ -1,0 +1,389 @@
+{
+  "middleware.ts": [],
+  "app\\error.tsx": [],
+  "app\\layout.tsx": [
+    "app\\globals.css"
+  ],
+  "app\\page.tsx": [
+    "components\\layout\\MainLayout.tsx"
+  ],
+  "app\\api\\auth\\callback\\route.ts": [
+    "lib\\supabase\\server.ts",
+    "lib\\supabase\\server.ts"
+  ],
+  "app\\api\\auth\\register\\route.ts": [
+    "lib\\error-handler.ts",
+    "lib\\supabase\\server.ts",
+    "lib\\error-handler.ts",
+    "lib\\supabase\\server.ts"
+  ],
+  "app\\api\\auth\\signout\\route.ts": [
+    "lib\\supabase\\server.ts",
+    "lib\\supabase\\server.ts"
+  ],
+  "app\\api\\projects\\route.ts": [
+    "types\\project.ts",
+    "lib\\supabase\\server.ts",
+    "types\\project.ts",
+    "lib\\supabase\\server.ts"
+  ],
+  "app\\api\\projects\\[projectId]\\route.ts": [
+    "lib\\supabase\\server.ts",
+    "types\\api.ts",
+    "types\\asset.ts",
+    "lib\\supabase\\server.ts",
+    "types\\api.ts",
+    "types\\asset.ts"
+  ],
+  "app\\api\\projects\\[projectId]\\assets\\route.ts": [
+    "types\\asset.ts",
+    "types\\asset.ts"
+  ],
+  "app\\api\\projects\\[projectId]\\assets\\[assetId]\\route.ts": [],
+  "app\\api\\projects\\[projectId]\\assets\\[assetId]\\versions\\route.ts": [],
+  "app\\api\\projects\\[projectId]\\conversations\\route.ts": [
+    "lib\\supabase\\server.ts",
+    "lib\\supabase\\server.ts"
+  ],
+  "app\\api\\projects\\[projectId]\\conversations\\[conversationId]\\route.ts": [
+    "types\\api.ts",
+    "lib\\supabase\\server.ts",
+    "types\\api.ts",
+    "lib\\supabase\\server.ts"
+  ],
+  "app\\api\\projects\\[projectId]\\conversations\\[conversationId]\\messages\\route.ts": [
+    "lib\\supabase\\server.ts",
+    "types\\chat.ts",
+    "lib\\supabase\\server.ts",
+    "types\\chat.ts"
+  ],
+  "app\\api\\projects\\[projectId]\\conversations\\[conversationId]\\stream\\route.ts": [
+    "lib\\supabase\\server.ts",
+    "lib\\langchain\\client.ts",
+    "lib\\langchain\\context.ts",
+    "lib\\supabase\\server.ts",
+    "lib\\langchain\\client.ts",
+    "lib\\langchain\\context.ts"
+  ],
+  "app\\api\\projects\\[projectId]\\conversations\\[conversationId]\\title\\route.ts": [
+    "lib\\supabase\\server.ts",
+    "lib\\supabase\\server.ts"
+  ],
+  "app\\dashboard\\page.tsx": [
+    "lib\\supabase\\server.ts",
+    "components\\project\\ProjectList.tsx",
+    "components\\ui\\Button.tsx",
+    "lib\\supabase\\server.ts",
+    "components\\layout\\MainLayout.tsx",
+    "components\\project\\ProjectList.tsx",
+    "components\\ui\\Button.tsx"
+  ],
+  "app\\login\\page.tsx": [
+    "lib\\supabase\\client.ts",
+    "components\\ui\\Button.tsx",
+    "components\\ui\\Input.tsx",
+    "lib\\supabase\\client.ts",
+    "components\\layout\\MainLayout.tsx",
+    "components\\ui\\Button.tsx",
+    "components\\ui\\Input.tsx"
+  ],
+  "app\\projects\\layout.tsx": [
+    "components\\layout\\MainLayout.tsx"
+  ],
+  "app\\projects\\new\\page.tsx": [
+    "components\\project\\ProjectCreationForm.tsx",
+    "components\\project\\ProjectCreationForm.tsx"
+  ],
+  "app\\projects\\[projectId]\\page.tsx": [
+    "components\\project-workspace\\ProjectLayout.tsx",
+    "components\\project-workspace\\ProjectLayout.tsx"
+  ],
+  "app\\projects\\[projectId]\\settings\\page.tsx": [],
+  "app\\register\\page.tsx": [
+    "components\\ui\\Button.tsx",
+    "components\\ui\\Input.tsx",
+    "components\\layout\\MainLayout.tsx",
+    "components\\ui\\Button.tsx",
+    "components\\ui\\Input.tsx"
+  ],
+  "components\\layout\\Footer.tsx": [],
+  "components\\layout\\Header.tsx": [
+    "components\\ui\\Button.tsx",
+    "components\\ui\\Button.tsx"
+  ],
+  "components\\layout\\MainLayout.tsx": [
+    "components\\layout\\Header.tsx",
+    "components\\layout\\Footer.tsx"
+  ],
+  "components\\project\\ProjectCard.tsx": [
+    "components\\ui\\Card.tsx",
+    "types\\project.ts",
+    "components\\ui\\Card.tsx",
+    "types\\project.ts"
+  ],
+  "components\\project\\ProjectCreationForm.tsx": [
+    "components\\ui\\Card.tsx",
+    "components\\ui\\Input.tsx",
+    "components\\ui\\Button.tsx",
+    "types\\project.ts",
+    "components\\ui\\Card.tsx",
+    "components\\ui\\Input.tsx",
+    "components\\ui\\Button.tsx",
+    "types\\project.ts"
+  ],
+  "components\\project\\ProjectList.tsx": [
+    "types\\project.ts",
+    "components\\project\\ProjectCard.tsx",
+    "components\\ui\\Button.tsx",
+    "types\\project.ts",
+    "components\\project\\ProjectCard.tsx",
+    "components\\ui\\Button.tsx"
+  ],
+  "components\\project-workspace\\ProjectLayout.tsx": [
+    "components\\project-workspace\\VersionHistory.tsx",
+    "components\\project-workspace\\chat\\ChatInterface.tsx",
+    "components\\project-workspace\\chat\\ConversationList.tsx",
+    "contexts\\AppContext.tsx",
+    "components\\project-workspace\\asset\\AssetViewer.tsx",
+    "components\\project-workspace\\asset\\AssetList.tsx",
+    "hooks\\useAppState.ts",
+    "hooks\\useAppActions.ts",
+    "types\\asset.ts",
+    "hooks\\useAssetFetcher.ts",
+    "components\\project-workspace\\VersionHistory.tsx",
+    "components\\project-workspace\\chat\\ChatInterface.tsx",
+    "components\\project-workspace\\chat\\ConversationList.tsx",
+    "contexts\\AppContext.tsx",
+    "components\\project-workspace\\asset\\AssetViewer.tsx",
+    "components\\project-workspace\\asset\\AssetList.tsx",
+    "hooks\\useAppState.ts",
+    "hooks\\useAppActions.ts",
+    "types\\asset.ts",
+    "hooks\\useAssetFetcher.ts"
+  ],
+  "components\\project-workspace\\VersionHistory.tsx": [],
+  "components\\project-workspace\\asset\\AssetList.tsx": [
+    "types\\asset.ts",
+    "types\\asset.ts"
+  ],
+  "components\\project-workspace\\asset\\AssetReference.tsx": [
+    "types\\asset.ts",
+    "types\\asset.ts"
+  ],
+  "components\\project-workspace\\asset\\AssetViewer.tsx": [
+    "types\\asset.ts",
+    "types\\asset.ts"
+  ],
+  "components\\project-workspace\\chat\\ChatInterface.tsx": [
+    "components\\project-workspace\\chat\\MessageList.tsx",
+    "components\\project-workspace\\chat\\MessageInput.tsx",
+    "hooks\\useAppState.ts",
+    "hooks\\useAppActions.ts",
+    "components\\project-workspace\\chat\\MessageList.tsx",
+    "components\\project-workspace\\chat\\MessageInput.tsx",
+    "hooks\\useAppState.ts",
+    "hooks\\useAppActions.ts"
+  ],
+  "components\\project-workspace\\chat\\ConversationList.tsx": [
+    "types\\conversation.ts",
+    "hooks\\useAppActions.ts",
+    "types\\conversation.ts",
+    "hooks\\useAppActions.ts"
+  ],
+  "components\\project-workspace\\chat\\MessageInput.tsx": [],
+  "components\\project-workspace\\chat\\MessageItem.tsx": [
+    "types\\chat.ts",
+    "types\\asset.ts",
+    "hooks\\useAppActions.ts",
+    "types\\chat.ts",
+    "types\\asset.ts",
+    "hooks\\useAppActions.ts"
+  ],
+  "components\\project-workspace\\chat\\MessageList.tsx": [
+    "types\\chat.ts",
+    "components\\project-workspace\\chat\\MessageItem.tsx",
+    "hooks\\useAppState.ts",
+    "types\\asset.ts",
+    "types\\chat.ts",
+    "components\\project-workspace\\chat\\MessageItem.tsx",
+    "hooks\\useAppState.ts",
+    "types\\asset.ts"
+  ],
+  "components\\ui\\Button.tsx": [
+    "lib\\utils\\cn.ts",
+    "lib\\utils\\cn.ts"
+  ],
+  "components\\ui\\Card.tsx": [
+    "lib\\utils\\cn.ts",
+    "lib\\utils\\cn.ts"
+  ],
+  "components\\ui\\Input.tsx": [
+    "lib\\utils\\cn.ts",
+    "lib\\utils\\cn.ts"
+  ],
+  "contexts\\AppContext.tsx": [
+    "types\\app.ts",
+    "types\\asset.ts",
+    "hooks\\useAssetFetcher.ts",
+    "types\\app.ts",
+    "types\\asset.ts",
+    "hooks\\useAssetFetcher.ts"
+  ],
+  "hooks\\useAppActions.ts": [
+    "contexts\\AppContext.tsx",
+    "types\\asset.ts",
+    "types\\conversation.ts",
+    "contexts\\AppContext.tsx",
+    "types\\asset.ts",
+    "types\\conversation.ts"
+  ],
+  "hooks\\useAppState.ts": [
+    "contexts\\AppContext.tsx",
+    "types\\conversation.ts",
+    "types\\project.ts",
+    "types\\chat.ts",
+    "types\\asset.ts",
+    "contexts\\AppContext.tsx",
+    "types\\conversation.ts",
+    "types\\project.ts",
+    "types\\chat.ts",
+    "types\\asset.ts"
+  ],
+  "hooks\\useAssetFetcher.ts": [
+    "contexts\\AppContext.tsx",
+    "contexts\\AppContext.tsx"
+  ],
+  "lib\\api-client.ts": [
+    "types\\chat.ts",
+    "types\\project.ts",
+    "types\\asset.ts",
+    "types\\chat.ts",
+    "types\\project.ts",
+    "types\\asset.ts"
+  ],
+  "lib\\api-utils.ts": [
+    "types\\api.ts",
+    "types\\api.ts"
+  ],
+  "lib\\error-handler.ts": [],
+  "lib\\asset\\asset-id-processor.client.ts": [
+    "types\\asset.ts",
+    "lib\\api-client.ts",
+    "types\\asset.ts",
+    "lib\\api-client.ts"
+  ],
+  "lib\\asset\\asset-reference-processor.client.ts": [
+    "types\\asset.ts",
+    "lib\\api-client.ts",
+    "types\\asset.ts",
+    "lib\\api-client.ts"
+  ],
+  "lib\\asset\\asset-service.client.ts": [
+    "types\\asset.ts",
+    "lib\\api-client.ts",
+    "types\\asset.ts",
+    "lib\\api-client.ts"
+  ],
+  "lib\\asset\\asset-service.server.ts": [
+    "lib\\supabase\\server.ts",
+    "lib\\supabase\\server.ts"
+  ],
+  "lib\\langchain\\api-mocks.ts": [],
+  "lib\\langchain\\asset-extraction.ts": [
+    "types\\asset.ts",
+    "types\\asset.ts",
+    "types\\asset.ts",
+    "lib\\validators\\mermaid-validator.ts",
+    "types\\asset.ts",
+    "types\\asset.ts",
+    "types\\asset.ts",
+    "lib\\validators\\mermaid-validator.ts"
+  ],
+  "lib\\langchain\\client.ts": [
+    "lib\\langchain\\config.ts",
+    "types\\asset.ts",
+    "lib\\langchain\\asset-extraction.ts",
+    "types\\chat.ts",
+    "lib\\langchain\\prompts.ts",
+    "lib\\langchain\\api-mocks.ts",
+    "lib\\langchain\\context.ts",
+    "lib\\langchain\\context.ts",
+    "lib\\langchain\\config.ts",
+    "types\\asset.ts",
+    "lib\\langchain\\asset-extraction.ts",
+    "types\\chat.ts",
+    "lib\\langchain\\prompts.ts",
+    "lib\\langchain\\api-mocks.ts",
+    "lib\\langchain\\context.ts",
+    "lib\\langchain\\context.ts"
+  ],
+  "lib\\langchain\\config.ts": [],
+  "lib\\langchain\\context.ts": [
+    "lib\\supabase\\server.ts",
+    "types\\chat.ts",
+    "types\\langchain.ts",
+    "lib\\supabase\\server.ts",
+    "types\\chat.ts",
+    "types\\langchain.ts"
+  ],
+  "lib\\langchain\\prompts.ts": [
+    "lib\\langchain\\config.ts",
+    "types\\asset.ts",
+    "lib\\langchain\\config.ts",
+    "types\\asset.ts"
+  ],
+  "lib\\supabase\\client.ts": [],
+  "lib\\supabase\\server.ts": [],
+  "lib\\utils\\cn.ts": [],
+  "lib\\validators\\mermaid-validator.ts": [
+    "types\\asset.ts",
+    "types\\asset.ts"
+  ],
+  "types\\api.ts": [
+    "types\\chat.ts",
+    "types\\conversation.ts",
+    "types\\project.ts",
+    "types\\asset.ts",
+    "types\\chat.ts",
+    "types\\conversation.ts",
+    "types\\project.ts",
+    "types\\asset.ts"
+  ],
+  "types\\app.ts": [
+    "types\\asset.ts",
+    "types\\chat.ts",
+    "types\\project.ts",
+    "types\\conversation.ts",
+    "types\\asset.ts",
+    "types\\asset.ts",
+    "types\\chat.ts",
+    "types\\project.ts",
+    "types\\conversation.ts",
+    "types\\asset.ts"
+  ],
+  "types\\asset.ts": [
+    "types\\supabase.ts",
+    "types\\supabase.ts"
+  ],
+  "types\\chat.ts": [
+    "types\\asset.ts",
+    "types\\conversation.ts",
+    "types\\asset.ts",
+    "types\\conversation.ts"
+  ],
+  "types\\conversation.ts": [
+    "types\\chat.ts",
+    "types\\chat.ts"
+  ],
+  "types\\langchain.ts": [
+    "types\\asset.ts",
+    "types\\chat.ts",
+    "types\\project.ts",
+    "types\\asset.ts",
+    "types\\chat.ts",
+    "types\\project.ts"
+  ],
+  "types\\project.ts": [],
+  "types\\supabase.ts": [],
+  "utils\\env.ts": []
+}

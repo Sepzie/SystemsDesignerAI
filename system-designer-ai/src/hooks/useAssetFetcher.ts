@@ -1,21 +1,19 @@
 import { useEffect } from 'react';
-import { useAppState } from './useAppState';
-import { useAppActions } from './useAppActions';
+import { useAppContext } from '../contexts/AppContext';
 import { fetchAssetsByIds } from '@/lib/asset/asset-service.client';
 
 /**
  * Hook that monitors messages for pending assets and fetches them
  */
 export function useAssetFetcher() {
-  const { getMessages, getCurrentProjectId } = useAppState();
-  const { dispatch } = useAppActions();
+  const { state, dispatch } = useAppContext();
 
   useEffect(() => {
-    const currentProjectId = getCurrentProjectId();
+    const currentProjectId = state.currentProjectId;
     if (!currentProjectId) return;
 
     // Get all messages from all conversations
-    const allMessages = Array.from(getMessages().values()).flat();
+    const allMessages = Array.from(state.messages.values()).flat();
     
     // Find messages with pending assets
     const messagesWithPendingAssets = allMessages.filter(
@@ -48,5 +46,5 @@ export function useAssetFetcher() {
           console.error(`[useAssetFetcher] Error processing assets for message ${message.id}:`, error);
         });
     });
-  }, [getMessages, getCurrentProjectId, dispatch]);
+  }, [state.messages, state.currentProjectId, dispatch]);
 } 

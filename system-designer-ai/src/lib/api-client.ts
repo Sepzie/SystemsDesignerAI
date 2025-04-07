@@ -8,9 +8,11 @@ import {
   ProjectResponse,
   ListConversationsResponse,
 } from '@/types/api';
-import { Message } from '@/types/chat';
-import { Project } from '@/types/project';
-import { Asset, AssetVersion, MermaidValidationResult } from '@/types/asset';
+import { Message } from '@/types/base-types';
+import { Project } from "@/types/base-types";
+import { MermaidValidationResult } from '@/types/langchain';
+import { Asset } from '@/types/base-types';
+import { AssetVersion } from '@/types/base-types';
 
 class ApiError extends Error {
   constructor(

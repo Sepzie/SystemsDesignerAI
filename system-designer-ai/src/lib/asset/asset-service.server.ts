@@ -1,10 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
-import { 
-  Asset, 
-  AssetVersion, 
-  AssetReference,
-  AssetType 
-} from '@/types/asset';
+import { AssetType } from "@/types/base-types";
+import { Asset } from '@/types/base-types';
+import { AssetVersion } from '@/types/base-types';
 import { SupabaseClient } from '@supabase/supabase-js';
 
 export class AssetService {
@@ -163,72 +160,6 @@ export class AssetService {
 
     if (error) throw error;
     return data;
-  }
-
-  /**
-   * Creates a reference between an asset and a message
-   * @param reference The asset reference to create
-   * @returns The created reference
-   */
-  async createAssetReference(reference: Omit<AssetReference, 'id'>): Promise<AssetReference> {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from('asset_references')
-      .insert([reference])
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  }
-
-  /**
-   * Retrieves all references for an asset
-   * @param assetId The ID of the asset
-   * @returns Array of references
-   */
-  async getAssetReferences(assetId: string): Promise<AssetReference[]> {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from('asset_references')
-      .select('*')
-      .eq('asset_id', assetId)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-    return data;
-  }
-
-  /**
-   * Retrieves all assets referenced in a message
-   * @param messageId The ID of the message
-   * @returns Array of assets with their references
-   */
-  async getMessageAssets(messageId: string): Promise<{
-    asset: Asset;
-    reference: AssetReference;
-  }[]> {
-    const supabase = await createClient();
-    const { data, error } = await supabase
-      .from('asset_references')
-      .select(`
-        *,
-        asset:assets(*)
-      `)
-      .eq('message_id', messageId);
-
-    if (error) throw error;
-
-    return data.map((item: any) => ({
-      asset: item.asset,
-      reference: {
-        id: item.id,
-        message_id: item.message_id,
-        asset_id: item.asset_id,
-        version_referenced: item.version_referenced,
-        reference_type: item.reference_type
-      }
-    }));
   }
 
   /**
