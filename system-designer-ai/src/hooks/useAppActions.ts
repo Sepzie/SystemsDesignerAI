@@ -236,22 +236,25 @@ export function useAppActions() {
 
   const createAssetAction = useCallback(
     async (projectId: string, data: Omit<Asset, 'id' | 'createdAt' | 'updatedAt'>) => {
-      console.log(`[APP ACTIONS] Creating new asset for project: ${projectId}`);
-      try {
-        dispatch({ type: 'CREATE_ASSET_START', payload: { projectId, data } });
-        const asset = await createAsset(projectId, data);
-        console.log(`[APP ACTIONS] Successfully created asset: ${asset.id}`);
-        dispatch({
-          type: 'CREATE_ASSET_SUCCESS',
-          payload: { asset },
-        });
-      } catch (error) {
-        console.error(`[APP ACTIONS] Failed to create asset for project: ${projectId}`, error);
-        dispatch({
-          type: 'CREATE_ASSET_ERROR',
-          payload: { projectId, error: error instanceof Error ? error.message : 'Failed to create asset' },
-        });
-      }
+      console.log(`[APP ACTIONS] Creating assets by users is not supported`);
+      return;
+      
+      // Original implementation commented out:
+      // try {
+      //   dispatch({ type: 'CREATE_ASSET_START', payload: { projectId, data } });
+      //   const asset = await createAsset(projectId, data);
+      //   console.log(`[APP ACTIONS] Successfully created asset: ${asset.id}`);
+      //   dispatch({
+      //     type: 'CREATE_ASSET_SUCCESS',
+      //     payload: { asset },
+      //   });
+      // } catch (error) {
+      //   console.error(`[APP ACTIONS] Failed to create asset for project: ${projectId}`, error);
+      //   dispatch({
+      //     type: 'CREATE_ASSET_ERROR',
+      //     payload: { projectId, error: error instanceof Error ? error.message : 'Failed to create asset' },
+      //   });
+      // }
     },
     [dispatch]
   );
