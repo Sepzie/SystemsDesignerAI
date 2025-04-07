@@ -12,15 +12,15 @@ export function extractAssetIds(content: string, messageId: string): string[] {
   const assetIds: string[] = [];
   let match;
 
-  console.log(`[Asset ID Processor] Extracting asset IDs from message ${messageId}`);
+  console.log(`[ASSET SERVICE] Extracting asset IDs from message ${messageId}`);
 
   while ((match = assetReferenceRegex.exec(content)) !== null) {
     const [_, title, assetId] = match;
     assetIds.push(assetId);
-    console.log(`[Asset ID Processor] Found asset ID: ${assetId} (${title})`);
+    console.log(`[ASSET SERVICE] Found asset ID: ${assetId} (${title})`);
   }
 
-  console.log(`[Asset ID Processor] Found ${assetIds.length} asset IDs in total`);
+  console.log(`[ASSET SERVICE] Found ${assetIds.length} asset IDs in total`);
   return assetIds;
 }
 
@@ -31,7 +31,7 @@ export function extractAssetIds(content: string, messageId: string): string[] {
  * @returns Array of assets
  */
 export async function fetchAssetsByIds(assetIds: string[], projectId: string): Promise<Asset[]> {
-  console.log(`[Asset ID Processor] Fetching ${assetIds.length} assets for project ${projectId}`);
+  console.log(`[ASSET SERVICE] Fetching ${assetIds.length} assets for project ${projectId}`);
   
   const assets: Asset[] = [];
   
@@ -40,13 +40,13 @@ export async function fetchAssetsByIds(assetIds: string[], projectId: string): P
       const asset = await getAsset(projectId, assetId);
       if (asset) {
         assets.push(asset);
-        console.log(`[Asset ID Processor] Successfully fetched asset ${assetId}`);
+        console.log(`[ASSET SERVICE] Successfully fetched asset ${assetId}`);
       }
     } catch (error) {
-      console.error(`[Asset ID Processor] Failed to fetch asset ${assetId}:`, error);
+      console.error(`[ASSET SERVICE] Failed to fetch asset ${assetId}:`, error);
     }
   }
   
-  console.log(`[Asset ID Processor] Successfully fetched ${assets.length} assets`);
+  console.log(`[ASSET SERVICE] Successfully fetched ${assets.length} assets`);
   return assets;
 } 
