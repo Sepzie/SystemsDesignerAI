@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useAppContext } from '../contexts/AppContext';
 import { fetchAssetsByIds } from '@/lib/asset/asset-service.client';
 
@@ -7,6 +7,8 @@ import { fetchAssetsByIds } from '@/lib/asset/asset-service.client';
  */
 export function useAssetFetcher() {
   const { state, dispatch } = useAppContext();
+  // Keep track of messages that have already been processed
+  const processedMessagesRef = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     const currentProjectId = state.currentProjectId;
@@ -15,9 +17,12 @@ export function useAssetFetcher() {
     // Get all messages from all conversations
     const allMessages = Array.from(state.messages.values()).flat();
     
-    // Find messages with pending assets
+    // Find messages with pending assets that haven't been processed yet
     const messagesWithPendingAssets = allMessages.filter(
-      message => message.metadata?.pendingAssetIds && message.metadata.pendingAssetIds.length > 0
+      message => 
+        message.metadata?.pendingAssetIds && 
+        message.metadata.pendingAssetIds.length > 0 &&
+        !processedMessagesRef.current.has(message.id)
     );
 
     if (messagesWithPendingAssets.length === 0) return;
@@ -25,6 +30,9 @@ export function useAssetFetcher() {
     // Process each message with pending assets
     messagesWithPendingAssets.forEach(message => {
       const pendingAssetIds = message.metadata?.pendingAssetIds || [];
+      
+      // Mark this message as being processed
+      processedMessagesRef.current.add(message.id);
       
       // Fetch the assets
       fetchAssetsByIds(pendingAssetIds, currentProjectId)

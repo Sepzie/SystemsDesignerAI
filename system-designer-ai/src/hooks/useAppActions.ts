@@ -53,7 +53,10 @@ export function useAppActions() {
         try {
           dispatch({ type: 'LOAD_MESSAGES_START', payload: { conversationId } });
           const conversation = state.conversations.get(conversationId);
-          if (!conversation) return;
+          if (!conversation) {
+            console.warn(`[APP ACTIONS] Conversation not found: ${conversationId}`);
+            return;
+          }
           const response = await getMessages(conversation.project_id, conversationId);
           console.log(`[APP ACTIONS] Successfully loaded messages for conversation: ${conversationId}`);
           dispatch({
