@@ -41,6 +41,14 @@ export function useAssetFetcher() {
           const validAssets = assets.filter(asset => asset !== null);
           console.log(`[useAssetFetcher] Successfully processed ${validAssets.length} assets for message ${message.id}`);
           
+          // Update the global assets state
+          validAssets.forEach(asset => {
+            dispatch({
+              type: 'UPDATE_ASSET_SUCCESS',
+              payload: { asset }
+            });
+          });
+          
           // Update the message with the fetched assets
           dispatch({
             type: 'UPDATE_MESSAGE_ASSETS',
