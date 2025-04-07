@@ -8,13 +8,13 @@ src/
 │   │   │   │   └── route.ts
 │   │   │   └── signout
 │   │   │       └── route.ts
-│   │   ├── diagrams
-
 │   │   ├── export
 
 │   │   └── projects
 │   │       ├── route.ts
 │   │       └── [projectId]
+│   │           ├── asset-references
+
 │   │           ├── assets
 │   │           │   ├── route.ts
 │   │           │   └── [assetId]
@@ -27,7 +27,9 @@ src/
 │   │           │       ├── messages
 │   │           │       │   └── route.ts
 │   │           │       ├── route.ts
-│   │           │       └── stream
+│   │           │       ├── stream
+│   │           │       │   └── route.ts
+│   │           │       └── title
 │   │           │           └── route.ts
 │   │           └── route.ts
 │   ├── dashboard
@@ -65,6 +67,7 @@ src/
 │   │   │   └── AssetViewer.tsx
 │   │   ├── chat
 │   │   │   ├── ChatInterface.tsx
+│   │   │   ├── ConversationList.tsx
 │   │   │   ├── MessageInput.tsx
 │   │   │   ├── MessageItem.tsx
 │   │   │   └── MessageList.tsx
@@ -75,12 +78,19 @@ src/
 │       ├── Card.tsx
 │       └── Input.tsx
 ├── contexts
-│   └── ChatContext.tsx
+│   └── AppContext.tsx
+├── hooks
+│   ├── useAppActions.ts
+│   ├── useAppState.ts
+│   └── useAssetFetcher.ts
 ├── lib
 │   ├── api-client.ts
 │   ├── api-utils.ts
 │   ├── asset
-│   │   └── asset-service.ts
+│   │   ├── asset-id-processor.client.ts
+│   │   ├── asset-reference-processor.client.ts
+│   │   ├── asset-service.client.ts
+│   │   └── asset-service.server.ts
 │   ├── error-handler.ts
 │   ├── langchain
 │   │   ├── api-mocks.ts
@@ -101,8 +111,10 @@ src/
 
 ├── types
 │   ├── api.ts
+│   ├── app.ts
 │   ├── asset.ts
 │   ├── chat.ts
+│   ├── conversation.ts
 │   ├── langchain.ts
 │   ├── project.ts
 │   └── supabase.ts
