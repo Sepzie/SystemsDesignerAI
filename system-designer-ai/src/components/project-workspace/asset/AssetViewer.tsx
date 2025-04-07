@@ -34,16 +34,14 @@ export function AssetViewer({ asset, onAssetUpdate }: AssetViewerProps) {
         // Clear previous content
         mermaidRef.current.innerHTML = '';
         
-        // Ensure the content starts with a graph definition
-        let diagramContent = asset.content.trim();
-        if (!diagramContent.startsWith('graph') && !diagramContent.startsWith('flowchart')) {
-          diagramContent = `graph TD\n${diagramContent}`;
-        }
+        // Get the raw content
+        const rawContent = asset.content.trim();
         
-        // Add mermaid class to enable syntax highlighting
-        const wrappedContent = `\`\`\`mermaid\n${diagramContent}\n\`\`\``;
+        // Create a unique ID for this diagram
+        const diagramId = `mermaid-diagram-${Date.now()}`;
         
-        mermaid.render('mermaid-diagram', wrappedContent)
+        // Render the diagram directly without wrapping in code blocks
+        mermaid.render(diagramId, rawContent)
           .then(({ svg }) => {
             if (mermaidRef.current) {
               mermaidRef.current.innerHTML = svg;
@@ -52,11 +50,11 @@ export function AssetViewer({ asset, onAssetUpdate }: AssetViewerProps) {
           .catch((error) => {
             console.error('Mermaid rendering error:', error);
             setMermaidError(error.message);
-            // Fallback to showing raw content with syntax highlighting
+            // Fallback to showing raw content
             if (mermaidRef.current) {
               mermaidRef.current.innerHTML = `
                 <div class="text-red-500 mb-4">Error rendering diagram: ${error.message}</div>
-                <pre class="bg-gray-50 p-4 rounded-lg overflow-auto"><code class="language-mermaid">${diagramContent}</code></pre>
+                <pre class="bg-gray-50 p-4 rounded-lg overflow-auto"><code>${rawContent}</code></pre>
               `;
             }
           });
