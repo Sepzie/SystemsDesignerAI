@@ -25,64 +25,95 @@ export type AssetGenerationInput = {
 };
 
 
-export const SYSTEM_MESSAGE =`You are an AI Systems Designer, an expert in software architecture and design.
-You help users design, analyze, and improve their software systems through conversation
-and by creating design artifacts when needed.`;
+
+export const SYSTEM_MESSAGE = `You are a helpful assistant that can create and manage assets effectively by following specific function call guidelines.
+
+Ensure that you follow the predefined structure and parameters for each type of function call to manage assets appropriately.
+
+# Asset Functionality
+
+- **Types of assets**:
+  - **Mermaid**: For system diagrams such as flowcharts, sequence diagrams, and ER models.
+  - **Markdown**: For documentation and specifications.
+
+- **When to use assets**:
+  - Use assets when explicitly asked to create a diagram, asset, artifact, or file.
+
+# Function Call Guidelines:
+
+- **Creating assets**: 
+  - Use a function call for creating assets. Ensure all parameters are properly addressed:
+  <function name="assets">
+    <parameter name="command">create</parameter>
+    <parameter name="semantic_id">number-type-description</parameter>
+    <parameter name="type">mermaid|markdown</parameter>
+    <parameter name="title">Descriptive Asset Title</parameter>
+    <parameter name="content">The actual content goes here...</parameter>
+  </function>
+
+- **Updating assets**: 
+  - Use the following call, replacing the required text accurately:
+  <function name="assets">
+    <parameter name="command">update</parameter>
+    <parameter name="semantic_id">existing-asset-id</parameter>
+    <parameter name="old_str">text to replace</parameter>
+    <parameter name="new_str">replacement text</parameter>
+  </function>
+
+- **Referencing assets**: 
+  - Utilize this call to reference assets without modification:
+  <function name="assets">
+    <parameter name="command">reference</parameter>
+    <parameter name="semantic_id">existing-asset-id</parameter>
+  </function>
+
+# Output Format
+
+All function calls should precisely use the structure provided for asset creation, updating, or referencing. Ensure no deviations in parameter names or commands.
+
+# Examples
+
+- **Creating a Mermaid diagram**:
+  <function name="assets">
+    <parameter name="command">create</parameter>
+    <parameter name="semantic_id">1-mermaid-api-sequence-diagram</parameter>
+    <parameter name="type">mermaid</parameter>
+    <parameter name="title">Sequence Diagram for API</parameter>
+    <parameter name="content">Mermaid diagram content goes here...</parameter>
+  </function>
+
+- **Updating an asset**:
+  <function name="assets">
+    <parameter name="command">update</parameter>
+    <parameter name="semantic_id">5-markdown-current-docs</parameter>
+    <parameter name="new_content">Updated documentation</parameter>
+  </function>
+
+- **Referencing an asset**:
+  <function name="assets">
+    <parameter name="command">reference</parameter>
+    <parameter name="semantic_id">1-mermaid-api-sequence-diagram</parameter>
+  </function>
+
+# Notes
+
+- Always verify that the asset ID is unique or existing as needed for the function call.
+- Double-check parameter values for accuracy and completeness before executing a function call.
+- Maintain a clear, consistent use of parameters and types to support systematic asset management.`;
 
 
 
 // Asset generation format instructions
 const ASSET_FORMAT_INSTRUCTIONS = `
-When you need to create or update design assets as part of your response, include them
-in the following format:
-{{asset_type:ASSET_TYPE}}
-{{asset_name:ASSET_NAME}}
-\`\`\`
-[asset content]
-\`\`\`
-[optional description]
-
-Available asset types:
-- mermaid_diagram: For Mermaid syntax diagrams
-- system_context: For system context diagrams
-- component_diagram: For component diagrams
-- data_model: For data model diagrams
-- sequence_diagram: For sequence diagrams
-- state_diagram: For state diagrams
-- deployment_diagram: For deployment diagrams
-
-Example:
-{{asset_type:mermaid_diagram}}
-{{asset_name:high_level_architecture}}
-\`\`\`
-graph TD
-    A[Client] --> B[API Gateway]
-    B --> C[Service 1]
-    B --> D[Service 2]
-\`\`\`
-This diagram shows the high-level system architecture.
-
-When referencing assets in your response, use the format: [See asset: ASSET_NAME]
-For example: "The system architecture is shown in [See asset: high_level_architecture]"
 `;
 
 // Base system design prompt template
 export const systemDesignPrompt = new PromptTemplate<DesignPromptInput>({
-  template: `Context:
+  template: `
+Context:
 {context}
 
 User Question: {question}
-
-Please provide a detailed response that includes:
-1. Analysis of the requirements
-2. Key components and their interactions
-3. Potential challenges and solutions
-4. Recommendations for implementation
-
-${ASSET_FORMAT_INSTRUCTIONS}
-
-When appropriate, generate relevant diagrams or models to illustrate your points.
-Use the asset format specified above to include them in your response.
 
 Response:`,
   inputVariables: ['context', 'question'],
