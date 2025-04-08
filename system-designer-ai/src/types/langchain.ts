@@ -20,9 +20,12 @@ export interface MermaidValidationResult {
   warnings?: string[];
 }
 export interface ExtractedAsset {
+  semantic_id: string;
   type: AssetType;
-  name: string;
+  title: string;
   content: string;
-  description?: string;
+  command: 'create' | 'update' | 'reference';
+  old_str?: string;
+  new_str?: string;
 }
 

@@ -17,6 +17,7 @@ DROP POLICY IF EXISTS "Users can manage (CRUD) assets in their projects" ON asse
 -- Drop indexes
 DROP INDEX IF EXISTS idx_asset_versions_asset_id;
 DROP INDEX IF EXISTS idx_assets_project_id;
+DROP INDEX IF EXISTS idx_assets_project_semantic_id;
 
 -- Drop tables (in correct order due to foreign key constraints)
 DROP TABLE IF EXISTS asset_versions;

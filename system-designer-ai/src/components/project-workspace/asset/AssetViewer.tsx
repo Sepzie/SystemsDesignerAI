@@ -28,7 +28,7 @@ export function AssetViewer({ asset, onAssetUpdate }: AssetViewerProps) {
   }, []);
 
   useEffect(() => {
-    if (asset?.type === 'mermaid_diagram' && mermaidRef.current) {
+    if (asset?.type === 'mermaid' && mermaidRef.current) {
       setMermaidError(null);
       try {
         // Clear previous content
@@ -75,7 +75,7 @@ export function AssetViewer({ asset, onAssetUpdate }: AssetViewerProps) {
 
   const renderAssetContent = () => {
     switch (asset.type) {
-      case 'mermaid_diagram':
+      case 'mermaid':
         return (
           <div className="flex-1 overflow-auto p-4">
             <div ref={mermaidRef} className="mermaid-diagram" />

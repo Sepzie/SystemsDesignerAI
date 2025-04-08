@@ -3,8 +3,9 @@
 CREATE TABLE assets (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
     project_id uuid NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+    semantic_id text NOT NULL,
     name text NOT NULL,
-    type text NOT NULL CHECK (type IN ('mermaid_diagram', 'project_description', 'roadmap', 'tech_doc', 'prompt')),
+    type text NOT NULL CHECK (type IN ('mermaid', 'markdown')),
     content text NOT NULL,
     metadata jsonb DEFAULT '{}'::jsonb,
     created_at timestamptz DEFAULT now(),
@@ -13,6 +14,11 @@ CREATE TABLE assets (
 
 -- Create index on project_id for faster joins and lookups
 CREATE INDEX idx_assets_project_id ON assets(project_id);
+
+-- Create a unique constraint for semantic_id within each project
+CREATE UNIQUE INDEX idx_assets_project_semantic_id 
+ON assets(project_id, semantic_id) 
+WHERE semantic_id IS NOT NULL;
 
 -- Create asset_versions table
 CREATE TABLE asset_versions (
