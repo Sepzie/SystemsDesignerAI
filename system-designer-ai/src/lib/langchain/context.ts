@@ -23,7 +23,12 @@ export async function getConversationHistory(
     return [];
   }
 
-  return messages || [];
+  // Only include completed messages
+  const filteredMessages = (messages || []).filter(
+    msg => msg.metadata?.status === 'completed'
+  );
+
+  return filteredMessages;
 }
 
 /**
@@ -50,9 +55,10 @@ export async function getProjectDetails(projectId: string) {
  * Formats messages into a context string for the AI
  */
 export function formatMessageContext(messages: Message[]): string {
-  return messages
+  const formattedContext = messages
     .map(msg => `${msg.role}: ${msg.content}`)
     .join('\n');
+    return formattedContext;
 }
 
 /**

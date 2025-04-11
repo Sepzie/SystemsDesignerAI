@@ -104,20 +104,21 @@ class LangChainClient {
     console.log('Context Length:', context.length);
     console.log('Message Length:', message.length);
     console.log('Total Prompt Length:', formattedPrompt.length);
+    console.log('Context:', context);
     console.log('========================\n');
 
 
-    const response = MOCK_LLM_RESPONSE_MARKDOWN_WITH_DIAGRAM;
-    // await this.model.invoke([
-    //   {
-    //     role: 'system',
-    //     content: SYSTEM_MESSAGE,
-    //   },
-    //   {
-    //     role: 'user',
-    //     content: formattedPrompt,
-    //   },
-    // ]);
+    // const response = MOCK_LLM_RESPONSE_MARKDOWN_WITH_DIAGRAM;
+    const response = await this.model.invoke([
+      {
+        role: 'system',
+        content: SYSTEM_MESSAGE,
+      },
+      {
+        role: 'user',
+        content: formattedPrompt,
+      },
+    ]);
 
     // Get the last message's content and ensure it's a string
     const content = typeof response.content === 'string' 
