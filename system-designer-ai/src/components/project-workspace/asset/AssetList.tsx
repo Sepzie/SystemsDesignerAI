@@ -24,24 +24,16 @@ export function AssetList({ assets, selectedAssetId, onAssetSelect }: AssetListP
 
   const getAssetIcon = (type: AssetType) => {
     switch (type) {
-      case 'mermaid_diagram':
+      case 'mermaid':
         return '📊';
-      case 'data_model':
-        return '🗄️';
-      case 'component_diagram':
-        return '🔧';
-      case 'sequence_diagram':
-        return '⏱️';
-      case 'state_diagram':
-        return '🔄';
-      case 'deployment_diagram':
-        return '🚀';
-      case 'system_context':
-        return '🌐';
+      case 'markdown':
+        return '📝';
       default:
         return '📄';
     }
   };
+
+  const availableAssetTypes: AssetType[] = ['mermaid', 'markdown'];
 
   return (
     <div className="flex flex-col h-full">
@@ -56,7 +48,7 @@ export function AssetList({ assets, selectedAssetId, onAssetSelect }: AssetListP
             >
               All
             </button>
-            {(['mermaid_diagram', 'data_model', 'component_diagram', 'sequence_diagram', 'state_diagram', 'deployment_diagram', 'system_context'] as AssetType[]).map((type) => (
+            {availableAssetTypes.map((type) => (
               <button
                 key={type}
                 onClick={() => setFilterType(type)}
@@ -64,7 +56,7 @@ export function AssetList({ assets, selectedAssetId, onAssetSelect }: AssetListP
                   filterType === type ? 'bg-blue-100 text-blue-700' : 'bg-gray-100'
                 }`}
               >
-                {getAssetIcon(type)}
+                {getAssetIcon(type)} {type.charAt(0).toUpperCase() + type.slice(1)}
               </button>
             ))}
           </div>

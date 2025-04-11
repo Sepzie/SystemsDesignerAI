@@ -86,7 +86,7 @@ export function AssetViewer({ asset, onAssetUpdate }: AssetViewerProps) {
             )}
           </div>
         );
-      case 'system_context':
+      case 'markdown':
         return (
           <div className="p-4">
             <pre className="whitespace-pre-wrap">{asset.content}</pre>
