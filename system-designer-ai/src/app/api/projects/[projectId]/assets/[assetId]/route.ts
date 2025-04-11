@@ -9,7 +9,14 @@ export async function GET(
 ) {
   try {
     const { projectId, assetId } = await params;
-    const asset = await assetService.getAssetById(assetId);
+    
+    // Try to get the asset by semantic ID first
+    let asset = await assetService.getAssetBySemanticId(projectId, assetId);
+    
+    // If not found by semantic ID, try by UUID
+    if (!asset) {
+      asset = await assetService.getAssetById(assetId);
+    }
     
     if (!asset) {
       return NextResponse.json(

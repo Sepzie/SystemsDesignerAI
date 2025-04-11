@@ -8,7 +8,7 @@ import { getAsset } from '@/lib/api-client';
  * @returns Array of asset IDs
  */
 export function extractAssetIds(content: string, messageId: string): string[] {
-  const assetReferenceRegex = /\[See asset: ([^\]]+)\]\(([a-f0-9-]+)\)/g;
+  const assetReferenceRegex = /\[See asset: ([^\]]+)\]\(([a-zA-Z0-9-]+)\)/g;
   const assetIds: string[] = [];
   let match;
 

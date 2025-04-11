@@ -80,6 +80,8 @@ class LangChainClient {
     const content = typeof response.content === 'string' 
       ? response.content 
       : JSON.stringify(response.content);
+
+    console.log('--- AI Response ---:', content);
     
     // Process the response to extract assets and clean text
     const { assets, cleanedText, assetIds } = await processAIResponseAssets(
