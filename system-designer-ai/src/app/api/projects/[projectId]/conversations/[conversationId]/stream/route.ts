@@ -18,9 +18,9 @@ export async function GET(
     
     // Get messageId from query parameters
     const url = new URL(request.url);
-    const userMessageId = url.searchParams.get('messageId');
+    const messageId = url.searchParams.get('messageId');
 
-    if (!userMessageId) {
+    if (!messageId) {
       return NextResponse.json(
         { error: { message: 'Message ID is required' } },
         { status: 400 }
@@ -28,19 +28,21 @@ export async function GET(
     }
 
     // Validate message exists and belongs to conversation
-    const { data: userMessage, error: messageError } = await supabase
+    const { data: message, error: messageError } = await supabase
       .from('messages')
       .select('*')
-      .eq('id', userMessageId)
+      .eq('id', messageId)
       .eq('conversation_id', conversationId)
       .single();
 
-    if (messageError || !userMessage) {
+    if (messageError || !message) {
       return NextResponse.json(
         { error: { message: 'Message not found' } },
         { status: 404 }
       );
     }
+
+    console.log('--- User Message ---:', message);
 
     // Set up SSE headers
     const encoder = new TextEncoder();
@@ -48,7 +50,7 @@ export async function GET(
       async start(controller) {
         try {
           console.log('\n=== Starting AI Response Generation ===');
-          console.log('Message ID:', userMessageId);
+          console.log('Message ID:', messageId);
           console.log('Conversation ID:', conversationId);
           console.log('Project ID:', projectId);
 
@@ -61,12 +63,50 @@ export async function GET(
                 started_at: new Date().toISOString(),
               },
             })
-            .eq('id', userMessageId);
+            .eq('id', messageId);
+            
+          // First, let's find the user message that needs updating
+          const { data: userMessages, error: findError } = await supabase
+            .from('messages')
+            .select('*')
+            .eq('conversation_id', conversationId)
+            .eq('role', 'user')
+            .order('created_at', { ascending: false })
+            .limit(1);
+
+          if (findError) {
+            console.error('Error finding user message:', findError);
+          } else {
+            console.log('Found user messages:', userMessages);
+            
+            if (userMessages && userMessages.length > 0) {
+              const userMessage = userMessages[0];
+              console.log('Updating user message:', userMessage.id);
+              
+              // Update the specific user message
+              const { error: updateError } = await supabase
+                .from('messages')
+                .update({
+                  metadata: {
+                    ...userMessage.metadata,
+                    status: 'completed',
+                    completed_at: new Date().toISOString(),
+                  },
+                })
+                .eq('id', userMessage.id);
+
+              if (updateError) {
+                console.error('Error updating user message:', updateError);
+              } else {
+                console.log('Successfully updated user message');
+              }
+            }
+          }
 
           // Generate response using LangChain
           console.log('Generating AI response...');
           const response = await langChainClient.respondToUserMessage(
-            userMessage.content,
+            message.content,
             'design', // Default to design type
             projectId,
             conversationId
@@ -90,7 +130,7 @@ export async function GET(
                 completed_at: new Date().toISOString(),
               },
             })
-            .eq('id', userMessageId);
+            .eq('id', messageId);
 
           if (updateError) {
             console.error('Failed to update message in database:', updateError);
@@ -122,7 +162,7 @@ export async function GET(
                 completed_at: new Date().toISOString(),
               },
             })
-            .eq('id', userMessageId);
+            .eq('id', messageId);
 
           // Send an error event
           controller.enqueue(
