@@ -22,7 +22,7 @@ async function validateAsset(asset: ExtractedAsset): Promise<boolean> {
     const validationResult = await validateMermaidDiagram(asset.content);
     if (!validationResult.isValid) {
       console.warn(`Invalid Mermaid diagram: ${validationResult.errors?.join(', ')}`);
-      asset.content = `graph TD\n    A[Error] -->|Invalid Diagram| B[Please try again]`;
+      // asset.content = `graph TD\n    A[Error] -->|Invalid Diagram| B[Please try again]`;
       return true;
     }
   }
@@ -110,9 +110,10 @@ function isValidAssetType(type: string): type is AssetType {
  */
 function replaceAssetBlocks(text: string, assetMap: Map<string, string>): string {
   return text.replace(ASSET_FUNCTION_PATTERN, (match, command, semanticId, type, title) => {
-    const assetId = assetMap.get(semanticId.trim());
+    const trimmedSemanticId = semanticId.trim();
+    const assetId = assetMap.get(trimmedSemanticId);
     // If the asset is not found in the map (e.g., it was invalid or failed processing), keep the original block
-    return assetId ? `[See asset: ${title}](${assetId})` : match;
+    return assetId ? `[See asset: ${title}](${semanticId})` : match;
   }).trim();
 }
 
