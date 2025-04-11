@@ -42,8 +42,6 @@ export async function GET(
       );
     }
 
-    console.log('--- User Message ---:', message);
-
     // Set up SSE headers
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
@@ -77,11 +75,9 @@ export async function GET(
           if (findError) {
             console.error('Error finding user message:', findError);
           } else {
-            console.log('Found user messages:', userMessages);
             
             if (userMessages && userMessages.length > 0) {
               const userMessage = userMessages[0];
-              console.log('Updating user message:', userMessage.id);
               
               // Update the specific user message
               const { error: updateError } = await supabase
