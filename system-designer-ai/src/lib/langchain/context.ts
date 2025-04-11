@@ -24,11 +24,13 @@ export async function getConversationHistory(
   }
 
   // Only include completed messages
+  
   const filteredMessages = (messages || []).filter(
-    msg => msg.metadata?.status === 'completed'
+    msg => (msg.metadata?.status === 'completed')
   );
 
-  return filteredMessages;
+  // Remove the latest message as it is the user question
+  return filteredMessages.slice(0, -1);
 }
 
 /**

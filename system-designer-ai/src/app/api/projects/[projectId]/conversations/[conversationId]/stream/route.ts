@@ -93,17 +93,14 @@ export async function GET(
 
               if (updateError) {
                 console.error('Error updating user message:', updateError);
-              } else {
-                console.log('Successfully updated user message');
-              }
+              } 
             }
           }
 
           // Generate response using LangChain
           console.log('Generating AI response...');
           const response = await langChainClient.respondToUserMessage(
-            message.content,
-            'design', // Default to design type
+            userMessages && userMessages.length > 0 ? userMessages[0].content : '',
             projectId,
             conversationId
           );
