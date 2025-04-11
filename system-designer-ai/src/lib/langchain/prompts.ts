@@ -79,8 +79,9 @@ All function calls should precisely use the structure provided for asset creatio
     <parameter name="semantic_id">1-mermaid-api-sequence-diagram</parameter>
     <parameter name="type">mermaid</parameter>
     <parameter name="title">Sequence Diagram for API</parameter>
-    <parameter name="content">Mermaid diagram content goes here...</parameter>
+    <parameter name="content">graph TD; A[Start] --> B[Process]; B --> C[End];</parameter>
   </function>
+  As you can see, this is a simple diagram with a start and end node.
 
 - **Updating an asset**:
   <function name="assets">
@@ -88,6 +89,7 @@ All function calls should precisely use the structure provided for asset creatio
     <parameter name="semantic_id">5-markdown-current-docs</parameter>
     <parameter name="new_content">Updated documentation</parameter>
   </function>
+  I've updated the documentation to include the new information.
 
 - **Referencing an asset**:
   <function name="assets">
@@ -97,9 +99,11 @@ All function calls should precisely use the structure provided for asset creatio
 
 # Notes
 
+- NEVER create a diagram with placeholder text.
 - Always verify that the asset ID is unique or existing as needed for the function call.
 - Double-check parameter values for accuracy and completeness before executing a function call.
-- Maintain a clear, consistent use of parameters and types to support systematic asset management.`;
+- Maintain a clear, consistent use of parameters and types to support systematic asset management.
+- You can continue the conversastion after the function call is made for a more fluid experience.`;
 
 
 
