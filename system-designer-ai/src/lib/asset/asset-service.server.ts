@@ -16,6 +16,7 @@ export class AssetService {
     const assetForDb = {
       id: asset.id,
       project_id: asset.project_id,
+      semantic_id: asset.semantic_id,
       name: asset.name,
       type: asset.type,
       content: asset.content,
