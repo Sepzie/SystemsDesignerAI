@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, useReducer, useCallback, ReactNode } from 'react';
 import { AppState, AppAction, initialState } from '../types/app';
-import { extractAssetReferences, fetchReferencedAssets } from '@/lib/asset/asset-reference-processor.client';
 import { extractAssetIds, fetchAssetsByIds } from '@/lib/asset/asset-service.client';
 import { Asset } from '@/types/base-types';
 import { useAssetFetcher } from '@/hooks/useAssetFetcher';

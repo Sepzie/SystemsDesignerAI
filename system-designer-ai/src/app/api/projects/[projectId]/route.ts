@@ -120,6 +120,7 @@ export async function GET(
       assets: assets.map(asset => ({
         id: asset.id,
         project_id: asset.project_id,
+        semantic_id: asset.semantic_id,
         name: asset.name,
         type: asset.type as AssetType,
         content: asset.content,
