@@ -1,5 +1,6 @@
 import { AssetReference as AssetReferenceType } from "@/types/client-types";
 import { Asset } from '@/types/base-types';
+import { AssetType } from '@/types/base-types';
 
 interface AssetReferenceProps {
   reference: AssetReferenceType;
@@ -8,22 +9,12 @@ interface AssetReferenceProps {
 }
 
 export function AssetReference({ reference, asset, onClick }: AssetReferenceProps) {
-  const getAssetIcon = (type: string) => {
+  const getAssetIcon = (type: AssetType) => {
     switch (type) {
-      case 'mermaid_diagram':
+      case 'mermaid':
         return '📊';
-      case 'data_model':
-        return '🗄️';
-      case 'component_diagram':
-        return '🔧';
-      case 'sequence_diagram':
-        return '⏱️';
-      case 'state_diagram':
-        return '🔄';
-      case 'deployment_diagram':
-        return '🚀';
-      case 'system_context':
-        return '🌐';
+      case 'markdown':
+        return '📝';
       default:
         return '📄';
     }

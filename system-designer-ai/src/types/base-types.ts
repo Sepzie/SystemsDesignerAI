@@ -36,16 +36,19 @@ export interface AssetVersion {
   content: string;
   created_by_message_id: string;
   created_at: Date;
+  old_content?: string;
 }
 export interface Asset {
   id: string;
   project_id: string;
+  semantic_id: string;
   name: string;
   type: AssetType;
   content: string;
   metadata: Json;
   created_at: string;
   updated_at: string;
+  version?: number;
 }
 export interface Project {
   id: string;
@@ -57,11 +60,5 @@ export interface Project {
   updated_at: string;
   progress: number;
 }
-export type AssetType = 'mermaid_diagram' |
-  'system_context' |
-  'component_diagram' |
-  'data_model' |
-  'sequence_diagram' |
-  'state_diagram' |
-  'deployment_diagram';
+export type AssetType = 'mermaid' | 'markdown';
 

@@ -2,11 +2,8 @@ import { ChatOpenAI } from '@langchain/openai';
 import { PromptTemplate } from '@langchain/core/prompts';
 import { config } from './config';
 import { 
-  getPromptTemplate,
-  DesignPromptInput,
-  ReviewPromptInput,
-  SelectionPromptInput,
-  AssetGenerationInput
+  systemDesignPrompt,
+  DesignPromptInput
 } from './prompts';
 import { AssetType } from "@/types/base-types";
 import { processAIResponse as processAIResponseAssets } from './asset-extraction';
@@ -40,14 +37,10 @@ class LangChainClient {
   }
 
   async respondToUserMessage(
-    message: string,
-    type: 'design' | 'review' | 'selection' | 'asset' = 'design',
+    userMessage: string,
     projectId: string,
     conversationId: string,
-    assetTypes?: AssetType[]
   ): Promise<Message> {
-    const prompt = getPromptTemplate(type);
-
     // Build conversation context
     console.log('Building conversation context...');
     const conversationContext = await buildConversationContext(
@@ -58,71 +51,37 @@ class LangChainClient {
     // Format the context for the AI
     const context = formatCompleteContext(conversationContext);
     
-    // Format the prompt based on the type
-    let formattedPrompt: string;
-    switch (type) {
-      case 'design': {
-        const designPrompt = prompt as PromptTemplate<DesignPromptInput>;
-        formattedPrompt = await designPrompt.format({
-          context,
-          question: message,
-        });
-        break;
-      }
-      case 'review': {
-        const reviewPrompt = prompt as PromptTemplate<ReviewPromptInput>;
-        formattedPrompt = await reviewPrompt.format({
-          architecture: context,
-          reviewRequest: message,
-        });
-        break;
-      }
-      case 'selection': {
-        const selectionPrompt = prompt as PromptTemplate<SelectionPromptInput>;
-        formattedPrompt = await selectionPrompt.format({
-          requirements: message,
-          constraints: context,
-        });
-        break;
-      }
-      case 'asset': {
-        const assetPrompt = prompt as PromptTemplate<AssetGenerationInput>;
-        formattedPrompt = await assetPrompt.format({
-          context,
-          question: message,
-          assetTypes: assetTypes?.join(', ') || 'all',
-        });
-        break;
-      }
-      default:
-        throw new Error(`Unsupported prompt type: ${type}`);
-    }
+    // Format the prompt
+    const formattedPrompt = await systemDesignPrompt.format({
+      context,
+      question: userMessage, // The question is already included in the conversation context
+    });
 
     // Log the final prompt before sending to OpenAI
     console.log('\n=== AI Prompt Details ===');
-    console.log('Type:', type);
     console.log('Context Length:', context.length);
-    console.log('Message Length:', message.length);
     console.log('Total Prompt Length:', formattedPrompt.length);
+    console.log('Prompt:', formattedPrompt);
     console.log('========================\n');
 
-
-    const response = MOCK_LLM_RESPONSE_MARKDOWN_WITH_DIAGRAM;
-    // await this.model.invoke([
-    //   {
-    //     role: 'system',
-    //     content: SYSTEM_MESSAGE,
-    //   },
-    //   {
-    //     role: 'user',
-    //     content: formattedPrompt,
-    //   },
-    // ]);
+    // const response = MOCK_LLM_RESPONSE_MARKDOWN_WITH_DIAGRAM;
+    const response = await this.model.invoke([
+      {
+        role: 'system',
+        content: SYSTEM_MESSAGE,
+      },
+      {
+        role: 'user',
+        content: formattedPrompt,
+      },
+    ]);
 
     // Get the last message's content and ensure it's a string
     const content = typeof response.content === 'string' 
       ? response.content 
       : JSON.stringify(response.content);
+
+    console.log('--- AI Response ---:', content);
     
     // Process the response to extract assets and clean text
     const { assets, cleanedText, assetIds } = await processAIResponseAssets(

@@ -120,6 +120,7 @@ export async function GET(
       assets: assets.map(asset => ({
         id: asset.id,
         project_id: asset.project_id,
+        semantic_id: asset.semantic_id,
         name: asset.name,
         type: asset.type as AssetType,
         content: asset.content,
@@ -142,9 +143,9 @@ export async function GET(
 // PUT: Update a project
 export async function PUT(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
-  const { id } = await params;
+  const { projectId } = await params;
   const supabase = await createClient()
 
   const { data: { user }, error: userError } = await supabase.auth.getUser()
@@ -160,7 +161,7 @@ export async function PUT(
     const { data: projectData, error: projectError } = await supabase
       .from('projects')
       .select('user_id')
-      .eq('id', id)
+      .eq('id', projectId)
       .single()
     
     if (projectError || !projectData) {
@@ -183,7 +184,7 @@ export async function PUT(
         ...updates,
         updated_at: new Date().toISOString() 
       })
-      .eq('id', id)
+      .eq('id', projectId)
       .select()
       .single()
 
@@ -203,9 +204,9 @@ export async function PUT(
 // DELETE: Delete a project
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
-  const { id } = await params;
+  const { projectId } = await params;
   const supabase = await createClient()
 
   const { data: { user }, error: userError } = await supabase.auth.getUser()
@@ -218,7 +219,7 @@ export async function DELETE(
   const { data: projectData, error: projectError } = await supabase
     .from('projects')
     .select('user_id')
-    .eq('id', id)
+    .eq('id', projectId)
     .single()
   
   if (projectError || !projectData) {
@@ -238,7 +239,7 @@ export async function DELETE(
   const { error } = await supabase
     .from('projects')
     .delete()
-    .eq('id', id)
+    .eq('id', projectId)
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })

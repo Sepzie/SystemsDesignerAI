@@ -1,21 +1,132 @@
+"""
+Implementation Tracker - A tool for analyzing and visualizing project structure and dependencies.
+
+This script scans a directory structure, analyzes TypeScript/JavaScript imports, and generates:
+1. A JSON representation of the file structure
+2. A text-based tree visualization of the structure
+3. A dependency graph in JSON format
+4. A DOT file for visualizing the dependency graph
+
+Usage:
+    Basic usage (default settings):
+        python implementation_tracker.py
+
+    Specify a custom root directory:
+        python implementation_tracker.py --root-dir /path/to/your/project
+
+    Customize output files:
+        python implementation_tracker.py --structure-json my_structure.json --structure-txt my_tree.txt --dependency-json my_deps.json --dependency-dot my_graph.dot
+
+    Show help:
+        python implementation_tracker.py --help
+
+Command Line Arguments:
+    --root-dir         Directory to analyze (default: system-designer-ai/src)
+    --structure-json   Output file for JSON structure (default: file_structure.json)
+    --structure-txt    Output file for tree structure (default: file_structure.txt)
+    --dependency-json  Output file for dependency graph (default: dependency_graph.json)
+    --dependency-dot   Output file for DOT graph (default: dependency_graph.dot)
+
+Output Files:
+    - JSON structure: Contains hierarchical representation of the file system
+    - Text tree: Human-readable tree visualization of the file structure
+    - Dependency JSON: Graph representation of file dependencies
+    - DOT file: Graphviz-compatible file for visualizing dependencies
+"""
+
 import os
 import json
 import re
+import argparse
+import logging
 from pathlib import Path
 from typing import Dict, Any, List, Set, Tuple
+import fnmatch
+from datetime import datetime
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler(f'implementation_tracker_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log')
+    ]
+)
 
 class ImplementationTracker:
     def __init__(self, root_dir: str):
         self.root_dir = Path(root_dir)
         self.file_structure = {}
         self.dependency_graph = {}
+        logging.info(f"Initializing ImplementationTracker with root directory: {self.root_dir}")
+        self.ignore_patterns = self._load_gitignore_patterns()
+        logging.info(f"Loaded {len(self.ignore_patterns)} gitignore patterns")
+
+    def _load_gitignore_patterns(self) -> List[str]:
+        """Load and parse .gitignore patterns from the root directory and its subdirectories."""
+        patterns = []
+        start_time = datetime.now()
+        logging.info("Starting to load gitignore patterns...")
+        
+        for root, _, files in os.walk(self.root_dir):
+            if '.gitignore' in files:
+                gitignore_path = Path(root) / '.gitignore'
+                logging.info(f"Found gitignore file at: {gitignore_path}")
+                with open(gitignore_path, 'r', encoding='utf-8') as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith('#'):
+                            rel_path = Path(root).relative_to(self.root_dir)
+                            if rel_path != Path('.'):
+                                pattern = str(rel_path / line)
+                            else:
+                                pattern = line
+                            patterns.append(pattern)
+        
+        duration = (datetime.now() - start_time).total_seconds()
+        logging.info(f"Finished loading gitignore patterns in {duration:.2f} seconds")
+        return patterns
+
+    def _should_ignore(self, path: Path) -> bool:
+        """Check if a path should be ignored based on .gitignore patterns."""
+        rel_path = path.relative_to(self.root_dir)
+        rel_path_str = str(rel_path)
+        
+        for pattern in self.ignore_patterns:
+            # Handle directory patterns (ending with /)
+            if pattern.endswith('/'):
+                dir_pattern = pattern.rstrip('/')
+                # Check if the path is inside the directory
+                if fnmatch.fnmatch(rel_path_str, dir_pattern) or rel_path_str.startswith(dir_pattern + '/'):
+                    return True
+            # Handle regular patterns
+            elif fnmatch.fnmatch(rel_path_str, pattern) or fnmatch.fnmatch(rel_path_str, pattern + '/*'):
+                return True
+        return False
 
     def scan_directory(self, directory: Path) -> Dict[str, Any]:
         """Recursively scan a directory and create a representation of its structure."""
         structure = {}
+        logging.info(f"Scanning directory: {directory}")
+        start_time = datetime.now()
+        items_processed = 0
+        items_ignored = 0
+        
+        # Skip node_modules directories completely
+        if directory.name == 'node_modules':
+            logging.info(f"Skipping node_modules directory: {directory}")
+            return structure
         
         for item in directory.iterdir():
-            if item.name.startswith('.') or item.name.startswith('__'):
+            items_processed += 1
+            if (item.name.startswith('.') or 
+                item.name.startswith('__') or 
+                item.name == 'node_modules' or
+                self._should_ignore(item)):
+                items_ignored += 1
+                if item.name == 'node_modules':
+                    logging.info(f"Skipping node_modules directory: {item}")
                 continue
                 
             if item.is_file():
@@ -30,6 +141,9 @@ class ImplementationTracker:
                     'contents': self.scan_directory(item)
                 }
         
+        duration = (datetime.now() - start_time).total_seconds()
+        logging.info(f"Finished scanning {directory} in {duration:.2f} seconds")
+        logging.info(f"Processed {items_processed} items, ignored {items_ignored} items")
         return structure
 
     def generate_structure(self) -> Dict[str, Any]:
@@ -52,7 +166,21 @@ class ImplementationTracker:
     def generate_tree_representation(self, structure: Dict[str, Any], prefix: str = "", is_last: bool = True) -> str:
         """Generate a tree-like representation of the file structure."""
         tree = []
-        items = list(structure.items())
+        # Separate directories and files
+        dirs = []
+        files = []
+        for name, info in structure.items():
+            if info['type'] == 'directory':
+                dirs.append((name, info))
+            else:
+                files.append((name, info))
+        
+        # Sort directories and files alphabetically
+        dirs.sort(key=lambda x: x[0])
+        files.sort(key=lambda x: x[0])
+        
+        # Combine sorted lists with directories first
+        items = dirs + files
         
         for i, (name, info) in enumerate(items):
             is_last_item = i == len(items) - 1
@@ -159,32 +287,52 @@ class ImplementationTracker:
     def build_dependency_graph(self) -> Dict[str, List[str]]:
         """Build a dependency graph from TypeScript/JavaScript imports."""
         dependency_graph = {}
+        start_time = datetime.now()
+        logging.info("Starting to build dependency graph...")
+        files_processed = 0
         
-        # Find all TypeScript/JavaScript files
         for root, _, files in os.walk(self.root_dir):
+            # Skip node_modules directories and their contents
+            if 'node_modules' in root.split(os.sep):
+                logging.info(f"Skipping node_modules directory: {root}")
+                continue
+                
+            # Skip directories that match gitignore patterns
+            root_path = Path(root)
+            if self._should_ignore(root_path):
+                logging.info(f"Skipping ignored directory: {root}")
+                continue
+                
             for file in files:
                 if file.endswith(('.ts', '.tsx', '.js', '.jsx')):
                     file_path = Path(root) / file
+                    if self._should_ignore(file_path):
+                        logging.info(f"Skipping ignored file: {file_path}")
+                        continue
+                        
                     relative_path = file_path.relative_to(self.root_dir)
+                    logging.info(f"Processing file: {relative_path}")
                     
-                    # Extract imports
                     imports = self.extract_imports(file_path)
-                    
-                    # Resolve import paths
                     resolved_imports = []
                     for imp in imports:
                         resolved_path = self.resolve_import_path(imp, file_path)
                         if resolved_path.exists() and resolved_path.is_file():
                             try:
                                 relative_import = resolved_path.relative_to(self.root_dir)
-                                resolved_imports.append(str(relative_import))
+                                # Skip imports from node_modules and ignored paths
+                                if ('node_modules' not in str(relative_import) and 
+                                    not self._should_ignore(resolved_path)):
+                                    resolved_imports.append(str(relative_import))
                             except ValueError:
-                                # If the resolved path is outside the root directory, skip it
                                 pass
                     
-                    # Add to dependency graph
                     dependency_graph[str(relative_path)] = resolved_imports
+                    files_processed += 1
         
+        duration = (datetime.now() - start_time).total_seconds()
+        logging.info(f"Finished building dependency graph in {duration:.2f} seconds")
+        logging.info(f"Processed {files_processed} files")
         self.dependency_graph = dependency_graph
         return dependency_graph
 
@@ -223,19 +371,42 @@ class ImplementationTracker:
             f.write("\n".join(dot_content))
 
 def main():
-    # Get the project root directory (parent of this script)
-    current_dir = Path(__file__).parent
-    project_root = current_dir.parent
+    parser = argparse.ArgumentParser(description='Track and analyze implementation structure and dependencies.')
+    parser.add_argument('--root-dir', type=str, help='Root directory to analyze (default: system-designer-ai/src)')
+    parser.add_argument('--structure-json', type=str, default='file_structure.json', help='Output file for JSON structure')
+    parser.add_argument('--structure-txt', type=str, default='file_structure.txt', help='Output file for tree structure')
+    parser.add_argument('--dependency-json', type=str, default='dependency_graph.json', help='Output file for dependency graph')
+    parser.add_argument('--dependency-dot', type=str, default='dependency_graph.dot', help='Output file for DOT graph')
     
-    tracker = ImplementationTracker(str(project_root)+ '/system-designer-ai/src')
+    args = parser.parse_args()
+    
+    logging.info("Starting implementation tracker...")
+    start_time = datetime.now()
+    
+    # Get the project root directory
+    if args.root_dir:
+        root_dir = args.root_dir
+    else:
+        current_dir = Path(__file__).parent
+        project_root = current_dir.parent
+        root_dir = str(project_root) + '/system-designer-ai/src'
+    
+    tracker = ImplementationTracker(root_dir)
+    
+    # Generate and save structure
+    logging.info("Generating file structure...")
     tracker.generate_structure()
-    tracker.save_structure()
-    tracker.save_tree_structure()
+    tracker.save_structure(args.structure_json)
+    tracker.save_tree_structure(args.structure_txt)
     
     # Generate and save dependency graph
+    logging.info("Generating dependency graph...")
     tracker.build_dependency_graph()
-    tracker.save_dependency_graph()
-    tracker.generate_dependency_dot()
+    tracker.save_dependency_graph(args.dependency_json)
+    tracker.generate_dependency_dot(args.dependency_dot)
+    
+    duration = (datetime.now() - start_time).total_seconds()
+    logging.info(f"Implementation tracker completed in {duration:.2f} seconds")
 
 if __name__ == '__main__':
     main() 

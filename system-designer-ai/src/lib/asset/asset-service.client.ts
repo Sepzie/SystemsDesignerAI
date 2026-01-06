@@ -8,7 +8,7 @@ import { getAsset } from '@/lib/api-client';
  * @returns Array of asset IDs
  */
 export function extractAssetIds(content: string, messageId: string): string[] {
-  const assetReferenceRegex = /\[See asset: ([^\]]+)\]\(([a-f0-9-]+)\)/g;
+  const assetReferenceRegex = /\[See asset: ([^\]]+)\]\(([^)]+)\)/g;
   const assetIds: string[] = [];
   let match;
 
@@ -49,4 +49,17 @@ export async function fetchAssetsByIds(assetIds: string[], projectId: string): P
   
   console.log(`[ASSET SERVICE] Successfully fetched ${assets.length} assets`);
   return assets;
-} 
+}
+
+export async function fetchAssetsByProject(projectId: string): Promise<Asset[]> {
+  try {
+    const response = await fetch(`/api/projects/${projectId}/assets`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch project assets: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    console.error(`[ASSET SERVICE] Failed to fetch assets for project ${projectId}:`, error);
+    return [];
+  }
+}

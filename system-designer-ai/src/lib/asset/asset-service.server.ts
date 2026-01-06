@@ -16,6 +16,7 @@ export class AssetService {
     const assetForDb = {
       id: asset.id,
       project_id: asset.project_id,
+      semantic_id: asset.semantic_id,
       name: asset.name,
       type: asset.type,
       content: asset.content,
@@ -92,8 +93,8 @@ export class AssetService {
   }
 
   /**
-   * Retrieves an asset by ID
-   * @param assetId The ID of the asset
+   * Retrieves an asset by ID (supports both UUID and semantic ID)
+   * @param assetId The ID of the asset (UUID or semantic ID)
    * @returns The asset
    */
   async getAssetById(assetId: string): Promise<Asset | null> {
@@ -101,7 +102,26 @@ export class AssetService {
     const { data, error } = await supabase
       .from('assets')
       .select('*')
-      .eq('id', assetId)
+      .or(`id.eq.${assetId},semantic_id.eq.${assetId}`)
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  /**
+   * Retrieves an asset by semantic ID
+   * @param projectId The project ID
+   * @param semanticId The semantic ID of the asset
+   * @returns The asset
+   */
+  async getAssetBySemanticId(projectId: string, semanticId: string): Promise<Asset | null> {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('assets')
+      .select('*')
+      .eq('project_id', projectId)
+      .eq('semantic_id', semanticId)
       .single();
 
     if (error) throw error;

@@ -40,18 +40,18 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId }) => {
   return (
     <div className="h-full flex flex-col bg-white">
       {/* Header */}
-      <div className="p-4 border-b bg-white">
-        <div className="flex items-center">
-          <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white text-sm mr-2">
+      <div className="px-5 py-4 border-b border-slate-200 bg-white">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-slate-900 flex items-center justify-center text-white text-sm font-semibold">
             AI
           </div>
           <div className="flex flex-col">
-            <h3 className="text-lg font-semibold">AI System Designer Assistant</h3>
-            <div className="flex items-center space-x-2 mt-1">
+            <h3 className="text-base font-semibold text-slate-900">AI System Designer Assistant</h3>
+            <div className="flex items-center space-x-2 mt-1 text-xs">
               {currentConversation ? (
-                <span className="text-sm text-gray-600">{currentConversation.title}</span>
+                <span className="text-slate-600">{currentConversation.title}</span>
               ) : (
-                <span className="text-sm text-gray-500">No conversation selected</span>
+                <span className="text-slate-500">No conversation selected</span>
               )}
             </div>
           </div>
@@ -81,7 +81,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId }) => {
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-hidden flex flex-col bg-gray-50">
+      <div className="flex-1 overflow-hidden flex flex-col bg-slate-50">
         {isLoadingConversation && messages.length === 0 ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
@@ -95,7 +95,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ projectId }) => {
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t bg-white">
+      <div className="px-5 py-4 border-t border-slate-200 bg-white">
         <MessageInput 
           onSend={handleSendMessage}
           disabled={isWaitingForAI}

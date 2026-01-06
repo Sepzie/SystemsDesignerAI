@@ -23,7 +23,14 @@ export async function getConversationHistory(
     return [];
   }
 
-  return messages || [];
+  // Only include completed messages
+  
+  const filteredMessages = (messages || []).filter(
+    msg => (msg.metadata?.status === 'completed')
+  );
+
+  // Remove the latest message as it is the user question
+  return filteredMessages.slice(0, -1);
 }
 
 /**
@@ -50,9 +57,10 @@ export async function getProjectDetails(projectId: string) {
  * Formats messages into a context string for the AI
  */
 export function formatMessageContext(messages: Message[]): string {
-  return messages
+  const formattedContext = messages
     .map(msg => `${msg.role}: ${msg.content}`)
     .join('\n');
+    return formattedContext;
 }
 
 /**
