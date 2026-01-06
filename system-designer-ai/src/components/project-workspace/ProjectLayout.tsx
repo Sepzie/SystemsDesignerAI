@@ -59,19 +59,28 @@ function ProjectContent({ projectId }: { projectId: string }) {
   }
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="flex flex-col h-screen overflow-hidden bg-slate-50 text-slate-900">
       {/* Header */}
-      <header className="bg-primary text-white p-4 flex-shrink-0">
-        <div className="flex justify-between items-center">
-          <h1 className="text-xl font-semibold">{project?.name || 'AI System Designer'}</h1>
-          <div>{project?.description || 'Loading project...'}</div>
+      <header className="bg-slate-900 text-white px-6 py-4 flex-shrink-0">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+          <div>
+            <h1 className="text-xl font-semibold tracking-tight">
+              {project?.name || 'AI System Designer'}
+            </h1>
+            <p className="text-sm text-slate-300">
+              {project?.description || 'Loading project...'}
+            </p>
+          </div>
+          <div className="text-xs text-slate-300">
+            Workspace
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
       <div className="flex flex-1 overflow-hidden">
         {/* Conversation List Side Panel */}
-        <div className="w-64 border-r flex-shrink-0">
+        <div className="w-64 border-r border-slate-200 bg-white flex-shrink-0">
           <ConversationList
             conversations={conversations}
             activeConversationId={activeConversation?.id || null}
@@ -81,12 +90,12 @@ function ProjectContent({ projectId }: { projectId: string }) {
         </div>
 
         {/* Chat Interface */}
-        <div className="w-1/2 border-r flex flex-col">
+        <div className="w-1/2 border-r border-slate-200 flex flex-col bg-white">
           <ChatInterface projectId={projectId} />
         </div>
 
         {/* Right Side - Asset Viewer and List */}
-        <div className="w-1/2 flex flex-col">
+        <div className="w-1/2 flex flex-col bg-white">
           <div className="flex-1 overflow-hidden">
             <AssetViewer
               asset={selectedAsset}
@@ -97,7 +106,7 @@ function ProjectContent({ projectId }: { projectId: string }) {
               }}
             />
           </div>
-          <div className="h-56 border-t bg-white flex-shrink-0">
+          <div className="h-56 border-t border-slate-200 bg-white flex-shrink-0">
             <AssetList
               assets={assets}
               selectedAssetId={selectedAsset?.id || null}

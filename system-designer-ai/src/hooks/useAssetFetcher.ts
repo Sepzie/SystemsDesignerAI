@@ -16,7 +16,7 @@ export function useAssetFetcher() {
 
     // Get all messages from all conversations
     const allMessages = Array.from(state.messages.values()).flat();
-    
+
     // Find messages with pending assets that haven't been processed yet
     const messagesWithPendingAssets = allMessages.filter(
       message => 
@@ -30,17 +30,17 @@ export function useAssetFetcher() {
     // Process each message with pending assets
     messagesWithPendingAssets.forEach(message => {
       const pendingAssetIds = message.metadata?.pendingAssetIds || [];
-      
+
       // Mark this message as being processed
       processedMessagesRef.current.add(message.id);
-      
+
       // Fetch the assets
       fetchAssetsByIds(pendingAssetIds, currentProjectId)
         .then(assets => {
           // Filter out any failed fetches
           const validAssets = assets.filter(asset => asset !== null);
           console.log(`[useAssetFetcher] Successfully processed ${validAssets.length} assets for message ${message.id}`);
-          
+
           // Update the global assets state
           validAssets.forEach(asset => {
             dispatch({
@@ -48,7 +48,7 @@ export function useAssetFetcher() {
               payload: { asset }
             });
           });
-          
+
           // Update the message with the fetched assets
           dispatch({
             type: 'UPDATE_MESSAGE_ASSETS',
@@ -63,4 +63,4 @@ export function useAssetFetcher() {
         });
     });
   }, [state.messages, state.currentProjectId, dispatch]);
-} 
+}

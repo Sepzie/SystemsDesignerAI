@@ -113,7 +113,7 @@ function replaceAssetBlocks(text: string, assetMap: Map<string, string>): string
     const trimmedSemanticId = semanticId.trim();
     const assetId = assetMap.get(trimmedSemanticId);
     // If the asset is not found in the map (e.g., it was invalid or failed processing), keep the original block
-    return assetId ? `[See asset: ${title}](${semanticId})` : match;
+    return assetId ? `[See asset: ${title}](${assetId})` : match;
   }).trim();
 }
 

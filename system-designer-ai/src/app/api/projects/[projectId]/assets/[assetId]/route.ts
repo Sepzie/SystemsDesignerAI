@@ -75,6 +75,40 @@ export async function PUT(
   }
 }
 
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ projectId: string; assetId: string }> }
+) {
+  try {
+    const { projectId, assetId } = await params;
+    const updates = await request.json();
+
+    const asset = await assetService.getAssetById(assetId);
+    if (!asset) {
+      return NextResponse.json(
+        { error: 'Asset not found' },
+        { status: 404 }
+      );
+    }
+
+    if (asset.project_id !== projectId) {
+      return NextResponse.json(
+        { error: 'Asset not found in project' },
+        { status: 404 }
+      );
+    }
+
+    const updatedAsset = await assetService.updateAsset(assetId, updates);
+    return NextResponse.json(updatedAsset);
+  } catch (error) {
+    console.error('Error updating asset:', error);
+    return NextResponse.json(
+      { error: 'Failed to update asset' },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ projectId: string; assetId: string }> }

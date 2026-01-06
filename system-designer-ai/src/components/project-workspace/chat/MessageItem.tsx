@@ -26,53 +26,46 @@ export function MessageItem({ message, referencedAssets }: MessageItemProps) {
 
     // For assistant messages, process asset references
     return message.content.split('\n').map((line, index) => {
-      // Check if this line contains any asset references
-      const containsAssetReference = referencedAssets.some(asset => 
-        line.includes(`[See asset: ${asset.name}](${asset.semantic_id})`) ||
-        line.includes(`selectAsset(asset.id)`) ||
-        line.includes(`(${asset.semantic_id})`)
-      );
-
-      if (!containsAssetReference) {
-        // If no asset references, just return the line as is
-        return <p key={index} className="text-gray-800 mb-2 last:mb-0">{line}</p>;
-      }
-
-      // Process the line to extract and replace asset references
-      let segments = [];
+      const assetRefRegex = /\[See asset: ([^\]]+)\]\(([^)]+)\)/g;
+      let match;
       let currentIndex = 0;
-      
-      referencedAssets.forEach(asset => {
-        // Use a regex to find asset references
-        const assetRefRegex = new RegExp(`\\[See asset: ([^\\]]+)\\]\\(${asset.semantic_id}\\)`, 'g');
-        let match;
-        
-        while ((match = assetRefRegex.exec(line)) !== null) {
-          // Add text before the match
-          if (match.index > currentIndex) {
-            segments.push(
-              <span key={`text-${currentIndex}`}>
-                {line.substring(currentIndex, match.index)}
-              </span>
-            );
-          }
-          
-          // Add the clickable asset reference
+      const segments: React.ReactNode[] = [];
+
+      while ((match = assetRefRegex.exec(line)) !== null) {
+        const [fullMatch, title, assetToken] = match;
+        const asset = referencedAssets.find(
+          (item) => item.id === assetToken || item.semantic_id === assetToken
+        );
+
+        if (match.index > currentIndex) {
           segments.push(
-            <span 
-              key={`asset-${match.index}`}
+            <span key={`text-${index}-${currentIndex}`}>
+              {line.substring(currentIndex, match.index)}
+            </span>
+          );
+        }
+
+        if (asset) {
+          segments.push(
+            <span
+              key={`asset-${index}-${match.index}`}
               className="inline-flex items-center px-2 py-1 rounded-md bg-blue-100 text-blue-800 text-sm cursor-pointer hover:bg-blue-200"
               onClick={() => selectAsset(asset.id)}
             >
               {asset.name}
             </span>
           );
-          
-          currentIndex = match.index + match[0].length;
+        } else {
+          segments.push(
+            <span key={`asset-missing-${index}-${match.index}`}>
+              {fullMatch}
+            </span>
+          );
         }
-      });
-      
-      // Add any remaining text after the last match
+
+        currentIndex = match.index + fullMatch.length;
+      }
+
       if (currentIndex < line.length) {
         segments.push(
           <span key={`text-end-${index}`}>
@@ -80,12 +73,11 @@ export function MessageItem({ message, referencedAssets }: MessageItemProps) {
           </span>
         );
       }
-      
-      // If no segments were created (no regex matches but contains simple reference), return the whole line
+
       if (segments.length === 0) {
         return <p key={index} className="text-gray-800 mb-2 last:mb-0">{line}</p>;
       }
-      
+
       return <p key={index} className="text-gray-800 mb-2 last:mb-0">{segments}</p>;
     });
   };
@@ -93,13 +85,13 @@ export function MessageItem({ message, referencedAssets }: MessageItemProps) {
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
       <div
-        className={`max-w-[85%] rounded-2xl p-4 ${
-          isUser 
-            ? 'bg-blue-600 text-white shadow-sm' 
-            : 'bg-white text-gray-800 shadow-sm border border-gray-100'
+        className={`max-w-[85%] rounded-2xl px-4 py-3 ${
+          isUser
+            ? 'bg-blue-600 text-white shadow-sm'
+            : 'bg-white text-slate-800 shadow-sm border border-slate-200'
         }`}
       >
-        <div className="prose prose-sm max-w-none">
+        <div className="max-w-none">
           {renderMessageContent()}
         </div>
         
@@ -113,11 +105,11 @@ export function MessageItem({ message, referencedAssets }: MessageItemProps) {
           </div>
         )}
         
-        <div className="mt-2 text-xs text-gray-500 flex items-center justify-end">
+        <div className={`mt-2 text-xs flex items-center justify-end ${isUser ? 'text-white/70' : 'text-slate-500'}`}>
           <span>{new Date(message.created_at).toLocaleTimeString()}</span>
           {isStreaming && (
             <span className="ml-2 flex items-center">
-              <span className="w-1 h-1 bg-gray-400 rounded-full animate-ping mr-1" />
+              <span className={`w-1 h-1 rounded-full animate-ping mr-1 ${isUser ? 'bg-white/70' : 'bg-slate-400'}`} />
               Generating...
             </span>
           )}

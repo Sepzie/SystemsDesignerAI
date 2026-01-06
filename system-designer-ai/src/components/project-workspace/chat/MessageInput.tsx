@@ -49,7 +49,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({ onSend, isLoading, d
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Type your message here..."
-          className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none min-h-[48px] max-h-[150px] text-gray-800 placeholder-gray-400 bg-white shadow-sm"
+          className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none min-h-[48px] max-h-[150px] text-slate-800 placeholder-slate-400 bg-white shadow-sm"
           disabled={isLoading || disabled}
           rows={1}
         />
@@ -61,7 +61,7 @@ export const MessageInput: React.FC<MessageInputProps> = ({ onSend, isLoading, d
           px-6 py-3 rounded-xl text-white font-medium
           ${message.trim() && !isLoading && !disabled
             ? 'bg-blue-600 hover:bg-blue-700 shadow-sm'
-            : 'bg-gray-200 cursor-not-allowed'}
+            : 'bg-slate-200 cursor-not-allowed text-slate-500'}
           min-h-[48px]
           flex items-center justify-center
           transition-all duration-200
