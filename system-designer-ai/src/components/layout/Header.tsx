@@ -11,6 +11,7 @@ interface HeaderProps {
 
 export default function Header({ isLoggedIn, userEmail }: HeaderProps) {
   const router = useRouter()
+  const logoHref = isLoggedIn ? '/dashboard' : '/'
 
   const handleSignOut = async () => {
     try {
@@ -29,7 +30,7 @@ export default function Header({ isLoggedIn, userEmail }: HeaderProps) {
     <header className="bg-[var(--surface)] backdrop-blur border-b border-[var(--border)]">
       <div className="container mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-3">
         <div className="text-xl font-semibold tracking-tight text-[var(--ink)]">
-          <Link href="/">AI System Designer</Link>
+          <Link href={logoHref}>AI System Designer</Link>
         </div>
         <div className="flex items-center space-x-4">
           {isLoggedIn ? (

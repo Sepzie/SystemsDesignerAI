@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import Link from 'next/link';
 import { VersionHistory } from './VersionHistory';
 import { ChatInterface } from './chat/ChatInterface';
 import { ConversationList } from './chat/ConversationList';
@@ -59,10 +60,16 @@ function ProjectContent({ projectId }: { projectId: string }) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[var(--app-bg)] text-[var(--ink)]">
+    <div className="flex h-[100dvh] flex-col overflow-hidden bg-[var(--app-bg)] text-[var(--ink)]">
       <header className="bg-[var(--surface)] backdrop-blur border-b border-[var(--border)] px-6 py-4 flex-shrink-0">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-          <div>
+          <div className="space-y-1">
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center text-xs font-semibold uppercase tracking-[0.3em] text-[var(--accent)] hover:text-[var(--accent-strong)]"
+            >
+              Back to Dashboard
+            </Link>
             <h1 className="text-2xl font-semibold tracking-tight">
               {project?.name || 'AI System Designer'}
             </h1>
