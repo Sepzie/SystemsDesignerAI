@@ -103,10 +103,10 @@ export class AssetService {
       .from('assets')
       .select('*')
       .or(`id.eq.${assetId},semantic_id.eq.${assetId}`)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
-    return data;
+    return data ?? null;
   }
 
   /**
@@ -122,10 +122,10 @@ export class AssetService {
       .select('*')
       .eq('project_id', projectId)
       .eq('semantic_id', semanticId)
-      .single();
+      .maybeSingle();
 
     if (error) throw error;
-    return data;
+    return data ?? null;
   }
 
   /**

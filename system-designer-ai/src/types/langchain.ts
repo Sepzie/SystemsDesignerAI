@@ -7,6 +7,7 @@ import { Project } from "./base-types";
 export interface ConversationContext {
   messages: Message[];
   projectDetails?: Pick<Project, 'name' | 'description' | 'tech_stack'>;
+  assets?: Asset[];
 }
 export interface AssetExtractionResult {
   assets: Asset[];
@@ -28,4 +29,3 @@ export interface ExtractedAsset {
   old_str?: string;
   new_str?: string;
 }
-
