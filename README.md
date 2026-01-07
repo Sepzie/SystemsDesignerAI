@@ -1,98 +1,46 @@
-# AI System Designer 🏗️
+# AI System Designer
 
-> **Design complex software systems with AI assistance**
+Technical summary of a web app that supports AI-assisted system design with project workspaces, chat, and generated assets.
 
-AI System Designer is a revolutionary platform that transforms how developers and architects approach system design. Through intelligent AI conversations, you can create comprehensive system architectures, generate detailed diagrams, and export implementation-ready specifications.
+## Scope
+- Next.js app with a Supabase/Postgres backend
+- AI chat with streaming responses
+- Project-scoped assets (markdown, mermaid)
 
-![AI System Designer](https://img.shields.io/badge/Status-Active%20Development-brightgreen)
-![Next.js](https://img.shields.io/badge/Next.js-15.2.3-black)
-![React](https://img.shields.io/badge/React-19.0.0-blue)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
-![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-orange)
+## Features
+- Project workspaces with chat, asset list, and asset viewer
+- Mermaid diagram rendering and Markdown rendering
+- RAG-style context: project assets included in AI prompts
+- Per-user and global daily rate limits
+- Input token caps and output token caps
+- Alert emails on rate limit hits (Resend)
 
-## 🎯 Vision
+## Skills Demonstrated
+- Next.js App Router, streaming SSE
+- Supabase auth + Postgres schema design
+- LangChain prompt orchestration
+- RAG context assembly
+- Rate limiting and alerting workflows
+- Markdown/Mermaid rendering pipelines
 
-Traditional system design is often a solitary, time-consuming process that requires extensive domain knowledge and experience. AI System Designer democratizes this process by providing an intelligent assistant that can:
+## Tech Stack
+- Next.js 15, React 19, TypeScript, Tailwind
+- Supabase (Postgres, Auth)
+- LangChain + OpenAI
+- Mermaid, React Markdown
+- Cypress E2E
 
-- **Guide you through complex architectural decisions**
-- **Generate visual diagrams from natural language descriptions**
-- **Maintain context across design iterations**
-- **Export specifications ready for implementation**
-
-Whether you're a seasoned architect or a developer tackling your first large-scale system, AI System Designer helps you create robust, well-documented architectures faster than ever before.
-
-## ✨ Key Features
-
-### 🤖 AI-Powered Design Conversations
-- **Intelligent Context Management**: The AI remembers your project context and previous decisions
-- **Natural Language Interface**: Describe your requirements in plain English
-- **Real-time Responses**: Get instant feedback and suggestions as you design
-
-### 📊 Comprehensive Diagram Generation
-- **System Architecture Diagrams**: Visualize component relationships and data flows
-- **API Sequence Diagrams**: Map out request/response patterns
-- **Database Schema Diagrams**: Design entity relationships
-- **Infrastructure Diagrams**: Plan deployment and scaling strategies
-
-### 🏗️ Project Management
-- **Organized Workspaces**: Keep all design artifacts in one place
-- **Version Control**: Track changes to your designs over time
-- **Collaboration Ready**: Share projects with team members
-
-### 📤 Export & Implementation
-- **Multiple Formats**: Export as Mermaid diagrams, Markdown docs, or structured JSON
-- **Implementation Prompts**: Generate detailed prompts for coding agents
-- **API Specifications**: Create OpenAPI/Swagger documentation
-
-## 🚀 Quick Start
-
-1. **Create a Project**: Describe your system requirements
-2. **Chat with AI**: Refine your design through conversation
-3. **Generate Assets**: Create diagrams and documentation
-4. **Export & Implement**: Get ready-to-use specifications
-
-## 🛠️ Technology Stack
-
-- **Frontend**: Next.js 15, React 19, TypeScript, Tailwind CSS
-- **Backend**: Next.js API Routes, LangChain
-- **Database**: PostgreSQL (Supabase)
-- **AI**: OpenAI GPT-4 with custom prompts
-- **Authentication**: Supabase Auth
-- **Testing**: Cypress E2E testing
-
-## 📁 Project Structure
-
+## Repo Structure
 ```
 SystemsDesignerAI/
-├── system-designer-ai/          # Main Next.js application
-├── _design_assets/              # Design documentation and diagrams
-├── _design_assets_meta/         # Implementation guides and prompts
-└── implementation-tracker/      # Development tracking tools
+  system-designer-ai/      # main app
+  _design_assets/          # design docs
+  _design_assets_meta/     # implementation notes
+  implementation-tracker/  # tracking docs
 ```
 
-## 🎥 Demo
+## Setup
+See `system-designer-ai/README.md` for local setup and scripts.
 
-*Coming soon: Video demonstration of the AI System Designer in action*
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
-
-### Development Setup
-
-For detailed setup instructions, see the [Technical README](system-designer-ai/README.md) in the main application directory.
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- Built with [Next.js](https://nextjs.org/) and [React](https://reactjs.org/)
-- AI powered by [OpenAI](https://openai.com/) and [LangChain](https://langchain.com/)
-- Database hosted on [Supabase](https://supabase.com/)
-- Diagrams rendered with [Mermaid](https://mermaid.js.org/)
-
----
-
-**Ready to revolutionize your system design process?** [Get Started](system-designer-ai/README.md#getting-started) 🚀
+## Development
+Developer-focused docs live in `system-designer-ai/README.md`.
