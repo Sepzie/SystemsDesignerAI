@@ -5,8 +5,11 @@ import {
   ApiError,
 } from '@/lib/api-utils';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
 import { langChainClient } from '@/lib/langchain/client';
 import { buildConversationContext, formatCompleteContext } from '@/lib/langchain/context';
+import { estimateTokens, enforceDailyLimits, getRateLimitConfig, logRateLimitHit } from '@/lib/rate-limit';
+import { sendRateLimitAlert } from '@/lib/alerts/email';
 
 export async function GET(
   request: Request,
@@ -14,6 +17,7 @@ export async function GET(
 ) {
   try {
     const supabase = await createClient();
+    const admin = await createAdminClient();
     const { projectId, conversationId } = await context.params;
     
     // Get messageId from query parameters
@@ -51,6 +55,7 @@ export async function GET(
           console.log('Message ID:', messageId);
           console.log('Conversation ID:', conversationId);
           console.log('Project ID:', projectId);
+          const user = await validateUser(supabase);
 
           // Update message status to generating
           await supabase
@@ -79,7 +84,6 @@ export async function GET(
             if (userMessages && userMessages.length > 0) {
               const userMessage = userMessages[0];
               
-              // Update the specific user message
               const { error: updateError } = await supabase
                 .from('messages')
                 .update({
@@ -94,6 +98,107 @@ export async function GET(
               if (updateError) {
                 console.error('Error updating user message:', updateError);
               } 
+
+              const { maxInputTokens } = getRateLimitConfig();
+              const inputTokens = estimateTokens(userMessage.content);
+
+              if (inputTokens > maxInputTokens) {
+                const errorMessage = `Message too long. Max input size is about ${maxInputTokens} tokens.`;
+                await logRateLimitHit(admin, {
+                  limitType: 'input_tokens',
+                  userId: user.id,
+                  projectId,
+                  conversationId,
+                  messageId,
+                  details: { inputTokens, maxInputTokens },
+                });
+                void sendRateLimitAlert({
+                  to: process.env.ALERT_EMAIL_TO || '',
+                  from: process.env.ALERT_EMAIL_FROM || 'onboarding@resend.dev',
+                  limitType: 'input_tokens',
+                  userId: user.id,
+                  projectId,
+                  conversationId,
+                  messageId,
+                  details: { inputTokens, maxInputTokens },
+                });
+                await supabase
+                  .from('messages')
+                  .update({
+                    content: errorMessage,
+                    metadata: {
+                      status: 'error',
+                      error: 'input_tokens',
+                      completed_at: new Date().toISOString(),
+                    },
+                  })
+                  .eq('id', messageId);
+
+                controller.enqueue(
+                  encoder.encode(`event: message\ndata: ${JSON.stringify({ content: errorMessage })}\n\n`)
+                );
+                controller.enqueue(
+                  encoder.encode(`event: complete\ndata: {}\n\n`)
+                );
+                controller.close();
+                return;
+              }
+
+              const dailyLimitResult = await enforceDailyLimits(admin, user.id);
+              if (!dailyLimitResult.allowed) {
+                const errorMessage = dailyLimitResult.reason === 'global_daily'
+                  ? 'Global daily limit reached. Please try again later.'
+                  : `Daily limit reached (${dailyLimitResult.limit}/day). Please try again tomorrow.`;
+
+                await logRateLimitHit(admin, {
+                  limitType: dailyLimitResult.reason || 'user_daily',
+                  userId: user.id,
+                  projectId,
+                  conversationId,
+                  messageId,
+                  details: {
+                    limit: dailyLimitResult.limit,
+                    count: dailyLimitResult.count,
+                    date: dailyLimitResult.dateKey,
+                  },
+                });
+                void sendRateLimitAlert({
+                  to: process.env.ALERT_EMAIL_TO || '',
+                  from: process.env.ALERT_EMAIL_FROM || 'onboarding@resend.dev',
+                  limitType: dailyLimitResult.reason || 'user_daily',
+                  userId: user.id,
+                  projectId,
+                  conversationId,
+                  messageId,
+                  details: {
+                    limit: dailyLimitResult.limit,
+                    count: dailyLimitResult.count,
+                    date: dailyLimitResult.dateKey,
+                  },
+                });
+
+                await supabase
+                  .from('messages')
+                  .update({
+                    content: errorMessage,
+                    metadata: {
+                      status: 'error',
+                      error: dailyLimitResult.reason,
+                      completed_at: new Date().toISOString(),
+                    },
+                  })
+                  .eq('id', messageId);
+
+                controller.enqueue(
+                  encoder.encode(`event: message\ndata: ${JSON.stringify({ content: errorMessage })}\n\n`)
+                );
+                controller.enqueue(
+                  encoder.encode(`event: complete\ndata: {}\n\n`)
+                );
+                controller.close();
+                return;
+              }
+              
             }
           }
 
