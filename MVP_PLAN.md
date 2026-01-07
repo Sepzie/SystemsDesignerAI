@@ -1,4 +1,7 @@
-## MVP Plan: SystemsDesignerAI
+efc837203904: Downloading  73.32MB/73.32MB
+1b494f640717: Download complete 
+Stopping containers...
+failed to display json stream: failed commit on ref "layer-sha256:efc837203904e366f307f40ade6021ac963e1eac184b95fd66f385f7d7212ac3": commit failed: unexpected commit digest sha256:6450010cdd65d1158201ce9be0c3d30e917e9c659c1a91bc3d969f7e6ffbeee1, expected sha256:efc837203904e366f307f40ade6021ac963e1eac184b95fd66f385f7d7212ac3: failed precondition## MVP Plan: SystemsDesignerAI
 
 ### Goal
 Polish the existing app to be demo-ready without a redesign, add markdown rendering, make assets shared across conversations (RAG-style), add per-user + global daily rate limiting with real email alerts, and fix known API mismatches.
@@ -13,6 +16,49 @@ Polish the existing app to be demo-ready without a redesign, add markdown render
 - Do not “nuke” the design; keep the structure and improve readability/usability.
 - Add real email alerts for rate-limit hits.
 - Skip asset versioning for now.
+
+### Progress Checklist
+Use this to track MVP readiness. Mark items as you complete them.
+
+#### UI Polish (no redesign)
+- [x] Review workspace pages (layout/spacing/contrast) for readability
+- [x] Tighten typography hierarchy and body text legibility
+- [x] Apply consistent card/background treatment across panels
+- [x] Verify alignment/sizing in header and side panels
+- [ ] Confirm mobile responsiveness for workspace and dashboard
+
+#### Markdown Rendering
+- [x] Add a reusable Markdown renderer component
+- [x] Replace raw `<pre>` rendering with Markdown renderer
+- [x] Style code blocks and inline code to match theme
+
+#### Shared Assets Across Conversations (RAG behavior)
+- [x] Store assets by `project_id` and fetch by project scope
+- [x] Resolve `[See asset: ...](semantic_id)` references against project assets
+- [x] Ensure asset fetcher can pull by semantic ID
+- [x] Update asset list to show project-wide assets
+
+#### Rate Limiting + Alerts (per-user + global daily)
+- [ ] Add `rate_limits` + `global_rate_limits` tables/migration
+- [ ] Enforce per-user + global caps in stream endpoint
+- [ ] Log limit hits and return a clear client error
+- [ ] Add email alert integration (SendGrid/Resend)
+- [ ] Add and wire required env vars
+
+#### Fix Known API Mismatches
+- [x] Fix project API param naming for PUT/DELETE
+- [x] Align asset update method (client/server)
+- [x] Resolve missing mermaid validation endpoint or remove client call
+
+#### MVP Acceptance
+- [ ] Login/register works; dashboard lists projects
+- [ ] New project launches workspace
+- [ ] Chat sends/streams responses
+- [ ] Mermaid diagram renders
+- [ ] Markdown renders with formatting
+- [ ] Assets list shows shared assets across conversations
+- [ ] Rate limits block overuse with clear error + email alert
+- [ ] No 404s/500s on main flows
 
 ### Proposed Work Breakdown
 
