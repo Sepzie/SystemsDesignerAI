@@ -3,17 +3,17 @@ import MainLayout from '@/components/layout/MainLayout'
 
 export default function HomePage() {
   return (
-    <MainLayout>
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-5xl mx-auto">
-          <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-10 shadow-[0_18px_50px_rgba(24,20,16,0.1)] backdrop-blur">
+    <MainLayout hideFooter={true}>
+      <div className="container mx-auto px-4 min-h-[calc(100dvh-96px)] flex items-center">
+        <div className="max-w-4xl mx-auto w-full">
+          <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-8 shadow-[0_16px_40px_rgba(24,20,16,0.1)] backdrop-blur">
             <p className="text-xs uppercase tracking-[0.4em] text-[var(--accent)] font-semibold mb-4">
               Systems Designer AI
             </p>
-            <h1 className="text-4xl sm:text-5xl font-semibold mb-6 text-[var(--ink)]">
+            <h1 className="text-4xl sm:text-5xl font-semibold mb-5 text-[var(--ink)]">
               Design Complex Systems with AI Assistance
             </h1>
-            <p className="text-lg text-[var(--ink-muted)] mb-10">
+            <p className="text-base sm:text-lg text-[var(--ink-muted)] mb-8">
               Create system diagrams, API specifications, data models, and more with AI-powered assistance.
               Collaborate with AI to design the architecture for your next project.
             </p>
@@ -32,31 +32,6 @@ export default function HomePage() {
               </Link>
             </div>
           </div>
-        </div>
-
-        <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            {
-              title: 'System Diagrams',
-              body: 'Generate comprehensive system architecture diagrams showing components, interactions, and data flows.',
-            },
-            {
-              title: 'API Specifications',
-              body: 'Create detailed API specifications including endpoints, request/response formats, and authentication methods.',
-            },
-            {
-              title: 'Data Models',
-              body: 'Design database schemas and data models with entity relationships, fields, and constraints.',
-            },
-          ].map((item) => (
-            <div
-              key={item.title}
-              className="rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-6 shadow-[0_12px_30px_rgba(24,20,16,0.08)]"
-            >
-              <h2 className="text-xl font-semibold mb-3 text-[var(--ink)]">{item.title}</h2>
-              <p className="text-[var(--ink-muted)]">{item.body}</p>
-            </div>
-          ))}
         </div>
       </div>
     </MainLayout>
