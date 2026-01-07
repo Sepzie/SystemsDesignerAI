@@ -112,7 +112,7 @@ function appReducer(state: AppState, action: AppAction): AppState {
         ),
         activeConversationId: action.payload.conversation.id,
         loadingStates: new Map(state.loadingStates).set(
-          `conversation:${action.payload.conversation.id}`,
+          `conversation:${action.payload.conversation.project_id}`,
           false
         ),
       };

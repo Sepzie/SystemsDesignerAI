@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Conversation } from '@/types/base-types';
 import { useAppActions } from '@/hooks/useAppActions';
+import { useAppState } from '@/hooks/useAppState';
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -20,6 +21,8 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { createConversationAction: createConversation, deleteConversationAction: deleteConversation, updateConversationTitleAction: updateConversationTitle } = useAppActions();
+  const { isLoading } = useAppState();
+  const isCreating = isLoading(`conversation:${projectId}`);
 
   const handleCreateConversation = async () => {
     await createConversation(projectId);
@@ -74,16 +77,35 @@ export const ConversationList: React.FC<ConversationListProps> = ({
       <div className="p-4 border-b border-[var(--border)] bg-[var(--surface)]">
         <button
           onClick={handleCreateConversation}
-          className="w-full flex items-center justify-center px-4 py-2 bg-[var(--accent)] text-white rounded-lg hover:bg-[var(--accent-strong)] transition-colors shadow-[0_10px_24px_rgba(15,118,110,0.2)]"
+          className="w-full flex items-center justify-center px-4 py-2 bg-[var(--accent)] text-white rounded-lg hover:bg-[var(--accent-strong)] transition-colors shadow-[0_10px_24px_rgba(15,118,110,0.2)] disabled:opacity-70"
+          disabled={isCreating}
         >
-          <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          New Conversation
+          {isCreating ? (
+            <>
+              <svg className="w-5 h-5 mr-2 animate-spin" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              Creating...
+            </>
+          ) : (
+            <>
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              New Conversation
+            </>
+          )}
         </button>
       </div>
 
       <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-2">
+        {isCreating && (
+          <div className="p-3 rounded-lg border border-[var(--border)] bg-[var(--surface-strong)] animate-pulse">
+            <div className="h-3 w-3/4 rounded bg-[var(--surface-muted)] mb-2" />
+            <div className="h-2 w-1/2 rounded bg-[var(--surface-muted)]" />
+          </div>
+        )}
         {conversations.map((conversation) => {
           const isActive = conversation.id === activeConversationId;
           return (
