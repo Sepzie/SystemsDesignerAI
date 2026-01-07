@@ -56,23 +56,23 @@ export default function RegisterPage() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8 bg-gray-50">
+      <div className="min-h-screen flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
+          <h2 className="mt-6 text-center text-3xl font-semibold text-[var(--ink)]">
             Create a new account
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <p className="mt-2 text-center text-sm text-[var(--ink-muted)]">
             Or{' '}
-            <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link href="/login" className="font-medium text-[var(--accent)] hover:text-[var(--accent-strong)]">
               sign in to your account
             </Link>
           </p>
         </div>
 
         <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <div className="bg-[var(--surface)] py-8 px-4 shadow-[0_18px_40px_rgba(24,20,16,0.12)] border border-[var(--border)] sm:rounded-2xl sm:px-10">
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+              <div className="bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded mb-4">
                 {error}
               </div>
             )}

@@ -48,14 +48,14 @@ export function AssetViewer({ asset, onAssetUpdate }: AssetViewerProps) {
               mermaidRef.current.innerHTML = svg;
             }
           })
-          .catch((error) => {
+            .catch((error) => {
             console.error('Mermaid rendering error:', error);
             setMermaidError(error.message);
             // Fallback to showing raw content
             if (mermaidRef.current) {
               mermaidRef.current.innerHTML = `
-                <div class="text-red-500 mb-4">Error rendering diagram: ${error.message}</div>
-                <pre class="bg-gray-50 p-4 rounded-lg overflow-auto"><code>${rawContent}</code></pre>
+                <div style="color: #e11d48; margin-bottom: 1rem;">Error rendering diagram: ${error.message}</div>
+                <pre style="background: var(--surface-muted); padding: 1rem; border-radius: 0.75rem; overflow: auto; color: var(--ink);"><code>${rawContent}</code></pre>
               `;
             }
           });
@@ -68,8 +68,8 @@ export function AssetViewer({ asset, onAssetUpdate }: AssetViewerProps) {
 
   if (!asset) {
     return (
-      <div className="flex items-center justify-center h-full bg-slate-50">
-        <p className="text-slate-500 text-sm">Select an asset to view</p>
+      <div className="flex items-center justify-center h-full bg-[var(--surface-muted)]">
+        <p className="text-[var(--ink-muted)] text-sm">Select an asset to view</p>
       </div>
     );
   }
@@ -78,10 +78,10 @@ export function AssetViewer({ asset, onAssetUpdate }: AssetViewerProps) {
     switch (asset.type) {
       case 'mermaid':
         return (
-          <div className="flex-1 overflow-auto p-5">
+          <div className="flex-1 overflow-auto p-5 bg-[var(--surface-muted)]">
             <div ref={mermaidRef} className="mermaid-diagram" />
             {mermaidError && (
-              <div className="mt-2 text-sm text-red-500">
+              <div className="mt-2 text-sm text-rose-600">
                 Error: {mermaidError}
               </div>
             )}
@@ -89,14 +89,14 @@ export function AssetViewer({ asset, onAssetUpdate }: AssetViewerProps) {
         );
       case 'markdown':
         return (
-          <div className="p-5 overflow-auto">
+          <div className="p-5 overflow-auto bg-[var(--surface-muted)]">
             <MarkdownRenderer content={asset.content} />
           </div>
         );
       default:
         return (
-          <div className="p-5">
-            <pre className="whitespace-pre-wrap text-sm text-slate-700">{asset.content}</pre>
+          <div className="p-5 bg-[var(--surface-muted)]">
+            <pre className="whitespace-pre-wrap text-sm text-[var(--ink)]">{asset.content}</pre>
           </div>
         );
     }
@@ -104,10 +104,10 @@ export function AssetViewer({ asset, onAssetUpdate }: AssetViewerProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border)] bg-[var(--surface)]">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">{asset.name}</h2>
-          <p className="text-xs text-slate-500">
+          <h2 className="text-lg font-semibold text-[var(--ink)]">{asset.name}</h2>
+          <p className="text-xs text-[var(--ink-muted)]">
             {asset.type} · Created {new Date(asset.created_at).toLocaleDateString()}
           </p>
         </div>

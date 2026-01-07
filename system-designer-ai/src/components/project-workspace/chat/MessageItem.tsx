@@ -18,7 +18,7 @@ export function MessageItem({ message, referencedAssets }: MessageItemProps) {
   const renderMessageContent = () => {
     if (isUser) {
       return message.content.split('\n').map((line, index) => (
-        <p key={index} className="text-white mb-2 last:mb-0">{line}</p>
+        <p key={index} className="text-white/90 mb-2 last:mb-0">{line}</p>
       ));
     }
 
@@ -38,7 +38,7 @@ export function MessageItem({ message, referencedAssets }: MessageItemProps) {
             if (asset) {
               return (
                 <span
-                  className="inline-flex items-center px-2 py-1 rounded-md bg-blue-100 text-blue-800 text-sm cursor-pointer hover:bg-blue-200"
+                  className="inline-flex items-center px-2.5 py-1 rounded-md bg-[var(--accent-soft)] text-[var(--accent-strong)] text-sm font-semibold cursor-pointer hover:opacity-90"
                   onClick={() => selectAsset(asset.id)}
                 >
                   {asset.name}
@@ -47,13 +47,13 @@ export function MessageItem({ message, referencedAssets }: MessageItemProps) {
             }
 
             return (
-              <a href={href} className="text-blue-600 hover:text-blue-700 underline">
+              <a href={href} className="text-[var(--accent)] hover:text-[var(--accent-strong)] underline">
                 {children}
               </a>
             );
           },
           p: ({ children }) => (
-            <p className="text-sm leading-6 text-slate-800 mb-2 last:mb-0">
+            <p className="text-sm leading-6 text-[var(--ink)] mb-2 last:mb-0">
               {children}
             </p>
           ),
@@ -67,8 +67,8 @@ export function MessageItem({ message, referencedAssets }: MessageItemProps) {
       <div
         className={`max-w-[85%] rounded-2xl px-4 py-3 ${
           isUser
-            ? 'bg-blue-600 text-white shadow-sm'
-            : 'bg-white text-slate-800 shadow-sm border border-slate-200'
+            ? 'bg-[var(--accent)] text-white shadow-[0_12px_28px_rgba(15,118,110,0.2)]'
+            : 'bg-[var(--surface-strong)] text-[var(--ink)] shadow-[0_12px_28px_rgba(24,20,16,0.08)] border border-[var(--border)]'
         }`}
       >
         <div className="max-w-none">
@@ -85,11 +85,11 @@ export function MessageItem({ message, referencedAssets }: MessageItemProps) {
           </div>
         )}
         
-        <div className={`mt-2 text-xs flex items-center justify-end ${isUser ? 'text-white/70' : 'text-slate-500'}`}>
+        <div className={`mt-2 text-xs flex items-center justify-end ${isUser ? 'text-white/70' : 'text-[var(--ink-muted)]'}`}>
           <span>{new Date(message.created_at).toLocaleTimeString()}</span>
           {isStreaming && (
             <span className="ml-2 flex items-center">
-              <span className={`w-1 h-1 rounded-full animate-ping mr-1 ${isUser ? 'bg-white/70' : 'bg-slate-400'}`} />
+              <span className={`w-1 h-1 rounded-full animate-ping mr-1 ${isUser ? 'bg-white/70' : 'bg-[var(--ink-muted)]'}`} />
               Generating...
             </span>
           )}

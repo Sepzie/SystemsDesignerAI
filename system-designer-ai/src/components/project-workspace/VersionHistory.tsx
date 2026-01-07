@@ -8,16 +8,16 @@ const versions = [
 
 export const VersionHistory: React.FC = () => {
   return (
-    <aside className="w-64 bg-gray-50 p-4 border-l">
-      <h2 className="text-lg font-semibold mb-4">Version History</h2>
+    <aside className="w-64 bg-[var(--surface)] p-4 border-l border-[var(--border)]">
+      <h2 className="text-lg font-semibold mb-4 text-[var(--ink)]">Version History</h2>
       <div className="space-y-4">
         {versions.map((item) => (
           <div
             key={item.version}
-            className="p-3 bg-white rounded-md shadow-sm hover:shadow cursor-pointer"
+            className="p-3 bg-[var(--surface-strong)] rounded-md shadow-sm hover:shadow cursor-pointer"
           >
-            <div className="font-medium">Version {item.version}</div>
-            <div className="text-sm text-gray-500">{item.date}</div>
+            <div className="font-medium text-[var(--ink)]">Version {item.version}</div>
+            <div className="text-sm text-[var(--ink-muted)]">{item.date}</div>
           </div>
         ))}
       </div>

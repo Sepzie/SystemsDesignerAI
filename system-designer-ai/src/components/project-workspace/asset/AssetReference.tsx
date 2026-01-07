@@ -23,10 +23,10 @@ export function AssetReference({ reference, asset, onClick }: AssetReferenceProp
   return (
     <button
       onClick={onClick}
-      className="inline-flex items-center gap-1 px-2 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded"
+      className="inline-flex items-center gap-1 px-2 py-1 text-sm bg-[var(--accent-soft)] text-[var(--accent-strong)] hover:opacity-90 rounded"
     >
       <span>{getAssetIcon(asset.type)}</span>
       <span className="font-medium">{asset.name}</span>
     </button>
   );
-} 
+}

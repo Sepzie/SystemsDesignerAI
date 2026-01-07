@@ -23,7 +23,7 @@ export const MessageList: React.FC<MessageListProps> = ({ messages }) => {
   }, [messages, scrollToBottom]);
 
   return (
-    <div className="flex-1 overflow-y-auto px-5 py-6 space-y-4">
+    <div className="flex-1 overflow-y-auto px-6 py-6 space-y-5 text-[var(--ink)]">
       {messages.map((message) => {
         const assetIds = message.metadata?.assetIds || [];
         const referencedAssets = getAssetsByIds(assetIds);

@@ -16,69 +16,69 @@ export function MarkdownRenderer({ content, className, components }: MarkdownRen
   const normalizedContent = normalizeMarkdown(content);
   const baseComponents: Components = {
     h1: ({ children }) => (
-      <h1 className="text-2xl font-semibold text-slate-900 mb-3 mt-6 first:mt-0">{children}</h1>
+      <h1 className="text-2xl font-semibold text-[var(--ink)] mb-3 mt-6 first:mt-0">{children}</h1>
     ),
     h2: ({ children }) => (
-      <h2 className="text-xl font-semibold text-slate-900 mb-3 mt-6 first:mt-0">{children}</h2>
+      <h2 className="text-xl font-semibold text-[var(--ink)] mb-3 mt-6 first:mt-0">{children}</h2>
     ),
     h3: ({ children }) => (
-      <h3 className="text-lg font-semibold text-slate-900 mb-2 mt-4 first:mt-0">{children}</h3>
+      <h3 className="text-lg font-semibold text-[var(--ink)] mb-2 mt-4 first:mt-0">{children}</h3>
     ),
     p: ({ children }) => (
-      <p className="text-sm leading-6 text-slate-700 mb-3 last:mb-0">{children}</p>
+      <p className="text-sm leading-6 text-[var(--ink)] mb-3 last:mb-0">{children}</p>
     ),
     ul: ({ children }) => (
-      <ul className="list-disc list-inside text-sm text-slate-700 mb-3 space-y-1">{children}</ul>
+      <ul className="list-disc list-inside text-sm text-[var(--ink)] mb-3 space-y-1">{children}</ul>
     ),
     ol: ({ children }) => (
-      <ol className="list-decimal list-inside text-sm text-slate-700 mb-3 space-y-1">{children}</ol>
+      <ol className="list-decimal list-inside text-sm text-[var(--ink)] mb-3 space-y-1">{children}</ol>
     ),
     li: ({ children }) => (
-      <li className="text-sm text-slate-700">{children}</li>
+      <li className="text-sm text-[var(--ink)]">{children}</li>
     ),
     blockquote: ({ children }) => (
-      <blockquote className="border-l-4 border-slate-200 pl-4 text-sm text-slate-600 italic my-3">
+      <blockquote className="border-l-4 border-[var(--border)] pl-4 text-sm text-[var(--ink-muted)] italic my-3">
         {children}
       </blockquote>
     ),
     code: ({ inline, className, children }) => {
       if (inline) {
         return (
-          <code className="px-1.5 py-0.5 rounded bg-slate-100 text-slate-800 text-xs">
+          <code className="px-1.5 py-0.5 rounded bg-[var(--surface-muted)] text-[var(--ink)] text-xs">
             {children}
           </code>
         );
       }
       return (
-        <code className={`text-xs text-slate-100 ${className || ''}`}>
+        <code className={`text-xs text-[#f5f1ea] ${className || ''}`}>
           {children}
         </code>
       );
     },
     pre: ({ children }) => (
-      <pre className="bg-slate-900 text-slate-100 rounded-md p-3 overflow-x-auto mb-3">
+      <pre className="bg-[#1f1b16] text-[#f5f1ea] rounded-md p-3 overflow-x-auto mb-3">
         {children}
       </pre>
     ),
     table: ({ children }) => (
       <div className="overflow-x-auto mb-3">
-        <table className="w-full text-left text-sm border border-slate-200">
+        <table className="w-full text-left text-sm border border-[var(--border)]">
           {children}
         </table>
       </div>
     ),
     th: ({ children }) => (
-      <th className="border border-slate-200 bg-slate-100 px-3 py-2 font-semibold text-slate-700">
+      <th className="border border-[var(--border)] bg-[var(--surface-muted)] px-3 py-2 font-semibold text-[var(--ink)]">
         {children}
       </th>
     ),
     td: ({ children }) => (
-      <td className="border border-slate-200 px-3 py-2 text-slate-700">
+      <td className="border border-[var(--border)] px-3 py-2 text-[var(--ink)]">
         {children}
       </td>
     ),
     a: ({ href, children }) => (
-      <a href={href} className="text-blue-600 hover:text-blue-700 underline">
+      <a href={href} className="text-[var(--accent)] hover:text-[var(--accent-strong)] underline">
         {children}
       </a>
     ),

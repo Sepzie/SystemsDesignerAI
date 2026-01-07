@@ -43,7 +43,7 @@ export function ProjectList() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[200px]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[var(--accent)]"></div>
       </div>
     );
   }
@@ -51,7 +51,7 @@ export function ProjectList() {
   if (error) {
     return (
       <div className="text-center py-8">
-        <p className="text-red-500 mb-4">{error}</p>
+        <p className="text-rose-600 mb-4">{error}</p>
         <Button onClick={fetchProjects}>Try Again</Button>
       </div>
     );
@@ -60,7 +60,7 @@ export function ProjectList() {
   if (projects.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-500 mb-4">No projects found. Create your first project to get started!</p>
+        <p className="text-[var(--ink-muted)] mb-4">No projects found. Create your first project to get started!</p>
         <Link href="/projects/new">
           <Button>Create New Project</Button>
         </Link>

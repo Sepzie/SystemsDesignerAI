@@ -26,15 +26,15 @@ export default function Header({ isLoggedIn, userEmail }: HeaderProps) {
   };
 
   return (
-    <header className="bg-white shadow-sm border-b">
-      <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-        <div className="text-xl font-bold">
+    <header className="bg-[var(--surface)] backdrop-blur border-b border-[var(--border)]">
+      <div className="container mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-3">
+        <div className="text-xl font-semibold tracking-tight text-[var(--ink)]">
           <Link href="/">AI System Designer</Link>
         </div>
         <div className="flex items-center space-x-4">
           {isLoggedIn ? (
             <>
-              <span className="text-gray-600">
+              <span className="text-[var(--ink-muted)]">
                 {userEmail}
               </span>
               <Button 
@@ -48,13 +48,13 @@ export default function Header({ isLoggedIn, userEmail }: HeaderProps) {
             <>
               <Link 
                 href="/login" 
-                className="px-4 py-2 rounded-md text-gray-600 hover:text-gray-900"
+                className="px-4 py-2 rounded-lg text-[var(--ink-muted)] hover:text-[var(--ink)] hover:bg-[var(--surface-muted)] transition-colors"
               >
                 Login
               </Link>
               <Link 
                 href="/register" 
-                className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
+                className="px-4 py-2 rounded-lg bg-[var(--accent)] text-white hover:bg-[var(--accent-strong)] shadow-[0_10px_24px_rgba(15,118,110,0.25)] transition-colors"
               >
                 Sign Up
               </Link>

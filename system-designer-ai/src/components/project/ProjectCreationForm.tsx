@@ -101,9 +101,9 @@ export function ProjectCreationForm() {
             id="description"
             value={formData.description}
             onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-            className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-              errors.description ? 'border-red-500' : 'border-gray-300'
-            } ${isSubmitting ? 'bg-gray-100' : 'bg-white'}`}
+            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--ring)] ${
+              errors.description ? 'border-red-500' : 'border-[var(--border)]'
+            } ${isSubmitting ? 'bg-[var(--surface-muted)]' : 'bg-[var(--surface-strong)]'} text-[var(--ink)] placeholder:text-[var(--ink-muted)]`}
             rows={4}
             disabled={isSubmitting}
             placeholder="Enter project description..."

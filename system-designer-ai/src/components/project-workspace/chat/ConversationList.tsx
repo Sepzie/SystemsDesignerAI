@@ -70,11 +70,11 @@ export const ConversationList: React.FC<ConversationListProps> = ({
   };
 
   return (
-    <div className="h-full flex flex-col bg-white border-r border-slate-200">
-      <div className="p-4 border-b border-slate-200 bg-white">
+    <div className="h-full flex flex-col bg-[var(--surface)]">
+      <div className="p-4 border-b border-[var(--border)] bg-[var(--surface)]">
         <button
           onClick={handleCreateConversation}
-          className="w-full flex items-center justify-center px-4 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors shadow-sm"
+          className="w-full flex items-center justify-center px-4 py-2 bg-[var(--accent)] text-white rounded-lg hover:bg-[var(--accent-strong)] transition-colors shadow-[0_10px_24px_rgba(15,118,110,0.2)]"
         >
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -89,8 +89,8 @@ export const ConversationList: React.FC<ConversationListProps> = ({
             key={conversation.id}
             className={`p-3 rounded-lg cursor-pointer transition-colors ${
               conversation.id === activeConversationId
-                ? 'bg-blue-600 text-white shadow-md'
-                : 'bg-slate-50 hover:bg-slate-100 text-slate-700'
+                ? 'bg-[var(--accent)] text-white shadow-[0_10px_24px_rgba(15,118,110,0.2)]'
+                : 'bg-[var(--surface-muted)] hover:bg-[var(--surface-strong)] text-[var(--ink)]'
             }`}
           >
             {editingId === conversation.id ? (
@@ -103,8 +103,8 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                     onKeyDown={(e) => handleKeyDown(e, conversation.id)}
                     className={`flex-1 px-2 py-1 rounded border ${
                       conversation.id === activeConversationId
-                        ? 'bg-blue-700 border-blue-500 text-white placeholder-gray-300'
-                        : 'bg-white border-slate-300'
+                        ? 'bg-[var(--accent-strong)] border-[var(--accent)] text-white placeholder-white/70'
+                        : 'bg-[var(--surface-strong)] border-[var(--border)]'
                     } ${error ? 'border-red-500' : ''}`}
                     placeholder="Enter conversation title"
                     autoFocus
@@ -115,8 +115,8 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                     disabled={isSaving}
                     className={`p-1 rounded ${
                       conversation.id === activeConversationId
-                        ? 'hover:bg-blue-700'
-                        : 'hover:bg-gray-200'
+                        ? 'hover:bg-[var(--accent-strong)]'
+                        : 'hover:bg-[var(--surface-muted)]'
                     } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
                     title="Save (Enter)"
                   >
@@ -136,8 +136,8 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                     disabled={isSaving}
                     className={`p-1 rounded ${
                       conversation.id === activeConversationId
-                        ? 'hover:bg-blue-700'
-                        : 'hover:bg-gray-200'
+                        ? 'hover:bg-[var(--accent-strong)]'
+                        : 'hover:bg-[var(--surface-muted)]'
                     } ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
                     title="Cancel (Esc)"
                   >
@@ -165,8 +165,8 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                     onClick={() => handleStartEdit(conversation)}
                     className={`p-1 rounded ${
                       conversation.id === activeConversationId
-                        ? 'hover:bg-blue-700'
-                        : 'hover:bg-gray-200'
+                        ? 'hover:bg-[var(--accent-strong)]'
+                        : 'hover:bg-[var(--surface-muted)]'
                     }`}
                     title="Edit title"
                   >
@@ -178,8 +178,8 @@ export const ConversationList: React.FC<ConversationListProps> = ({
                     onClick={() => handleDeleteConversation(conversation.id)}
                     className={`p-1 rounded ${
                       conversation.id === activeConversationId
-                        ? 'hover:bg-blue-700'
-                        : 'hover:bg-gray-200'
+                        ? 'hover:bg-[var(--accent-strong)]'
+                        : 'hover:bg-[var(--surface-muted)]'
                     }`}
                     title="Delete conversation"
                   >
