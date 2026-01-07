@@ -109,12 +109,67 @@ function isValidAssetType(type: string): type is AssetType {
  * @returns Text with asset blocks replaced by references
  */
 function replaceAssetBlocks(text: string, assetMap: Map<string, string>): string {
-  return text.replace(ASSET_FUNCTION_PATTERN, (match, command, semanticId, type, title) => {
-    const trimmedSemanticId = semanticId.trim();
-    const assetId = assetMap.get(trimmedSemanticId);
-    // If the asset is not found in the map (e.g., it was invalid or failed processing), keep the original block
-    return assetId ? `[See asset: ${title}](${assetId})` : match;
-  }).trim();
+  const replaceInText = (input: string) => {
+    const assetPattern = new RegExp(ASSET_FUNCTION_PATTERN.source, 'g');
+    return input.replace(assetPattern, (match, command, semanticId, type, title) => {
+      const trimmedSemanticId = semanticId.trim();
+      const assetId = assetMap.get(trimmedSemanticId);
+      // If the asset is not found in the map (e.g., it was invalid or failed processing), keep the original block
+      return assetId ? `[See asset: ${title}](${assetId})` : match;
+    });
+  };
+
+  let result = text;
+
+  const fencedPattern = /```[a-zA-Z0-9_-]*\s*<function name="assets">[\s\S]*?<\/function>\s*```/g;
+  result = result.replace(fencedPattern, (block) => {
+    const replaced = replaceInText(block);
+    if (replaced !== block) {
+      return replaced.replace(/```[a-zA-Z0-9_-]*/g, '').trim();
+    }
+    return block;
+  });
+
+  const inlinePattern = /`\s*<function name="assets">[\s\S]*?<\/function>\s*`/g;
+  result = result.replace(inlinePattern, (block) => {
+    const replaced = replaceInText(block);
+    if (replaced !== block) {
+      return replaced.replace(/`/g, '').trim();
+    }
+    return block;
+  });
+
+  return replaceInText(result).trim();
+}
+
+function normalizeBlock(text: string): string {
+  return text
+    .replace(/\r\n/g, '\n')
+    .replace(/\\r\\n/g, '\n')
+    .replace(/\\n/g, '\n')
+    .replace(/\\t/g, '\t')
+    .trim();
+}
+
+function stripAssetPreviews(text: string, assets: Asset[]): string {
+  if (assets.length === 0) return text;
+
+  const normalizedAssets = new Set(assets.map((asset) => normalizeBlock(asset.content)));
+  const fencePattern = /```[a-zA-Z0-9_-]*\s*([\s\S]*?)```/g;
+  let result = '';
+  let lastIndex = 0;
+  let match;
+
+  while ((match = fencePattern.exec(text)) !== null) {
+    const [full, inner] = match;
+    if (normalizedAssets.has(normalizeBlock(inner))) {
+      result += text.slice(lastIndex, match.index);
+      lastIndex = match.index + full.length;
+    }
+  }
+
+  result += text.slice(lastIndex);
+  return result;
 }
 
 /**
@@ -200,7 +255,10 @@ export async function processAIResponse(
     }
   }
 
-  const cleanedText = replaceAssetBlocks(response, assetMap);
+  const cleanedText = stripAssetPreviews(
+    replaceAssetBlocks(response, assetMap),
+    assets
+  );
 
   return {
     assets,

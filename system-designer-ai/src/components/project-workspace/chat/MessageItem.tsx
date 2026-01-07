@@ -4,6 +4,7 @@ import React from 'react';
 import { Message } from '@/types/base-types';
 import { Asset } from '@/types/base-types';
 import { useAppActions } from '@/hooks/useAppActions';
+import { MarkdownRenderer } from '@/components/common/MarkdownRenderer';
 
 interface MessageItemProps {
   message: Message;
@@ -14,72 +15,51 @@ export function MessageItem({ message, referencedAssets }: MessageItemProps) {
   const { selectAsset } = useAppActions();
   const isUser = message.role === 'user';
   const isStreaming = message.metadata?.isStreaming;
-  
-  // Function to process message content and convert asset references into clickable elements
   const renderMessageContent = () => {
     if (isUser) {
-      // For user messages, just return the content as paragraphs
       return message.content.split('\n').map((line, index) => (
         <p key={index} className="text-white mb-2 last:mb-0">{line}</p>
       ));
     }
 
-    // For assistant messages, process asset references
-    return message.content.split('\n').map((line, index) => {
-      const assetRefRegex = /\[See asset: ([^\]]+)\]\(([^)]+)\)/g;
-      let match;
-      let currentIndex = 0;
-      const segments: React.ReactNode[] = [];
+    return (
+      <MarkdownRenderer
+        content={message.content}
+        components={{
+          a: ({ href, children }) => {
+            if (!href) {
+              return <span>{children}</span>;
+            }
 
-      while ((match = assetRefRegex.exec(line)) !== null) {
-        const [fullMatch, title, assetToken] = match;
-        const asset = referencedAssets.find(
-          (item) => item.id === assetToken || item.semantic_id === assetToken
-        );
+            const asset = referencedAssets.find(
+              (item) => item.id === href || item.semantic_id === href
+            );
 
-        if (match.index > currentIndex) {
-          segments.push(
-            <span key={`text-${index}-${currentIndex}`}>
-              {line.substring(currentIndex, match.index)}
-            </span>
-          );
-        }
+            if (asset) {
+              return (
+                <span
+                  className="inline-flex items-center px-2 py-1 rounded-md bg-blue-100 text-blue-800 text-sm cursor-pointer hover:bg-blue-200"
+                  onClick={() => selectAsset(asset.id)}
+                >
+                  {asset.name}
+                </span>
+              );
+            }
 
-        if (asset) {
-          segments.push(
-            <span
-              key={`asset-${index}-${match.index}`}
-              className="inline-flex items-center px-2 py-1 rounded-md bg-blue-100 text-blue-800 text-sm cursor-pointer hover:bg-blue-200"
-              onClick={() => selectAsset(asset.id)}
-            >
-              {asset.name}
-            </span>
-          );
-        } else {
-          segments.push(
-            <span key={`asset-missing-${index}-${match.index}`}>
-              {fullMatch}
-            </span>
-          );
-        }
-
-        currentIndex = match.index + fullMatch.length;
-      }
-
-      if (currentIndex < line.length) {
-        segments.push(
-          <span key={`text-end-${index}`}>
-            {line.substring(currentIndex)}
-          </span>
-        );
-      }
-
-      if (segments.length === 0) {
-        return <p key={index} className="text-gray-800 mb-2 last:mb-0">{line}</p>;
-      }
-
-      return <p key={index} className="text-gray-800 mb-2 last:mb-0">{segments}</p>;
-    });
+            return (
+              <a href={href} className="text-blue-600 hover:text-blue-700 underline">
+                {children}
+              </a>
+            );
+          },
+          p: ({ children }) => (
+            <p className="text-sm leading-6 text-slate-800 mb-2 last:mb-0">
+              {children}
+            </p>
+          ),
+        }}
+      />
+    );
   };
 
   return (
