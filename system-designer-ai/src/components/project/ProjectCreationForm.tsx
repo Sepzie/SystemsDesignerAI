@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card } from '../ui/Card';
 import { Input } from '../ui/Input';
@@ -19,6 +19,7 @@ export function ProjectCreationForm() {
   const [errors, setErrors] = useState<Partial<Record<keyof ProjectFormData, string>>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const isSubmittingRef = useRef(false);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof ProjectFormData, string>> = {};
@@ -43,6 +44,11 @@ export function ProjectCreationForm() {
       return;
     }
 
+    if (isSubmittingRef.current) {
+      return;
+    }
+
+    isSubmittingRef.current = true;
     setIsSubmitting(true);
 
     try {
@@ -66,6 +72,7 @@ export function ProjectCreationForm() {
       setSubmitError(error instanceof Error ? error.message : 'An unexpected error occurred');
     } finally {
       setIsSubmitting(false);
+      isSubmittingRef.current = false;
     }
   };
 
