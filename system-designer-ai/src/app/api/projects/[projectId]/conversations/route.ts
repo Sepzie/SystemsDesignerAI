@@ -29,11 +29,14 @@ export async function GET(
     }
 
     const response: ListConversationsResponse = {
-      conversations: conversations.map(conv => ({
+      conversations: (conversations ?? []).map((conv) => ({
         id: conv.id,
-        projectId: conv.project_id,
-        startedAt: new Date(conv.created_at),
-        updatedAt: new Date(conv.updated_at),
+        project_id: conv.project_id,
+        title: conv.title ?? '',
+        created_at: conv.created_at,
+        updated_at: conv.updated_at,
+        last_message_at: conv.last_message_at ?? conv.updated_at,
+        message_count: conv.message_count ?? 0,
       })),
     };
 

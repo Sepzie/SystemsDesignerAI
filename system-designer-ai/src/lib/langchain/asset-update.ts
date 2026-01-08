@@ -14,7 +14,7 @@ export async function updateAsset(
   projectId: string,
   messageId: string
 ): Promise<Asset> {
-  if (!asset.id || !asset.old_str || !asset.new_str) {
+  if (!asset.semantic_id || !asset.old_str || !asset.new_str) {
     throw new Error('Missing required fields for asset update');
   }
 
@@ -29,12 +29,13 @@ export async function updateAsset(
   const metadata = {
     created_by: messageId,
     version: 2, // Increment version
-    update_from: asset.id,
+    update_from: asset.semantic_id,
     old_content: asset.old_str
   };
 
   return {
     id: uuidv4(), // Generate a new ID for the updated asset
+    semantic_id: asset.semantic_id,
     project_id: projectId,
     name: asset.title,
     type: asset.type,

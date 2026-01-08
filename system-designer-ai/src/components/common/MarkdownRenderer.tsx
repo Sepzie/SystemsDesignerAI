@@ -41,8 +41,9 @@ export function MarkdownRenderer({ content, className, components }: MarkdownRen
         {children}
       </blockquote>
     ),
-    code: ({ inline, className, children }) => {
-      if (inline) {
+    code: ({ className, children, ...props }) => {
+      const isInline = !className;
+      if (isInline) {
         return (
           <code className="px-1.5 py-0.5 rounded bg-[var(--surface-muted)] text-[var(--ink)] text-xs">
             {children}
@@ -50,7 +51,7 @@ export function MarkdownRenderer({ content, className, components }: MarkdownRen
         );
       }
       return (
-        <code className={`text-xs text-[#f5f1ea] ${className || ''}`}>
+        <code className={`text-xs text-[#f5f1ea] ${className || ''}`} {...props}>
           {children}
         </code>
       );

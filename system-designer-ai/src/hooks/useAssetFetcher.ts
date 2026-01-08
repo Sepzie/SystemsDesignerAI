@@ -18,18 +18,22 @@ export function useAssetFetcher() {
     const allMessages = Array.from(state.messages.values()).flat();
 
     // Find messages with pending assets that haven't been processed yet
-    const messagesWithPendingAssets = allMessages.filter(
-      message => 
-        message.metadata?.pendingAssetIds && 
-        message.metadata.pendingAssetIds.length > 0 &&
+    const messagesWithPendingAssets = allMessages.filter((message) => {
+      const pendingAssetIds = message.metadata?.pendingAssetIds;
+      return (
+        Array.isArray(pendingAssetIds) &&
+        pendingAssetIds.length > 0 &&
         !processedMessagesRef.current.has(message.id)
-    );
+      );
+    });
 
     if (messagesWithPendingAssets.length === 0) return;
 
     // Process each message with pending assets
     messagesWithPendingAssets.forEach(message => {
-      const pendingAssetIds = message.metadata?.pendingAssetIds || [];
+      const pendingAssetIds = Array.isArray(message.metadata?.pendingAssetIds)
+        ? message.metadata.pendingAssetIds
+        : [];
 
       // Mark this message as being processed
       processedMessagesRef.current.add(message.id);

@@ -60,7 +60,7 @@ Cypress.Commands.add('seedTestData', () => {
 // Type definitions for custom commands
 declare global {
   namespace Cypress {
-    interface Chainable {
+    interface Chainable<Subject = any> {
       login(email?: string, password?: string): Chainable<void>;
       register(email?: string, password?: string, fullName?: string): Chainable<void>;
       createProject(name?: string, description?: string): Chainable<void>;
@@ -69,4 +69,6 @@ declare global {
       seedTestData(): Chainable<void>;
     }
   }
-} 
+}
+
+export {};
