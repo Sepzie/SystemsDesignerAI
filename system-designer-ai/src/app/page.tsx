@@ -3,7 +3,7 @@ import MainLayout from '@/components/layout/MainLayout'
 
 export default function HomePage() {
   return (
-    <MainLayout hideFooter={true}>
+    <MainLayout>
       <div className="container mx-auto px-4 flex-1 flex items-center">
         <div className="max-w-4xl mx-auto w-full">
           <div className="rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-8 shadow-[0_16px_40px_rgba(24,20,16,0.1)] backdrop-blur">
@@ -16,17 +16,6 @@ export default function HomePage() {
             <p className="text-base sm:text-lg text-[var(--ink-muted)] mb-8">
               This is a system design copilot: chat with an AI that creates and remembers diagrams, specs, and documents
               inside each project so you can plan architecture and keep assets organized over time.
-            </p>
-            <p className="text-sm text-[var(--ink-muted)] mb-8">
-              This is a demo project by Sepehr Zohoori Rad ·{' '}
-              <a
-                href="https://github.com/Sepzie/SystemsDesignerAI"
-                className="text-[var(--accent)] hover:text-[var(--accent-strong)] underline"
-                target="_blank"
-                rel="noreferrer"
-              >
-                GitHub
-              </a>
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <Link
