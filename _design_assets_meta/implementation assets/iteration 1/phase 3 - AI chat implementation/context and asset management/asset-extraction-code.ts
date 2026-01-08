@@ -88,7 +88,7 @@ export async function storeExtractedAssets(
     const asset = extractedAssets[i];
     
     // Store the asset
-    const assetId = await createOrUpdateAsset(
+    const assetId = await createAsset(
       projectId,
       asset.type,
       asset.content,
@@ -105,7 +105,7 @@ export async function storeExtractedAssets(
 /**
  * Creates a new asset or updates an existing one based on similarity
  */
-async function createOrUpdateAsset(
+async function createAsset(
   projectId: string,
   assetType: AssetType,
   content: string,
@@ -114,15 +114,6 @@ async function createOrUpdateAsset(
   // Check for similar existing assets to update instead of creating new
   const similarAsset = await findSimilarAsset(projectId, assetType, content);
   
-  if (similarAsset) {
-    // Update existing asset with new version
-    await createAssetVersion(similarAsset.id, content, messageId);
-    
-    // Create reference to the updated asset
-    await createAssetReference(messageId, similarAsset.id, 'modification');
-    
-    return similarAsset.id;
-  } else {
     // Create new asset
     const assetId = await createNewAsset(projectId, assetType, content);
     
@@ -133,7 +124,7 @@ async function createOrUpdateAsset(
     await createAssetReference(messageId, assetId, 'creation');
     
     return assetId;
-  }
+  
 }
 
 /**
