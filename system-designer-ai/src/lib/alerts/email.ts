@@ -23,7 +23,13 @@ export async function sendRateLimitAlert(payload: RateLimitAlertPayload) {
     return;
   }
 
-  const subject = `Rate limit hit: ${payload.limitType}`;
+  const subjectParts = [
+    'System Designer AI',
+    `Rate limit hit: ${payload.limitType}`,
+    payload.projectId ? `project ${payload.projectId}` : '',
+    payload.userId ? `user ${payload.userId}` : '',
+  ].filter(Boolean);
+  const subject = subjectParts.join(' | ');
   const details = payload.details ? JSON.stringify(payload.details, null, 2) : 'n/a';
 
   const html = `
