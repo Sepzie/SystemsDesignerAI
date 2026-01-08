@@ -1,5 +1,3 @@
-import { AssetType } from "./base-types";
-
 // base types
 import { Message } from './base-types';
 import { Project } from "./base-types";

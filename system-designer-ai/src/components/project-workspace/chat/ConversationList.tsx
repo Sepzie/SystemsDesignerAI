@@ -51,6 +51,7 @@ export const ConversationList: React.FC<ConversationListProps> = ({
       await updateConversationTitle(conversationId, trimmedTitle);
       setEditingId(null);
     } catch (err) {
+      console.error('Failed to update conversation title:', err);
       setError('Failed to update title. Please try again.');
     } finally {
       setIsSaving(false);

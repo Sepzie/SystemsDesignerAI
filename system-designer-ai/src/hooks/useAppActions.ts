@@ -9,7 +9,6 @@ import {
   deleteConversation,
   updateConversationTitle,
   sendMessage,
-  createAsset,
   updateAsset,
   deleteAsset,
   getProject,
@@ -236,7 +235,7 @@ export function useAppActions() {
 
   const createAssetAction = useCallback(
     async (projectId: string, data: Omit<Asset, 'id' | 'createdAt' | 'updatedAt'>) => {
-      console.log(`[APP ACTIONS] Creating assets by users is not supported`);
+      console.log(`[APP ACTIONS] Creating assets by users is not supported`, { projectId, data });
       return;
       
       // Original implementation commented out:
@@ -256,7 +255,7 @@ export function useAppActions() {
       //   });
       // }
     },
-    [dispatch]
+    []
   );
 
   const updateAssetAction = useCallback(

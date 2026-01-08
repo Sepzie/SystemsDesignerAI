@@ -1,20 +1,14 @@
 import { ChatOpenAI } from '@langchain/openai';
-import { PromptTemplate } from '@langchain/core/prompts';
 import { config } from './config';
 import { 
   systemDesignPrompt,
-  DesignPromptInput
 } from './prompts';
-import { AssetType } from "@/types/base-types";
 import { processAIResponse as processAIResponseAssets } from './asset-extraction';
 import { AssetService } from '../asset/asset-service.server';
 import { Message } from '@/types/base-types';
 import { v4 as uuidv4 } from 'uuid';
 import { SYSTEM_MESSAGE } from './prompts';
-import { MOCK_LLM_RESPONSE_MARKDOWN_WITH_DIAGRAM } from './api-mocks';
-import { formatCompleteContext } from './context';
-import { buildConversationContext } from './context';
-import App from 'next/app';
+import { formatCompleteContext, buildConversationContext } from './context';
 
 const assetService = new AssetService();
 

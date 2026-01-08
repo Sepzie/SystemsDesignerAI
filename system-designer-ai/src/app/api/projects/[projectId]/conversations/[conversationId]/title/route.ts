@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   validateUser,
   validateProjectAccess,
-  ApiError,
 } from '@/lib/api-utils';
 import { createClient } from '@/lib/supabase/server';
 

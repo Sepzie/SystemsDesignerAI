@@ -9,9 +9,6 @@ import { updateAsset } from './asset-update';
 // New regex pattern to match the XML-like function format
 const ASSET_FUNCTION_PATTERN = /<function name="assets">\s*<parameter name="command">([^<]+)<\/parameter>\s*<parameter name="semantic_id">([^<]+)<\/parameter>\s*<parameter name="type">([^<]+)<\/parameter>\s*<parameter name="title">([^<]+)<\/parameter>\s*<parameter name="content">([\s\S]*?)<\/parameter>(?:\s*<parameter name="old_str">([^<]+)<\/parameter>\s*<parameter name="new_str">([^<]+)<\/parameter>)?\s*<\/function>/g;
 
-// Pattern for asset references in the text
-const ASSET_REFERENCE_PATTERN = /\[See asset: ([^\]]+)\]\(([^)]+)\)/g;
-
 /**
  * Validates an asset based on its type
  * @param asset The asset to validate

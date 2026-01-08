@@ -93,9 +93,6 @@ export async function GET(
       )
     }
 
-    // Get the latest conversation
-    const latestConversation = conversations && conversations.length > 0 ? conversations[0] : null;
-
     // Construct the response
     const response: ProjectResponse = {
       project: {
@@ -194,6 +191,7 @@ export async function PUT(
 
     return NextResponse.json(data)
   } catch (error) {
+    console.error('Invalid update payload:', error);
     return NextResponse.json(
       { error: 'Invalid request data' },
       { status: 400 }

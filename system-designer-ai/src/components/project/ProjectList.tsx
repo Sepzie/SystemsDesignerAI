@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Project } from "@/types/base-types";
 import { ProjectCard } from './ProjectCard';
 import { Button } from '../ui/Button';
@@ -13,11 +13,7 @@ export function ProjectList() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    fetchProjects();
-  }, []);
-
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     try {
       const response = await fetch('/api/projects', {
         credentials: 'include', // Include cookies in the request
@@ -38,7 +34,11 @@ export function ProjectList() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [router]);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
   if (isLoading) {
     return (

@@ -49,8 +49,8 @@ export default function LoginPage() {
       } else {
         throw new Error('Failed to get session after login')
       }
-    } catch (error: any) {
-      setError(error.message || 'An error occurred during login')
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'An error occurred during login')
     } finally {
       setLoading(false)
     }

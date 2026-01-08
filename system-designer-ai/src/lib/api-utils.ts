@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
 import { ErrorResponse } from '@/types/api';
 
 export class ApiError extends Error {

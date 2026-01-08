@@ -15,7 +15,7 @@ export function extractAssetIds(content: string, messageId: string): string[] {
   console.log(`[ASSET SERVICE] Extracting asset IDs from message ${messageId}`);
 
   while ((match = assetReferenceRegex.exec(content)) !== null) {
-    const [_, title, assetId] = match;
+    const [, title, assetId] = match;
     assetIds.push(assetId);
     console.log(`[ASSET SERVICE] Found asset ID: ${assetId} (${title})`);
   }

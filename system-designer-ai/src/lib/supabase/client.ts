@@ -1,4 +1,4 @@
-import { createBrowserClient } from '@supabase/ssr'
+import { createBrowserClient, type CookieOptions } from '@supabase/ssr'
 
 export const createClient = () => {
   return createBrowserClient(
@@ -12,10 +12,11 @@ export const createClient = () => {
             .find(row => row.startsWith(`${name}=`))
           return cookie ? cookie.split('=')[1] : undefined
         },
-        set(name: string, value: string, options: any) {
+        set(name: string, value: string, options: CookieOptions) {
           document.cookie = `${name}=${value}; path=/; max-age=${options.maxAge || 31536000}`
         },
-        remove(name: string, options: any) {
+        remove(name: string, options: CookieOptions) {
+          void options;
           document.cookie = `${name}=; path=/; max-age=0`
         },
       },

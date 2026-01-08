@@ -5,7 +5,7 @@ import { Asset } from './base-types';
 
 
 export interface ConversationMessage extends Message {
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 // API Request/Response interfaces
@@ -29,7 +29,7 @@ export interface GetConversationResponse {
 export interface CreateMessageRequest {
   content: string;
   role: MessageRole;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface CreateMessageResponse {

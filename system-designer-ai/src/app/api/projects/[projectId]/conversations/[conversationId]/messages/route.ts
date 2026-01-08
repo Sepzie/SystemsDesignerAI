@@ -1,17 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  validateUser,
-  validateProjectAccess,
-  getPaginationParams,
-  ApiError,
-} from '@/lib/api-utils';
-import {
-  CreateMessageRequest,
-  CreateMessageResponse,
-  ListMessagesResponse,
-} from '@/types/api';
 import { createClient } from '@/lib/supabase/server';
-import { Message } from '@/types/base-types';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function GET(
@@ -31,6 +19,7 @@ export async function GET(
 
     return NextResponse.json(messages);
   } catch (error) {
+    console.error('Failed to fetch messages:', error);
     return NextResponse.json(
       { error: 'Failed to fetch messages' },
       { status: 500 }
@@ -95,7 +84,7 @@ export async function POST(
       created_at: new Date().toISOString()
     };
 
-    const { data: aiMessage, error: aiMessageError } = await supabase
+    const { error: aiMessageError } = await supabase
       .from('messages')
       .insert([aiMessageData])
       .select()
@@ -118,6 +107,7 @@ export async function POST(
     
     return NextResponse.json(response);
   } catch (error) {
+    console.error('Failed to store message:', error);
     return NextResponse.json(
       { error: 'Failed to store message' },
       { status: 500 }

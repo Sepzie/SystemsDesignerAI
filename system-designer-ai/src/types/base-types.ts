@@ -25,7 +25,7 @@ export interface Message {
       total: number;
     };
     isStreaming?: boolean;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   created_at: string;
 }
@@ -61,4 +61,3 @@ export interface Project {
   progress: number;
 }
 export type AssetType = 'mermaid' | 'markdown';
-

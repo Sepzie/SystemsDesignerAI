@@ -3,11 +3,12 @@ import { ProjectFormData } from "@/types/client-types"
 import { createClient } from '@/lib/supabase/server'
 
 // Validation function
-function validateProjectData(data: any): data is ProjectFormData {
+function validateProjectData(data: unknown): data is ProjectFormData {
   if (!data || typeof data !== 'object') return false
-  if (!data.name || typeof data.name !== 'string') return false
-  if (!data.description || typeof data.description !== 'string') return false
-  if (typeof data.techStack !== 'string') return false
+  const candidate = data as Partial<ProjectFormData>
+  if (!candidate.name || typeof candidate.name !== 'string') return false
+  if (!candidate.description || typeof candidate.description !== 'string') return false
+  if (typeof candidate.techStack !== 'string') return false
   return true
 }
 

@@ -1,18 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {
-  validateUser,
-  validateProjectAccess,
-  ApiError,
-} from '@/lib/api-utils';
-import {
   CreateConversationRequest,
-  CreateConversationResponse,
   ListConversationsResponse,
 } from '@/types/api';
 import { createClient } from '@/lib/supabase/server';
 
 export async function GET(
-  req: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {
@@ -53,10 +47,7 @@ export async function GET(
   }
 }
 
-export async function POST(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function POST(request: Request) {
   try {
     const supabase = await createClient();
     const { projectId } = await request.json() as CreateConversationRequest;

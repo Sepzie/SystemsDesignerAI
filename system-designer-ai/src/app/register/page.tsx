@@ -47,8 +47,8 @@ export default function RegisterPage() {
         // In production, redirect to login
         router.replace('/login');
       }
-    } catch (error: any) {
-      setError(error.message || 'An error occurred during registration');
+    } catch (error: unknown) {
+      setError(error instanceof Error ? error.message : 'An error occurred during registration');
     } finally {
       setLoading(false);
     }

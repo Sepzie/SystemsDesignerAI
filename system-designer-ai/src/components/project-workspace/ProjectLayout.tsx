@@ -2,7 +2,6 @@
 
 import React, { useEffect } from 'react';
 import Link from 'next/link';
-import { VersionHistory } from './VersionHistory';
 import { ChatInterface } from './chat/ChatInterface';
 import { ConversationList } from './chat/ConversationList';
 import { AppProvider } from '@/contexts/AppContext';

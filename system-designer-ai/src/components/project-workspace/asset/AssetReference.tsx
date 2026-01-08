@@ -8,7 +8,7 @@ interface AssetReferenceProps {
   onClick: () => void;
 }
 
-export function AssetReference({ reference, asset, onClick }: AssetReferenceProps) {
+export function AssetReference({ asset, onClick }: AssetReferenceProps) {
   const getAssetIcon = (type: AssetType) => {
     switch (type) {
       case 'mermaid':

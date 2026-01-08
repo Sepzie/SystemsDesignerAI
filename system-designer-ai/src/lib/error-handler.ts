@@ -1,5 +1,3 @@
-import { NextResponse } from 'next/server';
-
 /**
  * Custom error class for API-specific errors
  * Extends the base Error class to add HTTP status code and operational status

@@ -8,7 +8,7 @@ interface AssetViewerProps {
   onAssetUpdate?: (asset: Asset) => void;
 }
 
-export function AssetViewer({ asset, onAssetUpdate }: AssetViewerProps) {
+export function AssetViewer({ asset }: AssetViewerProps) {
   const mermaidRef = useRef<HTMLDivElement>(null);
   const [mermaidError, setMermaidError] = useState<string | null>(null);
 

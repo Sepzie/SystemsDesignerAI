@@ -1,13 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import {
   validateUser,
-  validateProjectAccess,
-  ApiError,
 } from '@/lib/api-utils';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import { langChainClient } from '@/lib/langchain/client';
-import { buildConversationContext, formatCompleteContext } from '@/lib/langchain/context';
 import { estimateTokens, enforceDailyLimits, getRateLimitConfig, logRateLimitHit } from '@/lib/rate-limit';
 import { sendRateLimitAlert } from '@/lib/alerts/email';
 

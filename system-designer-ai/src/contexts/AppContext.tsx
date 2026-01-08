@@ -1,10 +1,8 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useReducer } from 'react';
 import { AppState, AppAction, initialState } from '../types/app';
-import { extractAssetIds, fetchAssetsByIds } from '@/lib/asset/asset-service.client';
-import { Asset } from '@/types/base-types';
-import { useAssetFetcher } from '@/hooks/useAssetFetcher';
+import { extractAssetIds } from '@/lib/asset/asset-service.client';
 
 // Create the context
 const AppContext = createContext<{

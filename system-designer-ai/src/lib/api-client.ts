@@ -9,7 +9,6 @@ import {
   ListConversationsResponse,
 } from '@/types/api';
 import { Message } from '@/types/base-types';
-import { Project } from "@/types/base-types";
 import { MermaidValidationResult } from '@/types/langchain';
 import { Asset } from '@/types/base-types';
 import { AssetVersion } from '@/types/base-types';
@@ -18,7 +17,7 @@ class ApiError extends Error {
   constructor(
     message: string,
     public status: number,
-    public data?: any
+    public data?: unknown
   ) {
     super(message);
     this.name = 'ApiError';
@@ -125,7 +124,7 @@ export function connectToMessageStream(
     }
   });
 
-  eventSource.addEventListener('error', (event) => {
+  eventSource.addEventListener('error', () => {
     onError(new Error('EventSource failed'));
     eventSource.close();
   });

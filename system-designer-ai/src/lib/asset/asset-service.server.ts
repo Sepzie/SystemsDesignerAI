@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server';
 import { AssetType } from "@/types/base-types";
 import { Asset } from '@/types/base-types';
 import { AssetVersion } from '@/types/base-types';
-import { SupabaseClient } from '@supabase/supabase-js';
 
 export class AssetService {
   /**

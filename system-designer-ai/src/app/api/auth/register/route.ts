@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { ApiError, withErrorHandler } from '@/lib/error-handler'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 
 /**

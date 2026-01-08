@@ -10,13 +10,6 @@ export default async function DashboardPage() {
   // Get user details for the UI
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Fetch user's projects
-  const { data: projects } = await supabase
-    .from('projects')
-    .select('*')
-    .eq('user_id', user?.id)
-    .order('created_at', { ascending: false })
-
   return (
     <MainLayout isLoggedIn={true} userEmail={user?.email}>
       <div className="container mx-auto px-4 py-6">
