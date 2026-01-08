@@ -12,7 +12,7 @@ export default function MainLayout({ children, isLoggedIn, userEmail, hideFooter
   return (
     <div className="flex flex-col min-h-screen">
       <Header isLoggedIn={isLoggedIn} userEmail={userEmail} />
-      <main className="flex-grow">
+      <main className="flex-grow flex flex-col">
         {children}
       </main>
       {hideFooter ? null : <Footer />}

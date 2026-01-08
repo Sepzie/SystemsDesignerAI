@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type KeyboardEvent, type MouseEvent } from 'react';
 import { AssetType } from "@/types/base-types";
 import { Asset } from '@/types/base-types';
 import { formatDistanceToNow } from 'date-fns';
@@ -34,6 +34,35 @@ export function AssetList({ assets, selectedAssetId, onAssetSelect }: AssetListP
   };
 
   const availableAssetTypes: AssetType[] = ['mermaid', 'markdown'];
+
+  const getAssetFileName = (asset: Asset) => {
+    const baseName = asset.name
+      .trim()
+      .replace(/[^a-zA-Z0-9-_]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    const extension = asset.type === 'markdown' ? 'md' : asset.type === 'mermaid' ? 'mmd' : 'txt';
+    return `${baseName || 'asset'}.${extension}`;
+  };
+
+  const handleDownload = (event: MouseEvent<HTMLButtonElement>, asset: Asset) => {
+    event.stopPropagation();
+    const contentType = asset.type === 'markdown' ? 'text/markdown' : 'text/plain';
+    const blob = new Blob([asset.content], { type: contentType });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = getAssetFileName(asset);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleSelectKeyDown = (event: KeyboardEvent<HTMLDivElement>, asset: Asset) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return;
+    event.preventDefault();
+    onAssetSelect(asset);
+  };
 
   return (
     <div className="flex flex-col h-full">
@@ -77,9 +106,12 @@ export function AssetList({ assets, selectedAssetId, onAssetSelect }: AssetListP
       <div className="flex-1 overflow-x-auto bg-[var(--surface)]">
         <div className="flex gap-2 p-4">
           {filteredAssets.map((asset) => (
-            <button
+            <div
               key={asset.id}
               onClick={() => onAssetSelect(asset)}
+              onKeyDown={(event) => handleSelectKeyDown(event, asset)}
+              role="button"
+              tabIndex={0}
               className={`flex-shrink-0 w-56 p-3 text-left rounded-xl border transition ${
                 selectedAssetId === asset.id ? 'bg-[var(--accent-soft)] border-[var(--accent)]' : 'bg-[var(--surface-strong)] border-[var(--border)] hover:bg-[var(--surface-muted)]'
               }`}
@@ -94,8 +126,15 @@ export function AssetList({ assets, selectedAssetId, onAssetSelect }: AssetListP
                     {formatDistanceToNow(new Date(asset.created_at), { addSuffix: true })}
                   </p>
                 </div>
+                <button
+                  type="button"
+                  onClick={(event) => handleDownload(event, asset)}
+                  className="text-xs font-semibold text-[var(--accent)] hover:text-[var(--accent-strong)]"
+                >
+                  Download
+                </button>
               </div>
-            </button>
+            </div>
           ))}
         </div>
       </div>

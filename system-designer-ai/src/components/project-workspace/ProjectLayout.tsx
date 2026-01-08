@@ -42,11 +42,24 @@ function ProjectContent({ projectId }: { projectId: string }) {
     loadProject(projectId);
   }, [projectId, loadProject]);
 
+  const activeConversation = getActiveConversation();
+
+  useEffect(() => {
+    if (activeConversation) return;
+    const projectConversations = getProjectConversations(projectId);
+    if (projectConversations.length === 0) return;
+    const [latestConversation] = [...projectConversations].sort(
+      (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+    );
+    if (latestConversation) {
+      void setActiveConversation(latestConversation.id);
+    }
+  }, [activeConversation, getProjectConversations, projectId, setActiveConversation]);
+
   const project = getCurrentProject();
   const selectedAsset = getSelectedAsset();
   const assets = getProjectAssets(project?.id || '');
   const conversations = getProjectConversations(project?.id || '');
-  const activeConversation = getActiveConversation();
   const isLoadingProject = isLoading(`project:${project?.id}`);
   const error = getError(`project:${project?.id}`);
 

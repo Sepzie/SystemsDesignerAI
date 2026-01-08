@@ -14,6 +14,8 @@ export default function RegisterPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [registrationComplete, setRegistrationComplete] = useState(false)
+  const [registrationEmail, setRegistrationEmail] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,14 +41,8 @@ export default function RegisterPage() {
         throw new Error(data.error || 'Registration failed');
       }
 
-      // If we got a session (in development), we'll be automatically logged in
-      if (data.session) {
-        // Use replace instead of push to prevent back navigation to registration
-        router.replace('/dashboard');
-      } else {
-        // In production, redirect to login
-        router.replace('/login');
-      }
+      setRegistrationEmail(email)
+      setRegistrationComplete(true)
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : 'An error occurred during registration');
     } finally {
@@ -54,9 +50,29 @@ export default function RegisterPage() {
     }
   }
 
+  if (registrationComplete) {
+    return (
+      <MainLayout>
+        <div className="flex-1 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+          <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-4">
+            <h2 className="text-3xl font-semibold text-[var(--ink)]">
+              Check your email to confirm
+            </h2>
+            <p className="text-sm text-[var(--ink-muted)]">
+              We sent a confirmation link{registrationEmail ? ` to ${registrationEmail}` : ''}. Open it to activate your account.
+            </p>
+            <Button onClick={() => router.replace('/login')}>
+              Continue to sign in
+            </Button>
+          </div>
+        </div>
+      </MainLayout>
+    )
+  }
+
   return (
-    <MainLayout hideFooter={true}>
-      <div className="min-h-[calc(100dvh-96px)] flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+    <MainLayout>
+      <div className="flex-1 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-md">
           <h2 className="mt-6 text-center text-3xl font-semibold text-[var(--ink)]">
             Create a new account
