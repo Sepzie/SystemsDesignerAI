@@ -1,13 +1,13 @@
 # AI System Designer
 
-Technical summary of a web app that supports AI-assisted system design with project workspaces, chat, and generated assets.
+AI-assisted system design workspace with chat, project assets, and generated diagrams/docs.
 
-## Scope
-- Next.js app with a Supabase/Postgres backend
-- AI chat with streaming responses
-- Project-scoped assets (markdown, mermaid)
+## At a glance
+- Purpose: help teams design systems with AI in a structured workspace
+- Core flow: chat → generate assets → review in project context
+- Artifacts: Markdown docs and Mermaid diagrams
 
-## Features
+## Key features
 - Project workspaces with chat, asset list, and asset viewer
 - Mermaid diagram rendering and Markdown rendering
 - RAG-style context: project assets included in AI prompts
@@ -15,7 +15,7 @@ Technical summary of a web app that supports AI-assisted system design with proj
 - Input token caps and output token caps
 - Alert emails on rate limit hits (Resend)
 
-## Skills Demonstrated
+## Skills demonstrated
 - Next.js App Router, streaming SSE
 - Supabase auth + Postgres schema design
 - LangChain prompt orchestration
@@ -23,14 +23,14 @@ Technical summary of a web app that supports AI-assisted system design with proj
 - Rate limiting and alerting workflows
 - Markdown/Mermaid rendering pipelines
 
-## Tech Stack
+## Tech stack
 - Next.js 15, React 19, TypeScript, Tailwind
 - Supabase (Postgres, Auth)
 - LangChain + OpenAI
 - Mermaid, React Markdown
 - Cypress E2E
 
-## Repo Structure
+## Repo structure
 ```
 SystemsDesignerAI/
   system-designer-ai/      # main app
@@ -39,8 +39,9 @@ SystemsDesignerAI/
   implementation-tracker/  # tracking docs
 ```
 
-## Setup
-See `system-designer-ai/README.md` for local setup and scripts.
+## Getting started
+1) Open `system-designer-ai/README.md` for local setup, scripts, and env vars.
+2) Start with the main app in `system-designer-ai/`.
 
-## Development
+## Notes
 Developer-focused docs live in `system-designer-ai/README.md`.
